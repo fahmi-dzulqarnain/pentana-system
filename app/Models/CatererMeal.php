@@ -20,6 +20,11 @@ class CatererMeal extends Model
         return $this->belongsTo(Caterer::class);
     }
 
+    public function meal(): BelongsTo
+    {
+        return $this->belongsTo(Meal::class);
+    }
+
     public function options(): HasMany
     {
         return $this->hasMany(CatererMealOption::class);

@@ -29,5 +29,6 @@ class CopyMealToCatererTest extends TestCase
         $this->assertSame($meal->id, $catererMeal->meal_id);
         $this->assertSame(2, $catererMeal->options()->count());
         $this->assertNull($catererMeal->options()->first()->price);
+        $this->assertTrue($catererMeal->meal->is($meal)); // source meal relation resolves
     }
 }

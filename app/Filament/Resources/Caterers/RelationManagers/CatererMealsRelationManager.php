@@ -45,7 +45,7 @@ class CatererMealsRelationManager extends RelationManager
                     ->schema([
                         Select::make('meal_option_id')
                             ->label('Option')
-                            ->options(MealOption::query()->where('is_active', true)->pluck('name', 'id'))
+                            ->options(MealOption::query()->where('is_active', true)->orderBy('sort')->pluck('name', 'id'))
                             ->required(),
                         TextInput::make('price')
                             ->numeric()

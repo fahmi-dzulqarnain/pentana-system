@@ -21,6 +21,7 @@ class CaterersTable
                     ->toggleable(),
                 TextColumn::make('phone')
                     ->toggleable(),
+                TextColumn::make('meals_count')->counts('meals')->label('Menu items')->sortable(),
             ])
             ->recordActions([
                 EditAction::make(),
