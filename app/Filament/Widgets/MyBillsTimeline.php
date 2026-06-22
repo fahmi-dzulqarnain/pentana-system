@@ -29,22 +29,6 @@ class MyBillsTimeline extends Widget
      */
     public function getBills(): Collection
     {
-        return $this->bills ??= FeePeriod::query()
-            ->where('user_id', auth()->id())
-            ->withSum('allocations', 'amount_allocated')
-            ->orderByDesc('month_date')
-            ->get();
-    }
-
-    public function getOutstanding(): float
-    {
-        return round($this->getBills()->sum(
-            fn (FeePeriod $bill) => max(0, (float) $bill->amount_due - (float) $bill->allocations_sum_amount_allocated)
-        ), 2);
-    }
-
-    public function getCredit(): float
-    {
-        return (float) (auth()->user()?->credit ?? 0);
+        return $this->bills ??= FeePeriod::forMember(auth()->id())->get();
     }
 }

@@ -1,25 +1,6 @@
 <x-filament-widgets::widget>
     <x-filament::section>
-        <x-slot name="heading">My Bills</x-slot>
-
-        <div class="flex flex-wrap gap-8 mb-6">
-            <div>
-                <div class="text-sm text-gray-500 dark:text-gray-400">Outstanding</div>
-                <div @class([
-                    'text-2xl font-bold',
-                    'text-danger-600 dark:text-danger-400' => $this->getOutstanding() > 0,
-                    'text-success-600 dark:text-success-400' => $this->getOutstanding() <= 0,
-                ])>
-                    MYR {{ number_format($this->getOutstanding(), 2) }}
-                </div>
-            </div>
-            <div>
-                <div class="text-sm text-gray-500 dark:text-gray-400">Available credit</div>
-                <div class="text-2xl font-bold text-gray-950 dark:text-white">
-                    MYR {{ number_format($this->getCredit(), 2) }}
-                </div>
-            </div>
-        </div>
+        <x-slot name="heading">Bill history</x-slot>
 
         @php
             $bills = $this->getBills();
