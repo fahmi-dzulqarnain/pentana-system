@@ -32,6 +32,11 @@ class Lunch extends Model
         return $this->hasMany(LunchOption::class);
     }
 
+    public function responses(): HasMany
+    {
+        return $this->hasMany(LunchResponse::class);
+    }
+
     /** Planned cost: each enabled option's default_count × its effective price on this menu. */
     public function estimatedCost(): float
     {
