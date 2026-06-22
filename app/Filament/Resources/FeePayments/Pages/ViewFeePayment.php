@@ -4,9 +4,9 @@ namespace App\Filament\Resources\FeePayments\Pages;
 
 use App\Filament\Resources\FeePayments\FeePaymentResource;
 use Filament\Actions\EditAction;
-use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Components\ViewEntry;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -23,15 +23,9 @@ class ViewFeePayment extends ViewRecord
                     ->schema([
                         TextEntry::make('user.name')->label('Member Name'),
                         TextEntry::make('amount_claimed')->money('MYR'),
-                        ImageEntry::make('proof_image_path')
+                        ViewEntry::make('proof_image_path')
                             ->label('Receipt Proof')
-                            ->disk('public')
-                            ->visibility('public')
-                            ->extraImgAttributes([
-                                'alt' => 'Receipt Image',
-                                'loading' => 'lazy',
-                                'style' => 'border-radius: 0.5rem;',
-                            ])
+                            ->view('filament.infolists.receipt-proof')
                             ->columnSpanFull(),
                         TextEntry::make('status')
                             ->badge()
@@ -39,9 +33,9 @@ class ViewFeePayment extends ViewRecord
                                 'pending' => 'warning',
                                 'verified' => 'success',
                                 'rejected' => 'danger',
+                                default => 'gray',
                             })
-                            ->formatStateUsing(fn (string $state): string =>
-                                ucwords(str_replace('_', ' ', $state))
+                            ->formatStateUsing(fn (string $state): string => ucwords(str_replace('_', ' ', $state))
                             ),
                     ])
                     ->columns(2),
@@ -57,7 +51,7 @@ class ViewFeePayment extends ViewRecord
                                 TextEntry::make('amount_allocated')
                                     ->money('MYR'),
                             ])
-                            ->columns(2)
+                            ->columns(2),
                     ])
                     ->visible(fn ($record) => $record->status === 'verified'),
             ]);
