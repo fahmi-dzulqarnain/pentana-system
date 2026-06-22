@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Lunch;
 
+use App\Filament\Resources\Caterers\CatererResource;
 use App\Filament\Resources\MealOptions\MealOptionResource;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -18,5 +19,14 @@ class CatalogAccessTest extends TestCase
 
         $this->actingAs(User::factory()->admin()->create());
         $this->assertTrue(MealOptionResource::canAccess());
+    }
+
+    public function test_caterers_are_admin_only(): void
+    {
+        $this->actingAs(User::factory()->create());
+        $this->assertFalse(CatererResource::canAccess());
+
+        $this->actingAs(User::factory()->admin()->create());
+        $this->assertTrue(CatererResource::canAccess());
     }
 }
