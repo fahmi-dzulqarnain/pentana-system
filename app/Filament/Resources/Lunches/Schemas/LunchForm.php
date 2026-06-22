@@ -18,7 +18,7 @@ class LunchForm
     {
         return $schema
             ->components([
-                DatePicker::make('date')->required()->unique(ignoreRecord: true)->default(fn () => request('date')),
+                DatePicker::make('date')->required()->unique(ignoreRecord: true)->default(fn () => request('date'))->native(false),
                 Select::make('caterer_id')->relationship('caterer', 'name')->required()->live(),
                 Select::make('caterer_meal_id')
                     ->label('Menu')
@@ -26,7 +26,7 @@ class LunchForm
                         ? CatererMeal::where('caterer_id', $get('caterer_id'))->pluck('name', 'id')
                         : [])
                     ->required(),
-                DateTimePicker::make('deadline')->required(),
+                DateTimePicker::make('deadline')->required()->native(false)->seconds(false),
                 // Status is system-managed: draft -> published via the Publish action; 'closed' is set by Phase 3 (deadline close).
                 Select::make('status')
                     ->options(['draft' => 'Draft', 'published' => 'Published', 'closed' => 'Closed'])

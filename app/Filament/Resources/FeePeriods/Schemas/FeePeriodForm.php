@@ -21,7 +21,8 @@ class FeePeriodForm
                 DatePicker::make('month_date')
                     ->label('Billing Month')
                     ->format('Y-m-01') // Force start of month
-                    ->required(),
+                    ->required()
+                    ->native(false),
                 TextInput::make('amount_due')
                     ->numeric()
                     ->prefix('MYR')
@@ -34,9 +35,9 @@ class FeePeriodForm
                         'adjustment' => 'Manual Adjustment',
                     ])
                     ->live(),
-                    // ->afterStateUpdated(fn ($state, set) =>
-                    //     $state === 'free' ? set('amount_due', 0) : null
-                    // ),
+                // ->afterStateUpdated(fn ($state, set) =>
+                //     $state === 'free' ? set('amount_due', 0) : null
+                // ),
                 Textarea::make('remarks')
                     ->placeholder('Reason for free month or adjustment'),
             ]);

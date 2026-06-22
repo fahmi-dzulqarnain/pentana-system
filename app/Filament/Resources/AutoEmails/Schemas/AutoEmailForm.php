@@ -23,7 +23,9 @@ class AutoEmailForm
                     ->columnSpanFull(),
                 DateTimePicker::make('send_at')
                     ->label('Send at')
-                    ->helperText('Leave blank to keep as a draft.'),
+                    ->helperText('Leave blank to keep as a draft.')
+                    ->native(false)
+                    ->seconds(false),
                 Select::make('status')
                     ->options([
                         'draft' => 'Draft',

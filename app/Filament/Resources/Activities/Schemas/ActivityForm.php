@@ -21,7 +21,9 @@ class ActivityForm
                     ->columnSpanFull(),
                 DateTimePicker::make('starts_at')
                     ->label('Starts at')
-                    ->required(),
+                    ->required()
+                    ->native(false)
+                    ->seconds(false),
                 TextInput::make('location')
                     ->maxLength(255),
             ]);

@@ -21,7 +21,7 @@ class UserForm
                     ->label('Email address')
                     ->email()
                     ->required(),
-                DateTimePicker::make('email_verified_at'),
+                DateTimePicker::make('email_verified_at')->native(false)->seconds(false),
                 TextInput::make('password')
                     ->password()
                     // Required when creating; on edit, leave blank to keep the current password.
