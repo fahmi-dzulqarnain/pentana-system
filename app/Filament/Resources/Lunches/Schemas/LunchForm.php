@@ -27,6 +27,7 @@ class LunchForm
                         : [])
                     ->required(),
                 DateTimePicker::make('deadline')->required(),
+                // Status is system-managed: draft -> published via the Publish action; 'closed' is set by Phase 3 (deadline close).
                 Select::make('status')
                     ->options(['draft' => 'Draft', 'published' => 'Published', 'closed' => 'Closed'])
                     ->default('draft')->disabled()->dehydrated(),

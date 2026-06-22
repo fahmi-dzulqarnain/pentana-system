@@ -11,6 +11,7 @@ use App\Models\CatererMealOption;
 use App\Models\Lunch;
 use App\Models\MealOption;
 use App\Models\User;
+use App\Services\LunchPlanningService;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
@@ -73,6 +74,59 @@ class LunchResourceTest extends TestCase
 
         $lunch = Lunch::whereDate('date', '2025-08-01')->firstOrFail();
         $this->assertSame(2, $lunch->options()->count());
+    }
+
+    public function test_changing_the_menu_on_edit_resyncs_options(): void
+    {
+        // Build caterer A with mealA (2 options: Beef, Chicken).
+        $caterer = Caterer::factory()->create();
+
+        $mealA = CatererMeal::create([
+            'caterer_id' => $caterer->id,
+            'name' => 'Menu A',
+            'price' => 12.00,
+        ]);
+        $beef = MealOption::factory()->create(['name' => 'Beef']);
+        $chicken = MealOption::factory()->create(['name' => 'Chicken']);
+        CatererMealOption::create(['caterer_meal_id' => $mealA->id, 'meal_option_id' => $beef->id, 'price' => null]);
+        CatererMealOption::create(['caterer_meal_id' => $mealA->id, 'meal_option_id' => $chicken->id, 'price' => null]);
+
+        // Build mealB (1 option: Vegan) on the same caterer.
+        $mealB = CatererMeal::create([
+            'caterer_id' => $caterer->id,
+            'name' => 'Menu B',
+            'price' => 10.00,
+        ]);
+        $vegan = MealOption::factory()->create(['name' => 'Vegan']);
+        CatererMealOption::create(['caterer_meal_id' => $mealB->id, 'meal_option_id' => $vegan->id, 'price' => null]);
+
+        // Create a lunch on mealA and sync its options (simulates the CreateLunch path).
+        $lunch = Lunch::create([
+            'date' => '2025-10-01',
+            'caterer_id' => $caterer->id,
+            'caterer_meal_id' => $mealA->id,
+            'deadline' => '2025-09-30 12:00',
+            'status' => 'draft',
+        ]);
+        app(LunchPlanningService::class)->syncOptionsFromMenu($lunch);
+        $this->assertSame(2, $lunch->options()->count());
+
+        // Act: edit lunch to switch to mealB via the Filament EditLunch page.
+        $admin = User::factory()->admin()->create();
+        $this->actingAs($admin);
+        Filament::setCurrentPanel(Filament::getPanel('account'));
+
+        Livewire::test(EditLunch::class, ['record' => $lunch->getKey()])
+            ->fillForm([
+                'caterer_meal_id' => $mealB->id,
+            ])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        // Assert: options reset to exactly the 1 vegan option from mealB.
+        $fresh = $lunch->fresh();
+        $this->assertSame(1, $fresh->options()->count());
+        $this->assertSame($vegan->id, $fresh->options()->first()->meal_option_id);
     }
 
     public function test_publish_moves_draft_to_published(): void
