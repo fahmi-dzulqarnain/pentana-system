@@ -26,6 +26,6 @@ class CatererMealOption extends Model
 
     public function getEffectivePriceAttribute(): float
     {
-        return (float) ($this->price ?? $this->catererMeal->price);
+        return (float) ($this->price ?? $this->catererMeal?->price ?? 0.0);
     }
 }
