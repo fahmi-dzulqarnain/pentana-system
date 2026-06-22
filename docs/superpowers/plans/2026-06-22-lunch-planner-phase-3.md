@@ -785,7 +785,7 @@ namespace App\Notifications;
 
 use App\Filament\Pages\MyLunch;
 use App\Models\Lunch;
-use Filament\Notifications\Actions\Action;
+use Filament\Actions\Action; // Filament 5 unified namespace (not Filament\Notifications\Actions\Action)
 use Filament\Notifications\Notification as FilamentNotification;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;

@@ -27,6 +27,7 @@ class AccountPanelProvider extends PanelProvider
             ->id('account')
             ->path('account')
             ->login()
+            ->databaseNotifications()
             ->colors([
                 'primary' => Color::Amber,
             ])
