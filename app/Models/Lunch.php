@@ -37,6 +37,14 @@ class Lunch extends Model
         return $this->hasMany(LunchResponse::class);
     }
 
+    /** Members may vote only while a lunch is published and the deadline instant has not yet passed. */
+    public function isOpenForVoting(): bool
+    {
+        return $this->status === 'published'
+            && $this->deadline !== null
+            && now()->lte($this->deadline);
+    }
+
     /** Planned cost: each enabled option's default_count × its effective price on this menu. */
     public function estimatedCost(): float
     {
