@@ -18,7 +18,7 @@ class LunchForm
     {
         return $schema
             ->components([
-                DatePicker::make('date')->required()->unique(ignoreRecord: true),
+                DatePicker::make('date')->required()->unique(ignoreRecord: true)->default(fn () => request('date')),
                 Select::make('caterer_id')->relationship('caterer', 'name')->required()->live(),
                 Select::make('caterer_meal_id')
                     ->label('Menu')
