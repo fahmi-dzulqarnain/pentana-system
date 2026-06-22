@@ -3,13 +3,15 @@
 namespace App\Filament\Resources\FeePayments\Pages;
 
 use App\Filament\Resources\FeePayments\FeePaymentResource;
+use Filament\Actions\Action;
 use Filament\Actions\EditAction;
+use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\TextEntry;
-use Filament\Infolists\Components\ViewEntry;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Illuminate\Support\Facades\Storage;
 
 class ViewFeePayment extends ViewRecord
 {
@@ -23,9 +25,25 @@ class ViewFeePayment extends ViewRecord
                     ->schema([
                         TextEntry::make('user.name')->label('Member Name'),
                         TextEntry::make('amount_claimed')->money('MYR'),
-                        ViewEntry::make('proof_image_path')
+                        ImageEntry::make('proof_image_path')
                             ->label('Receipt Proof')
-                            ->view('filament.infolists.receipt-proof')
+                            ->disk('public')
+                            ->visibility('public')
+                            ->height(180)
+                            ->extraImgAttributes([
+                                'alt' => 'Receipt proof',
+                                'class' => 'cursor-zoom-in rounded-lg',
+                            ])
+                            ->action(
+                                Action::make('viewReceipt')
+                                    ->label('View receipt')
+                                    ->modalHeading('Receipt proof')
+                                    ->modalContent(fn ($record) => view('filament.infolists.receipt-modal', [
+                                        'url' => Storage::disk('public')->url($record->proof_image_path),
+                                    ]))
+                                    ->modalSubmitAction(false)
+                                    ->modalCancelActionLabel('Close'),
+                            )
                             ->columnSpanFull(),
                         TextEntry::make('status')
                             ->badge()
