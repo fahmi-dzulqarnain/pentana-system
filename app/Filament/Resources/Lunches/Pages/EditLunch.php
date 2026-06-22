@@ -17,7 +17,13 @@ class EditLunch extends EditRecord
             Action::make('publish')
                 ->visible(fn () => $this->record->status === 'draft')
                 ->requiresConfirmation()
-                ->action(fn () => $this->record->update(['status' => 'published'])),
+                ->color('success')
+                ->icon('heroicon-o-check-circle')
+                ->action(function () {
+                    $this->record->update(['status' => 'published']);
+                    // Keep the form state in sync so a later Save doesn't write the stale 'draft' back.
+                    $this->refreshFormData(['status']);
+                }),
             DeleteAction::make(),
         ];
     }
