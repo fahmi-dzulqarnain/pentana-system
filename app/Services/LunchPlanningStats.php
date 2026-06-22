@@ -31,6 +31,20 @@ class LunchPlanningStats
         );
     }
 
+    public function avgOrdersPerDay(Carbon $month): float
+    {
+        $lunches = Lunch::whereBetween('date', [$month->copy()->startOfMonth(), $month->copy()->endOfMonth()])
+            ->whereIn('status', ['published', 'closed'])
+            ->with('responses')
+            ->get();
+
+        if ($lunches->isEmpty()) {
+            return 0.0;
+        }
+
+        return round($lunches->sum(fn (Lunch $lunch) => $lunch->attendingCount()) / $lunches->count(), 1);
+    }
+
     private function lunchesForMonth(Carbon $month): Collection
     {
         return Lunch::whereBetween('date', [$month->copy()->startOfMonth(), $month->copy()->endOfMonth()])->get();

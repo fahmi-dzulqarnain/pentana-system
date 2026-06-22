@@ -45,6 +45,26 @@ class Lunch extends Model
             && now()->lte($this->deadline);
     }
 
+    public function attendingCount(): int
+    {
+        return $this->responses->whereNotNull('meal_option_id')->count();
+    }
+
+    public function notAttendingCount(): int
+    {
+        return $this->responses->whereNull('meal_option_id')->count();
+    }
+
+    /** @return array<int, int> meal_option_id => count */
+    public function optionCounts(): array
+    {
+        return $this->responses
+            ->whereNotNull('meal_option_id')
+            ->countBy('meal_option_id')
+            ->map(fn ($count) => (int) $count)
+            ->all();
+    }
+
     /** Planned cost: each enabled option's default_count × its effective price on this menu. */
     public function estimatedCost(): float
     {

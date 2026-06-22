@@ -88,12 +88,17 @@ class LunchCalendar extends Page
         return app(LunchPlanningStats::class)->estimatedCostForMonth($this->monthStart());
     }
 
+    public function avgOrdersPerDay(): float
+    {
+        return app(LunchPlanningStats::class)->avgOrdersPerDay($this->monthStart());
+    }
+
     private function lunchesByDate(): Collection
     {
         $start = $this->monthStart()->copy()->startOfMonth();
         $end = $this->monthStart()->copy()->endOfMonth();
 
-        return Lunch::with(['catererMeal', 'options.mealOption'])
+        return Lunch::with(['catererMeal', 'options.mealOption', 'responses'])
             ->whereBetween('date', [$start, $end])->get()
             ->keyBy(fn (Lunch $l) => $l->date->toDateString());
     }

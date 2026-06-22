@@ -3,8 +3,10 @@
 namespace App\Filament\Resources\Lunches\Schemas;
 
 use App\Models\CatererMeal;
+use App\Models\Lunch;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -41,6 +43,25 @@ class LunchForm
                     ])
                     ->columns(3)->columnSpanFull()->addable(false)->deletable(false)
                     ->hiddenOn('create'),
+                Placeholder::make('orders_summary')
+                    ->label('Current orders')
+                    ->visibleOn('edit')
+                    ->columnSpanFull()
+                    ->content(function (?Lunch $record): string {
+                        if (! $record) {
+                            return '—';
+                        }
+
+                        $record->loadMissing('responses', 'options.mealOption');
+                        $counts = $record->optionCounts();
+                        $perOption = $record->options
+                            ->map(fn ($o) => ($o->mealOption?->name ?? 'Option').': '.($counts[$o->meal_option_id] ?? 0))
+                            ->implode('   ·   ');
+
+                        return trim($perOption)
+                            .'      Not attending: '.$record->notAttendingCount()
+                            .'      Total ordering: '.$record->attendingCount();
+                    }),
             ]);
     }
 }
