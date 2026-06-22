@@ -85,8 +85,8 @@ class CatererMealsRelationManager extends RelationManager
                             ->options(Meal::query()->pluck('name', 'id'))
                             ->required(),
                     ])
-                    ->action(function (array $data, LunchCatalogService $service) {
-                        $caterer = $this->getOwnerRecord();
+                    ->action(function (array $data, LunchCatalogService $service, self $livewire) {
+                        $caterer = $livewire->getOwnerRecord();
                         foreach (Meal::with('options')->findMany($data['meals']) as $meal) {
                             $service->copyMealToCaterer($meal, $caterer);
                         }
