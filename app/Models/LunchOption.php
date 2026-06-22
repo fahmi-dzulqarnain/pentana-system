@@ -12,7 +12,7 @@ class LunchOption extends Model
 
     protected $fillable = ['lunch_id', 'meal_option_id', 'enabled', 'default_count'];
 
-    protected $casts = ['enabled' => 'boolean', 'default_count' => 'integer'];
+    protected $casts = ['enabled' => 'boolean', 'default_count' => 'integer', 'meal_option_id' => 'integer'];
 
     public function lunch(): BelongsTo
     {
