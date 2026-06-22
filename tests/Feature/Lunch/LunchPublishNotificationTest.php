@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Notifications\LunchPublished;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -49,5 +50,22 @@ class LunchPublishNotificationTest extends TestCase
 
         Livewire::test(EditLunch::class, ['record' => $lunch->getRouteKey()])
             ->assertActionHidden('publish');
+    }
+
+    public function test_the_notification_builds_and_persists_a_database_record_when_sent(): void
+    {
+        // No Notification::fake() — exercise the real toDatabase()/toMail() build paths
+        // (Filament getDatabaseMessage + the Action url, and MyLunch::getUrl in the mail).
+        Mail::fake();
+        $user = User::factory()->create();
+        $lunch = Lunch::factory()->create(['status' => 'published', 'deadline' => now()->addDay()]);
+
+        $user->notify(new LunchPublished($lunch));
+
+        $this->assertDatabaseCount('notifications', 1);
+        $this->assertDatabaseHas('notifications', [
+            'notifiable_id' => $user->id,
+            'type' => LunchPublished::class,
+        ]);
     }
 }

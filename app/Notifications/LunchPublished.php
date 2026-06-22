@@ -6,15 +6,14 @@ use App\Filament\Pages\MyLunch;
 use App\Models\Lunch;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification as FilamentNotification;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class LunchPublished extends Notification implements ShouldQueue
+class LunchPublished extends Notification
 {
-    use Queueable;
-
+    // Sent synchronously (not ShouldQueue): this deployment has no queue worker, so inline
+    // delivery guarantees the bell + logged email actually fire on publish. Re-add ShouldQueue
+    // (and run `queue:work`) if the recipient list ever grows enough to warrant async fan-out.
     public function __construct(public Lunch $lunch) {}
 
     /** @return array<int, string> */
