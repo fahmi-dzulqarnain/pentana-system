@@ -35,6 +35,7 @@ class ViewFeePaymentTest extends TestCase
         Livewire::test(ViewFeePayment::class, ['record' => $proof->getKey()])
             ->assertSuccessful()
             ->assertSee('receipts/test.jpg')                            // thumbnail rendered
+            ->assertSee('object-fit:cover', false)                      // full-width, cropped preview (inline style)
             ->assertInfolistActionExists('proof_image_path', 'viewReceipt'); // click opens the modal action
     }
 

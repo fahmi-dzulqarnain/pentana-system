@@ -1,15 +1,16 @@
-<div class="flex flex-col items-center gap-3">
+{{-- Inline styles: Filament's precompiled CSS doesn't ship arbitrary Tailwind utilities. --}}
+<div style="display:flex;flex-direction:column;align-items:center;gap:0.75rem;">
     <img
         src="{{ $url }}"
         alt="Receipt proof"
-        class="max-h-[75vh] w-auto rounded-lg"
+        style="max-height:75vh;max-width:100%;height:auto;border-radius:0.5rem;"
     />
 
     <a
         href="{{ $url }}"
         target="_blank"
         rel="noopener"
-        class="text-sm font-medium text-primary-600 hover:underline dark:text-primary-400"
+        style="font-size:0.875rem;font-weight:500;text-decoration:underline;"
     >
         Open original &#8599;
     </a>

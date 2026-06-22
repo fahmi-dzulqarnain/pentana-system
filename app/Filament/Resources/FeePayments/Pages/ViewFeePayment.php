@@ -29,10 +29,11 @@ class ViewFeePayment extends ViewRecord
                             ->label('Receipt Proof')
                             ->disk('public')
                             ->visibility('public')
-                            ->height(180)
                             ->extraImgAttributes([
                                 'alt' => 'Receipt proof',
-                                'class' => 'cursor-zoom-in rounded-lg',
+                                // Inline styles: Filament's precompiled CSS doesn't ship arbitrary Tailwind utilities,
+                                // so class-based styling here would silently do nothing.
+                                'style' => 'width:100%;height:14rem;object-fit:cover;border-radius:0.75rem;cursor:zoom-in;',
                             ])
                             ->action(
                                 Action::make('viewReceipt')
