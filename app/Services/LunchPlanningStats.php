@@ -1,0 +1,38 @@
+<?php
+
+namespace App\Services;
+
+use App\Models\Lunch;
+use Carbon\Carbon;
+use Carbon\CarbonPeriod;
+use Illuminate\Support\Collection;
+
+class LunchPlanningStats
+{
+    public function workingDays(Carbon $month): int
+    {
+        return collect(CarbonPeriod::create($month->copy()->startOfMonth(), $month->copy()->endOfMonth()))
+            ->filter(fn (Carbon $d) => $d->isWeekday())
+            ->count();
+    }
+
+    public function daysPlanned(Carbon $month): int
+    {
+        return $this->lunchesForMonth($month)->count();
+    }
+
+    public function estimatedCostForMonth(Carbon $month): float
+    {
+        return round(
+            $this->lunchesForMonth($month)
+                ->load('catererMeal.options', 'options')
+                ->sum(fn (Lunch $lunch) => $lunch->estimatedCost()),
+            2
+        );
+    }
+
+    private function lunchesForMonth(Carbon $month): Collection
+    {
+        return Lunch::whereBetween('date', [$month->copy()->startOfMonth(), $month->copy()->endOfMonth()])->get();
+    }
+}

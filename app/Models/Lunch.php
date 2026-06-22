@@ -31,4 +31,14 @@ class Lunch extends Model
     {
         return $this->hasMany(LunchOption::class);
     }
+
+    /** Planned cost: each enabled option's default_count × its effective price on this menu. */
+    public function estimatedCost(): float
+    {
+        $prices = $this->catererMeal?->options->keyBy('meal_option_id') ?? collect();
+
+        return round($this->options->where('enabled', true)->sum(
+            fn (LunchOption $o) => $o->default_count * (float) ($prices->get($o->meal_option_id)?->effective_price ?? 0)
+        ), 2);
+    }
 }

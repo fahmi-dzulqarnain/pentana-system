@@ -6,8 +6,11 @@ use App\Models\Caterer;
 use App\Models\CatererMeal;
 use App\Models\CatererMealOption;
 use App\Models\Lunch;
+use App\Models\LunchOption;
 use App\Models\MealOption;
 use App\Services\LunchPlanningService;
+use App\Services\LunchPlanningStats;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -50,5 +53,47 @@ class LunchPlanningTest extends TestCase
         $service->syncOptionsFromMenu($lunch->fresh());
 
         $this->assertSame(2, $lunch->options()->count());
+    }
+
+    public function test_estimated_cost_uses_enabled_options_and_effective_price(): void
+    {
+        $lunch = $this->lunchWithMenu(['Beef' => 15, 'Vegan' => null]); // Vegan falls back to meal price 10
+        app(LunchPlanningService::class)->syncOptionsFromMenu($lunch);
+        $lunch->load('options');
+        // set counts: Beef 4, Vegan 2
+        LunchOption::where('lunch_id', $lunch->id)->where('meal_option_id', $lunch->options[0]->meal_option_id)->update(['default_count' => 4]);
+        LunchOption::where('lunch_id', $lunch->id)->where('meal_option_id', $lunch->options[1]->meal_option_id)->update(['default_count' => 2]);
+
+        // Beef 4×15=60 ; Vegan 2×10=20 ; total 80
+        $this->assertSame(80.0, $lunch->fresh()->load('catererMeal.options', 'options')->estimatedCost());
+    }
+
+    public function test_estimated_cost_ignores_disabled_options(): void
+    {
+        $lunch = $this->lunchWithMenu(['Beef' => 15, 'Vegan' => null]);
+        app(LunchPlanningService::class)->syncOptionsFromMenu($lunch);
+        LunchOption::where('lunch_id', $lunch->id)->update(['default_count' => 5]);
+        // disable the second option
+        LunchOption::where('lunch_id', $lunch->id)->latest('id')->first()->update(['enabled' => false]);
+
+        // only the enabled Beef counts: 5 × 15 = 75
+        $this->assertSame(75.0, $lunch->fresh()->load('catererMeal.options', 'options')->estimatedCost());
+    }
+
+    public function test_working_days_counts_weekdays_in_month(): void
+    {
+        // July 2025 has 23 weekdays (Mon–Fri)
+        $this->assertSame(23, app(LunchPlanningStats::class)->workingDays(Carbon::parse('2025-07-15')));
+    }
+
+    public function test_month_estimated_cost_and_days_planned(): void
+    {
+        $stats = app(LunchPlanningStats::class);
+        $lunch = $this->lunchWithMenu(['Beef' => 15]); // date 2025-07-01
+        app(LunchPlanningService::class)->syncOptionsFromMenu($lunch);
+        LunchOption::where('lunch_id', $lunch->id)->update(['default_count' => 3]); // 3 × 15 = 45
+
+        $this->assertSame(45.0, $stats->estimatedCostForMonth(Carbon::parse('2025-07-10')));
+        $this->assertSame(1, $stats->daysPlanned(Carbon::parse('2025-07-10')));
     }
 }
