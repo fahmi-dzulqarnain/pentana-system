@@ -33,6 +33,11 @@ class EditLunch extends EditRecord
                 ->color('success')
                 ->icon('heroicon-o-check-circle')
                 ->action(function () {
+                    // Only a genuine draft -> published transition should fan out notifications.
+                    if ($this->record->status !== 'draft') {
+                        return;
+                    }
+
                     $this->record->update(['status' => 'published']);
                     // Keep the form state in sync so a later Save doesn't write the stale 'draft' back.
                     $this->refreshFormData(['status']);

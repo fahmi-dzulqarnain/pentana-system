@@ -58,9 +58,11 @@ class LunchForm
                             ->map(fn ($o) => ($o->mealOption?->name ?? 'Option').': '.($counts[$o->meal_option_id] ?? 0))
                             ->implode('   ·   ');
 
-                        return trim($perOption)
-                            .'      Not attending: '.$record->notAttendingCount()
-                            .'      Total ordering: '.$record->attendingCount();
+                        $summary = trim($perOption);
+
+                        return ($summary === '' ? '' : $summary.'   ·   ')
+                            .'Not attending: '.$record->notAttendingCount()
+                            .'   ·   Total ordering: '.$record->attendingCount();
                     }),
             ]);
     }
