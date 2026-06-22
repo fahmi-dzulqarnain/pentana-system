@@ -69,7 +69,7 @@
         <x-filament::section>
             <div style="text-align:center;padding:0.5rem 0;">
                 <div style="font-size:1.75rem;font-weight:700;color:var(--primary-600,#d97706);line-height:1.2;">
-                    {{ number_format($this->avgOrdersPerDay(), 1) }}
+                    {{ number_format($this->avgOrdersPerDay(), 0) }}
                 </div>
                 <div style="font-size:0.8125rem;color:var(--gray-500,#6b7280);margin-top:0.25rem;font-weight:500;">Avg. Orders/Day</div>
                 <div style="font-size:0.75rem;color:var(--gray-400,#9ca3af);margin-top:0.125rem;">published days this month</div>
