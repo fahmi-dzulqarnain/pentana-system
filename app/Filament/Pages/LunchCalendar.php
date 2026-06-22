@@ -21,7 +21,7 @@ class LunchCalendar extends Page
 
     protected static ?string $navigationLabel = 'Menu Calendar';
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCalendarDays;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::CalendarDays;
 
     protected static ?string $title = 'Menu Calendar';
 

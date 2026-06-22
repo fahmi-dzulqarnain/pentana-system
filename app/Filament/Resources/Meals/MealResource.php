@@ -19,7 +19,7 @@ class MealResource extends Resource
 {
     protected static ?string $model = Meal::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::Cake;
 
     protected static string|UnitEnum|null $navigationGroup = 'Welfare & Social';
 

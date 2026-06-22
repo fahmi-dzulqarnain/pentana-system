@@ -19,7 +19,7 @@ class LunchResource extends Resource
 {
     protected static ?string $model = Lunch::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedClipboardDocumentList;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::ClipboardDocumentList;
 
     protected static string|UnitEnum|null $navigationGroup = 'Welfare & Social';
 

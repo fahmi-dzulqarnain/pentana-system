@@ -19,7 +19,7 @@ class AutoEmailResource extends Resource
 {
     protected static ?string $model = AutoEmail::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedEnvelope;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::Envelope;
 
     protected static string|UnitEnum|null $navigationGroup = 'Welfare & Social';
 

@@ -20,7 +20,7 @@ class CatererResource extends Resource
 {
     protected static ?string $model = Caterer::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::BuildingStorefront;
 
     protected static string|UnitEnum|null $navigationGroup = 'Welfare & Social';
 

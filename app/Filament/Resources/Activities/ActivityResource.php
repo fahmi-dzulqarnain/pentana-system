@@ -19,7 +19,7 @@ class ActivityResource extends Resource
 {
     protected static ?string $model = Activity::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCalendarDays;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::Sparkles;
 
     protected static string|UnitEnum|null $navigationGroup = 'Activity';
 
