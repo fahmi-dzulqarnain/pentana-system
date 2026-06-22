@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Caterers;
 use App\Filament\Resources\Caterers\Pages\CreateCaterer;
 use App\Filament\Resources\Caterers\Pages\EditCaterer;
 use App\Filament\Resources\Caterers\Pages\ListCaterers;
+use App\Filament\Resources\Caterers\RelationManagers\CatererMealsRelationManager;
 use App\Filament\Resources\Caterers\Schemas\CatererForm;
 use App\Filament\Resources\Caterers\Tables\CaterersTable;
 use App\Models\Caterer;
@@ -43,7 +44,7 @@ class CatererResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            CatererMealsRelationManager::class,
         ];
     }
 
