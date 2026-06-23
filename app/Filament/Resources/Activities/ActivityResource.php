@@ -43,7 +43,7 @@ class ActivityResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            RelationManagers\RegistrationsRelationManager::class,
         ];
     }
 
