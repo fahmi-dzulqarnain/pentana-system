@@ -14,6 +14,10 @@ class AutoEmailsTable
     {
         return $table
             ->columns([
+                TextColumn::make('type')
+                    ->badge()
+                    ->formatStateUsing(fn (string $state): string => $state === 'birthday' ? 'Birthday' : 'One-off')
+                    ->color(fn (string $state): string => $state === 'birthday' ? 'info' : 'gray'),
                 TextColumn::make('subject')
                     ->searchable()
                     ->limit(50),
