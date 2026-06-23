@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Activity;
 
+use App\Filament\Resources\Activities\Pages\CreateActivity;
 use App\Filament\Resources\Activities\Pages\EditActivity;
 use App\Filament\Resources\Activities\RelationManagers\RegistrationsRelationManager;
 use App\Models\Activity;
@@ -32,6 +33,25 @@ class ActivityAdminTest extends TestCase
             'activity_id' => $activity->id,
             'user_id' => User::factory()->create()->id,
             'status' => $status,
+        ]);
+    }
+
+    public function test_admin_can_create_an_activity_via_the_form(): void
+    {
+        Livewire::test(CreateActivity::class)
+            ->fillForm([
+                'title' => 'Annual Dinner',
+                'starts_at' => now()->addMonth(),
+                'capacity' => 50,
+                'location' => 'Grand Hall',
+            ])
+            ->call('create')
+            ->assertHasNoFormErrors();
+
+        $this->assertDatabaseHas('activities', [
+            'title' => 'Annual Dinner',
+            'capacity' => 50,
+            'status' => 'draft',
         ]);
     }
 
