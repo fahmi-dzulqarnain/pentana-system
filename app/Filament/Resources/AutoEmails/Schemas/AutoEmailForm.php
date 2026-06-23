@@ -3,8 +3,8 @@
 namespace App\Filament\Resources\AutoEmails\Schemas;
 
 use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Utilities\Get;
@@ -22,9 +22,8 @@ class AutoEmailForm
                     ->required()
                     ->live(),
                 TextInput::make('subject')->required()->maxLength(255),
-                Textarea::make('body')
+                RichEditor::make('body')
                     ->required()
-                    ->rows(6)
                     ->columnSpanFull()
                     ->helperText(fn (Get $get): ?string => $get('type') === 'birthday'
                         ? 'Use {name} where the member\'s name should appear.'
