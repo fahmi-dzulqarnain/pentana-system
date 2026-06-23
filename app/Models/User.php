@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Models\Payment\PaymentProof;
+use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -13,7 +14,7 @@ use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable implements FilamentUser
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
+    /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
     /**
@@ -36,6 +37,8 @@ class User extends Authenticatable implements FilamentUser
         'is_admin',
         'member_category_id',
         'custom_fee',
+        'birthday',
+        'activated_at',
     ];
 
     /**
@@ -60,7 +63,14 @@ class User extends Authenticatable implements FilamentUser
             'password' => 'hashed',
             'is_admin' => 'boolean',
             'custom_fee' => 'decimal:2',
+            'birthday' => 'date',
+            'activated_at' => 'datetime',
         ];
+    }
+
+    public function isActivated(): bool
+    {
+        return $this->activated_at !== null;
     }
 
     public function memberCategory()
