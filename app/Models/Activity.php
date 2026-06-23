@@ -21,6 +21,7 @@ class Activity extends Model
         'registration_closes_at',
         'ends_at',
         'reminder_sent_at',
+        'registration_fields',
     ];
 
     protected $casts = [
@@ -29,11 +30,18 @@ class Activity extends Model
         'registration_closes_at' => 'datetime',
         'reminder_sent_at' => 'datetime',
         'capacity' => 'integer',
+        'registration_fields' => 'array',
     ];
 
     public function registrations(): HasMany
     {
         return $this->hasMany(ActivityRegistration::class);
+    }
+
+    /** True when the admin has attached at least one registration question. */
+    public function hasRegistrationFields(): bool
+    {
+        return ! empty($this->registration_fields);
     }
 
     public function registeredCount(): int

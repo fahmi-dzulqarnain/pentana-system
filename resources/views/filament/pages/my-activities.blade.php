@@ -33,7 +33,8 @@
                 <div class="ma-meta">📍 {{ $activity->location }}</div>
             @endif
             @if($activity->description)
-                <div class="ma-desc">{{ $activity->description }}</div>
+                {{-- Admin-authored RichEditor HTML (trusted), rendered like the email body. --}}
+                <div class="ma-desc">{!! $activity->description !!}</div>
             @endif
 
             <div class="ma-foot">

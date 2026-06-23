@@ -3,8 +3,8 @@
 namespace App\Filament\Resources\Activities\Schemas;
 
 use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
 
@@ -17,8 +17,7 @@ class ActivityForm
                 TextInput::make('title')
                     ->required()
                     ->maxLength(255),
-                Textarea::make('description')
-                    ->rows(4)
+                RichEditor::make('description')
                     ->columnSpanFull(),
                 DateTimePicker::make('starts_at')
                     ->label('Starts at')

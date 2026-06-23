@@ -10,13 +10,14 @@ class ActivityRegistration extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['activity_id', 'user_id', 'status', 'registered_at', 'attended'];
+    protected $fillable = ['activity_id', 'user_id', 'status', 'registered_at', 'attended', 'answers'];
 
     protected $casts = [
         'registered_at' => 'datetime',
         'attended' => 'boolean',
         'activity_id' => 'integer',
         'user_id' => 'integer',
+        'answers' => 'array',
     ];
 
     public function activity(): BelongsTo
