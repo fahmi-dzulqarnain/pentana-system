@@ -16,10 +16,10 @@
     <link rel="stylesheet" href="{{ asset('css/filament/filament/app.css') }}">
 </head>
 <body class="antialiased" style="margin:0;min-height:100vh;background-color:#ffffff;">
-    {{-- Full-page (not a centered card): the white background fills the viewport and the
-         content flows from the top. A max-width keeps the form readable on wide screens;
-         margin auto centres that column horizontally without drawing a boxed card. --}}
-    <main style="width:100%;max-width:42rem;margin:0 auto;padding:3rem 1.5rem;box-sizing:border-box;">
+    {{-- Full-viewport canvas: the white page fills the screen and the claim component
+         lays itself out inside (header group at the top, field centred, footer button
+         pinned to the bottom). It manages its own padding per stage. --}}
+    <main style="width:100%;min-height:100vh;display:flex;flex-direction:column;">
         {{ $slot }}
     </main>
 
