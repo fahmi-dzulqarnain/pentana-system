@@ -49,4 +49,18 @@ class LoginGatingTest extends TestCase
         // anything but 404; the WebAuthn ceremony itself is smoke-tested later.
         $this->get(route('passkeys.authentication_options'))->assertStatus(200);
     }
+
+    public function test_the_passkey_webauthn_script_loads_as_a_module(): void
+    {
+        // passkeys.js is a Vite ES module that `import`s the @simplewebauthn/browser
+        // chunk to define window.startAuthentication. It MUST be served as
+        // type="module" or the browser rejects the import and the global never
+        // defines ("startAuthentication is not defined"). Guards the ->module() flag.
+        $html = $this->get('/account/login')->getContent();
+
+        $this->assertSame(1, preg_match('/<script\b[^>]*passkeys[^>]*>/s', $html, $match),
+            'A <script> tag loading passkeys.js should be present on the login page.');
+        $this->assertStringContainsString('type="module"', $match[0],
+            'The passkeys WebAuthn script must be loaded as type="module".');
+    }
 }

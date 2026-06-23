@@ -29,8 +29,13 @@ class AppServiceProvider extends ServiceProvider
         // resources/js/passkeys.js (no axios/Alpine/Livewire) as a Filament asset
         // so it ships on every panel page without conflicting with Filament's
         // bundled Alpine/Livewire.
+        //
+        // ->module() is REQUIRED: Vite builds passkeys.js as an ES module that
+        // `import`s a code-split @simplewebauthn/browser chunk. Without type="module"
+        // the browser rejects the import statement, the file never runs, and the
+        // globals stay undefined ("startAuthentication is not defined").
         FilamentAsset::register([
-            Js::make('passkeys-webauthn', Vite::asset('resources/js/passkeys.js')),
+            Js::make('passkeys-webauthn', Vite::asset('resources/js/passkeys.js'))->module(),
         ]);
     }
 }
