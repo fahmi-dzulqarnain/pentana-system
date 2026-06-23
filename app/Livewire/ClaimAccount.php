@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Filament\Pages\Passkeys;
 use App\Models\User;
 use App\Services\AccountClaimService;
 use Filament\Forms\Components\DatePicker;
@@ -105,7 +106,9 @@ class ClaimAccount extends Component implements HasSchemas
 
         Auth::login($user);
 
-        $this->redirect('/account', navigate: true);
+        // Freshly-activated members land on "add a passkey" so they can set up
+        // password-free sign-in right away.
+        $this->redirect(Passkeys::getUrl(panel: 'account'), navigate: true);
     }
 
     #[Layout('components.layouts.guest')]
