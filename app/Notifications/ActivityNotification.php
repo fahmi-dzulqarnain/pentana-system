@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Filament\Pages\MyActivities;
 use App\Models\Activity;
 use Illuminate\Notifications\Notification;
 
@@ -31,7 +32,6 @@ abstract class ActivityNotification extends Notification
 
     protected function url(): string
     {
-        // ACT-5 points this at MyActivities::getUrl(panel: 'account').
-        return url('/account');
+        return MyActivities::getUrl(panel: 'account');
     }
 }
