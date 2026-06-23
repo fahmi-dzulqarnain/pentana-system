@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Activity;
 use App\Models\ActivityRegistration;
 use App\Models\User;
+use App\Notifications\WaitlistPromoted;
 use Illuminate\Support\Facades\DB;
 
 class ActivityRegistrationService
@@ -103,7 +104,7 @@ class ActivityRegistrationService
 
             $next->update(['status' => 'registered']);
 
-            // ACT-3 seam: notify the promoted member — $next->user->notify(new WaitlistPromoted($activity));
+            $next->user->notify(new WaitlistPromoted($activity));
         }
     }
 }
