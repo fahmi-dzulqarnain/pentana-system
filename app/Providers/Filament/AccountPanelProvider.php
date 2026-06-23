@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Auth\Login;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -29,7 +30,7 @@ class AccountPanelProvider extends PanelProvider
             ->default()
             ->id('account')
             ->path('account')
-            ->login()
+            ->login(Login::class)
             ->databaseNotifications()
             ->renderHook(
                 PanelsRenderHook::AUTH_LOGIN_FORM_AFTER,
