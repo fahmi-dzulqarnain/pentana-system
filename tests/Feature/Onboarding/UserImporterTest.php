@@ -3,10 +3,13 @@
 namespace Tests\Feature\Onboarding;
 
 use App\Filament\Imports\UserImporter;
+use App\Filament\Resources\Users\Pages\ListUsers;
 use App\Models\MemberCategory;
 use App\Models\User;
 use Filament\Actions\Imports\Exceptions\RowImportFailedException;
+use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class UserImporterTest extends TestCase
@@ -40,5 +43,15 @@ class UserImporterTest extends TestCase
 
         $this->expectException(RowImportFailedException::class);
         UserImporter::buildRecord(['email' => 'dupe@example.com', 'name' => 'Dupe', 'grade' => 'Grade 7-10']);
+    }
+
+    public function test_admin_users_list_renders_with_the_import_action(): void
+    {
+        $this->actingAs(User::factory()->admin()->create());
+        Filament::setCurrentPanel(Filament::getPanel('account'));
+
+        Livewire::test(ListUsers::class)
+            ->assertSuccessful()
+            ->assertTableActionExists('import');
     }
 }
