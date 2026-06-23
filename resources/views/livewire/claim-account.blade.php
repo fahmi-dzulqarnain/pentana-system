@@ -5,6 +5,20 @@
         .dark .claim-subtle { color: #a1a1aa; }
         .dark .claim-input { background-color: #27272a; border-color: #3f3f46; color: #fafafa; }
         .dark .claim-message { background-color: #422006; border-color: #854d0e; color: #fde68a; }
+
+        /* Keep the multi-step Wizard, but render its step header flat: drop the card
+           box (transparent background, no ring/shadow/border) and the horizontal
+           scrollbar. The header is a column grid with auto-width columns + overflow-x:
+           auto, so two steps with long descriptions overflow and scroll. Equal,
+           shrinkable columns (minmax(0, 1fr)) make both steps always fit the card. */
+        .fi-sc-wizard-header {
+            grid-auto-columns: minmax(0, 1fr);
+            overflow: visible;
+            background-color: transparent;
+            box-shadow: none;
+            border: 0;
+            border-radius: 0;
+        }
     </style>
 
     <h1 class="claim-title" style="font-size:1.5rem;font-weight:700;margin:0 0 0.25rem;color:#111827;">
