@@ -97,7 +97,9 @@ class ClaimAccount extends Component implements HasSchemas
                                 ->label('Confirm password')
                                 ->dehydrated(false),
                         ]),
-                ])->submitAction(view('livewire.claim-submit-button')),
+                ])
+                    ->contained(false)
+                    ->submitAction(view('livewire.claim-submit-button')),
             ]);
     }
 
