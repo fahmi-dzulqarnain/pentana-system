@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Users\Schemas;
 
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
@@ -21,6 +22,10 @@ class UserForm
                     ->label('Email address')
                     ->email()
                     ->required(),
+                DatePicker::make('birthday')
+                    ->native(false)
+                    ->maxDate(today())
+                    ->helperText('Set or correct the member\'s date of birth.'),
                 DateTimePicker::make('email_verified_at')->native(false)->seconds(false),
                 TextInput::make('password')
                     ->password()
