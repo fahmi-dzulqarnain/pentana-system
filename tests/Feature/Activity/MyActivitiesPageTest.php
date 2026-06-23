@@ -118,4 +118,67 @@ class MyActivitiesPageTest extends TestCase
 
         Livewire::test(MyActivities::class)->assertSee('Past Trip');
     }
+
+    public function test_registering_with_questions_stores_answers(): void
+    {
+        $activity = $this->published([
+            'capacity' => 5,
+            'registration_fields' => [
+                ['key' => 'diet', 'label' => 'Dietary needs', 'type' => 'text', 'required' => true, 'options' => []],
+            ],
+        ]);
+        $user = $this->actAsPanelUser();
+
+        Livewire::test(MyActivities::class)
+            ->call('startRegistration', $activity->id)
+            ->set('answers.diet', 'Halal')
+            ->call('submitRegistration')
+            ->assertHasNoErrors();
+
+        $registration = ActivityRegistration::where(['activity_id' => $activity->id, 'user_id' => $user->id])->first();
+        $this->assertSame('registered', $registration->status);
+        $this->assertSame('Halal', $registration->answers['diet']);
+    }
+
+    public function test_a_missing_required_answer_blocks_registration(): void
+    {
+        $activity = $this->published([
+            'capacity' => 5,
+            'registration_fields' => [
+                ['key' => 'diet', 'label' => 'Dietary needs', 'type' => 'text', 'required' => true, 'options' => []],
+            ],
+        ]);
+        $user = $this->actAsPanelUser();
+
+        Livewire::test(MyActivities::class)
+            ->call('startRegistration', $activity->id)
+            ->call('submitRegistration')
+            ->assertHasErrors('answers.diet');
+
+        $this->assertDatabaseMissing('activity_registrations', [
+            'activity_id' => $activity->id, 'user_id' => $user->id,
+        ]);
+    }
+
+    public function test_only_defined_question_keys_are_stored(): void
+    {
+        $activity = $this->published([
+            'capacity' => 5,
+            'registration_fields' => [
+                ['key' => 'diet', 'label' => 'Dietary needs', 'type' => 'text', 'required' => false, 'options' => []],
+            ],
+        ]);
+        $user = $this->actAsPanelUser();
+
+        // A tampered client could push extra keys into the public `answers` prop.
+        Livewire::test(MyActivities::class)
+            ->call('startRegistration', $activity->id)
+            ->set('answers.diet', 'None')
+            ->set('answers.injected', 'evil')
+            ->call('submitRegistration')
+            ->assertHasNoErrors();
+
+        $registration = ActivityRegistration::where(['activity_id' => $activity->id, 'user_id' => $user->id])->first();
+        $this->assertSame(['diet' => 'None'], $registration->answers);
+    }
 }

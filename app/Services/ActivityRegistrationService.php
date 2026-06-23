@@ -15,13 +15,16 @@ class ActivityRegistrationService
      *
      * @throws RegistrationException when registration is not open.
      */
-    public function register(Activity $activity, User $user): ActivityRegistration
+    /**
+     * @param  array<string, mixed>  $answers  responses to the activity's registration questions
+     */
+    public function register(Activity $activity, User $user, array $answers = []): ActivityRegistration
     {
         if (! $activity->isOpenForRegistration()) {
             throw new RegistrationException('Registration is closed for this activity.');
         }
 
-        return DB::transaction(function () use ($activity, $user) {
+        return DB::transaction(function () use ($activity, $user, $answers) {
             // Lock the activity row so two members can't both claim the final seat.
             $locked = Activity::whereKey($activity->getKey())->lockForUpdate()->first();
 
@@ -38,6 +41,7 @@ class ActivityRegistrationService
                 [
                     'status' => $locked->isFull() ? 'waitlisted' : 'registered',
                     'registered_at' => now(),
+                    'answers' => $answers,
                 ],
             );
         });
