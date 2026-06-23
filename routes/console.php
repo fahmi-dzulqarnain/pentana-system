@@ -10,3 +10,4 @@ Artisan::command('inspire', function () {
 
 Schedule::command('app:generate-monthly-fees')->monthlyOn(1, '00:00');
 Schedule::command('app:close-lunch-orders')->everyFifteenMinutes();
+Schedule::command('app:send-birthday-emails')->dailyAt('08:00');
