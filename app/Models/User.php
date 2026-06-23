@@ -68,6 +68,17 @@ class User extends Authenticatable implements FilamentUser
         ];
     }
 
+    /**
+     * Return an empty string rather than null when no password has been set.
+     * This prevents password_verify() from receiving null (a deprecation in
+     * PHP 8.2+ and a TypeError in PHP 9), ensuring unclaimed users are cleanly
+     * rejected by Auth::attempt without any warning.
+     */
+    public function getAuthPassword(): string
+    {
+        return $this->password ?? '';
+    }
+
     public function isActivated(): bool
     {
         return $this->activated_at !== null;

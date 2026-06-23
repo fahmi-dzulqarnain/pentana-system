@@ -19,6 +19,8 @@ class LoginGatingTest extends TestCase
 
     public function test_an_activated_user_can_authenticate(): void
     {
+        // The User model's 'password' => 'hashed' cast auto-hashes the plain string on
+        // factory create; Auth::attempt then calls password_verify() against that hash.
         User::factory()->create(['email' => 'ok@example.com', 'password' => 'secret-password', 'activated_at' => now()]);
         $this->assertTrue(Auth::attempt(['email' => 'ok@example.com', 'password' => 'secret-password']));
     }
