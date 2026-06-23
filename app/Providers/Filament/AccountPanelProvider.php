@@ -10,12 +10,14 @@ use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\View\PanelsRenderHook;
 use Filament\Widgets\AccountWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\HtmlString;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class AccountPanelProvider extends PanelProvider
@@ -28,6 +30,14 @@ class AccountPanelProvider extends PanelProvider
             ->path('account')
             ->login()
             ->databaseNotifications()
+            ->renderHook(
+                PanelsRenderHook::AUTH_LOGIN_FORM_AFTER,
+                fn (): HtmlString => new HtmlString(
+                    '<div style="margin-top:1rem;text-align:center;font-size:0.875rem;">'
+                    .'New here? <a href="/claim" style="color:var(--primary-600,#d97706);font-weight:600;">Claim your account</a>'
+                    .'</div>'
+                ),
+            )
             ->colors([
                 'primary' => Color::Amber,
             ])
