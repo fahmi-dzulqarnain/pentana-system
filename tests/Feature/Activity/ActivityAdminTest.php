@@ -135,4 +135,48 @@ class ActivityAdminTest extends TestCase
             ->assertTableColumnExists('attended')
             ->assertCanSeeTableRecords([$registration]);
     }
+
+    public function test_admin_can_view_a_registrants_answers(): void
+    {
+        $activity = Activity::factory()->create([
+            'status' => 'published',
+            'starts_at' => now()->addWeek(),
+            'registration_fields' => [
+                ['key' => 'diet', 'label' => 'Dietary needs', 'type' => 'text', 'required' => true, 'options' => []],
+            ],
+        ]);
+        $registration = ActivityRegistration::factory()->create([
+            'activity_id' => $activity->id,
+            'user_id' => User::factory()->create()->id,
+            'status' => 'registered',
+            'answers' => ['diet' => 'Halal'],
+        ]);
+
+        Livewire::test(RegistrationsRelationManager::class, [
+            'ownerRecord' => $activity,
+            'pageClass' => EditActivity::class,
+        ])
+            ->assertTableActionExists('viewAnswers')
+            ->mountTableAction('viewAnswers', $registration)
+            ->assertHasNoErrors();
+
+        // The modal body is an Alpine-rendered view; assert its content renders the answer.
+        $html = view('filament.activities.registration-answers', [
+            'fields' => $activity->registration_fields,
+            'answers' => $registration->answers,
+        ])->render();
+        $this->assertStringContainsString('Dietary needs', $html);
+        $this->assertStringContainsString('Halal', $html);
+    }
+
+    public function test_view_answers_is_hidden_when_the_activity_has_no_questions(): void
+    {
+        $activity = Activity::factory()->create(['status' => 'published', 'starts_at' => now()->addWeek()]);
+        $registration = $this->registration($activity, 'registered');
+
+        Livewire::test(RegistrationsRelationManager::class, [
+            'ownerRecord' => $activity,
+            'pageClass' => EditActivity::class,
+        ])->assertTableActionHidden('viewAnswers', $registration);
+    }
 }

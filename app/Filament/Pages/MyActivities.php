@@ -3,6 +3,7 @@
 namespace App\Filament\Pages;
 
 use App\Models\Activity;
+use App\Models\ActivityRegistration;
 use App\Services\ActivityRegistrationService;
 use App\Services\RegistrationException;
 use BackedEnum;
@@ -63,7 +64,12 @@ class MyActivities extends Page
 
     public function statusFor(Activity $activity): ?string
     {
-        return $activity->registrations->firstWhere('user_id', auth()->id())?->status;
+        return $this->myRegistrationFor($activity)?->status;
+    }
+
+    public function myRegistrationFor(Activity $activity): ?ActivityRegistration
+    {
+        return $activity->registrations->firstWhere('user_id', auth()->id());
     }
 
     public function waitlistPositionFor(Activity $activity): ?int

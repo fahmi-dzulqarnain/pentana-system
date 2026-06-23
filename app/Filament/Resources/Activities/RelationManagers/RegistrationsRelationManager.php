@@ -48,6 +48,18 @@ class RegistrationsRelationManager extends RelationManager
             ])
             ->defaultSort('registered_at')
             ->recordActions([
+                Action::make('viewAnswers')
+                    ->label('Answers')
+                    ->icon('heroicon-o-clipboard-document-list')
+                    ->color('gray')
+                    ->visible(fn (): bool => $this->getOwnerRecord()->hasRegistrationFields())
+                    ->modalHeading('Registration answers')
+                    ->modalSubmitAction(false)
+                    ->modalCancelActionLabel('Close')
+                    ->modalContent(fn (ActivityRegistration $record) => view('filament.activities.registration-answers', [
+                        'fields' => $this->getOwnerRecord()->registration_fields ?? [],
+                        'answers' => $record->answers ?? [],
+                    ])),
                 Action::make('remove')
                     ->label('Remove')
                     ->icon('heroicon-o-trash')

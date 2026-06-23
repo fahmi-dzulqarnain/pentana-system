@@ -73,6 +73,20 @@
                     <button type="button" class="ma-btn ma-btn--primary" wire:click="startRegistration({{ $activity->id }})">Register</button>
                 @endif
             </div>
+
+            @if(in_array($status, ['registered', 'waitlisted'], true) && $activity->hasRegistrationFields())
+                @php($mine = $this->myRegistrationFor($activity))
+                @if($mine && $mine->answers)
+                    <div class="ma-answers">
+                        @foreach($activity->registration_fields as $field)
+                            @php($val = $mine->answers[$field['key']] ?? null)
+                            @if($val !== null && $val !== '')
+                                <div><strong>{{ $field['label'] }}:</strong> {{ is_bool($val) ? ($val ? 'Yes' : 'No') : $val }}</div>
+                            @endif
+                        @endforeach
+                    </div>
+                @endif
+            @endif
         </div>
     @empty
         <div class="ma-empty">No upcoming activities right now.</div>

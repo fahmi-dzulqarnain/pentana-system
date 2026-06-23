@@ -140,6 +140,22 @@ class MyActivitiesPageTest extends TestCase
         $this->assertSame('Halal', $registration->answers['diet']);
     }
 
+    public function test_member_sees_their_own_answers_on_the_card(): void
+    {
+        $activity = $this->published([
+            'capacity' => 5,
+            'registration_fields' => [
+                ['key' => 'diet', 'label' => 'Dietary needs', 'type' => 'text', 'required' => false, 'options' => []],
+            ],
+        ]);
+        $user = $this->actAsPanelUser();
+        ActivityRegistration::factory()->create([
+            'activity_id' => $activity->id, 'user_id' => $user->id, 'status' => 'registered', 'answers' => ['diet' => 'Halal only'],
+        ]);
+
+        Livewire::test(MyActivities::class)->assertSee('Halal only');
+    }
+
     public function test_a_missing_required_answer_blocks_registration(): void
     {
         $activity = $this->published([
