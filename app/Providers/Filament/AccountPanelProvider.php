@@ -48,9 +48,24 @@ class AccountPanelProvider extends PanelProvider
             ->renderHook(
                 PanelsRenderHook::AUTH_LOGIN_FORM_AFTER,
                 fn (): HtmlString => new HtmlString(
-                    '<div style="margin-top:0.75rem;text-align:center;font-size:0.875rem;color:var(--primary-600,#d97706);font-weight:600;">'
-                    .Blade::render('<x-authenticate-passkey :redirect="$redirect" />', ['redirect' => '/account'])
-                    .'</div>'
+                    Blade::render(
+                        <<<'BLADE'
+                        <div style="margin-top:1rem;">
+                            <x-authenticate-passkey :redirect="$redirect">
+                                <x-filament::button
+                                    type="button"
+                                    outlined
+                                    color="gray"
+                                    icon="heroicon-o-finger-print"
+                                    style="width:100%;justify-content:center;"
+                                >
+                                    {{ __('passkeys::passkeys.authenticate_using_passkey') }}
+                                </x-filament::button>
+                            </x-authenticate-passkey>
+                        </div>
+                        BLADE,
+                        ['redirect' => '/account'],
+                    )
                 ),
             )
             ->colors([
