@@ -24,6 +24,16 @@ class ClaimAccountPageTest extends TestCase
         $this->get('/claim')->assertOk()->assertSeeLivewire(ClaimAccount::class);
     }
 
+    public function test_the_wizard_form_state_is_initialized_on_mount(): void
+    {
+        // Guards a browser-only entangle bug: the Wizard's native(false) date picker uses
+        // $wire.entangle('data.birthday'), which throws unless the form state is filled on
+        // mount so the 'birthday' key exists on the component's $data.
+        $data = Livewire::test(ClaimAccount::class)->get('data');
+
+        $this->assertArrayHasKey('birthday', $data);
+    }
+
     public function test_lookup_reveals_the_wizard_for_an_unclaimed_member(): void
     {
         $category = MemberCategory::create(['name' => 'Senior', 'default_fee' => 50]);

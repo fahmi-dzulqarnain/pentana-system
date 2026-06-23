@@ -37,6 +37,15 @@ class ClaimAccount extends Component implements HasSchemas
     /** @var array<string, mixed> */
     public array $data = [];
 
+    public function mount(): void
+    {
+        // Initialize the form state up front so the Wizard's fields have resolvable
+        // Livewire properties. The native(false) date picker uses
+        // $wire.entangle('data.birthday') in the browser, which throws
+        // "property data.birthday cannot be found" if the key was never initialized.
+        $this->claimForm->fill();
+    }
+
     public function lookup(): void
     {
         $this->validate(['email' => 'required|email']);
