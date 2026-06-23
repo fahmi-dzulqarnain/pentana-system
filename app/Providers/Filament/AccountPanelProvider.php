@@ -3,6 +3,8 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Auth\Login;
+use App\Filament\Auth\Profile;
+use Filament\Enums\UserMenuPosition;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -31,6 +33,8 @@ class AccountPanelProvider extends PanelProvider
             ->id('account')
             ->path('account')
             ->login(Login::class)
+            ->profile(Profile::class, isSimple: false)
+            ->userMenu(position: UserMenuPosition::Sidebar)
             ->databaseNotifications()
             ->renderHook(
                 PanelsRenderHook::AUTH_LOGIN_FORM_AFTER,
