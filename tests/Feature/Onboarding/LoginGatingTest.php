@@ -29,4 +29,24 @@ class LoginGatingTest extends TestCase
     {
         $this->get('/account/login')->assertSee('Claim your account')->assertSee('/claim');
     }
+
+    public function test_the_login_page_shows_the_passkey_sign_in_option(): void
+    {
+        // Spatie's <x-authenticate-passkey> renders its default label
+        // "Authenticate using Passkey" (passkeys::passkeys.authenticate_using_passkey)
+        // plus a hidden POST form to route('passkeys.login'). Asserting on both
+        // proves the component (not just the claim link) is on the login page.
+        $this->get('/account/login')
+            ->assertSuccessful()
+            ->assertSee('Authenticate using Passkey')
+            ->assertSee('passkey-login-form');
+    }
+
+    public function test_the_passkey_authentication_options_route_is_registered(): void
+    {
+        // Proves Route::passkeys() is wired (the package does not auto-register
+        // it). We only assert the route resolves — a registered route returns
+        // anything but 404; the WebAuthn ceremony itself is smoke-tested later.
+        $this->get(route('passkeys.authentication_options'))->assertStatus(200);
+    }
 }
