@@ -1,11 +1,5 @@
-<div style="background-color:#ffffff;border-radius:0.75rem;box-shadow:0 1px 3px rgba(0,0,0,0.1);padding:2rem;" wire:key="claim-card">
+<div wire:key="claim-card">
     <style>
-        .dark .claim-card { background-color: #18181b; }
-        .dark .claim-title { color: #fafafa; }
-        .dark .claim-subtle { color: #a1a1aa; }
-        .dark .claim-input { background-color: #27272a; border-color: #3f3f46; color: #fafafa; }
-        .dark .claim-message { background-color: #422006; border-color: #854d0e; color: #fde68a; }
-
         /* Keep the multi-step Wizard, but render its step header flat: drop the card
            box (transparent background, no ring/shadow/border) and the horizontal
            scrollbar. The header is a column grid with auto-width columns + overflow-x:

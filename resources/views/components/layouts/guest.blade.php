@@ -15,12 +15,11 @@
          Livewire's JS is injected on its own, so no @vite app.js is needed either. --}}
     <link rel="stylesheet" href="{{ asset('css/filament/filament/app.css') }}">
 </head>
-<body class="antialiased" style="margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1.5rem;background-color:#f3f4f6;">
-    <style>
-        .dark body { background-color: #0a0a0a; }
-    </style>
-
-    <main style="width:100%;max-width:42rem;">
+<body class="antialiased" style="margin:0;min-height:100vh;background-color:#ffffff;">
+    {{-- Full-page (not a centered card): the white background fills the viewport and the
+         content flows from the top. A max-width keeps the form readable on wide screens;
+         margin auto centres that column horizontally without drawing a boxed card. --}}
+    <main style="width:100%;max-width:42rem;margin:0 auto;padding:3rem 1.5rem;box-sizing:border-box;">
         {{ $slot }}
     </main>
 
