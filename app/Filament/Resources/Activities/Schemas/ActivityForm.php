@@ -3,10 +3,16 @@
 namespace App\Filament\Resources\Activities\Schemas;
 
 use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
+use Illuminate\Support\Str;
 
 class ActivityForm
 {
@@ -47,6 +53,36 @@ class ActivityForm
                     ->default('draft')
                     ->disabled()
                     ->dehydrated(false),
+                // Optional per-activity questions members answer when registering.
+                Repeater::make('registration_fields')
+                    ->label('Registration questions')
+                    ->helperText('Optional — questions members answer when they register.')
+                    ->columnSpanFull()
+                    ->addActionLabel('Add question')
+                    ->reorderable()
+                    ->collapsible()
+                    ->default([])
+                    ->itemLabel(fn (array $state): ?string => $state['label'] ?? null)
+                    ->schema([
+                        // Stable id so renaming a label never orphans existing answers.
+                        Hidden::make('key')->default(fn (): string => (string) Str::uuid()),
+                        TextInput::make('label')->required(),
+                        Select::make('type')
+                            ->options([
+                                'text' => 'Short text',
+                                'textarea' => 'Long text',
+                                'select' => 'Dropdown',
+                                'checkbox' => 'Checkbox',
+                            ])
+                            ->default('text')
+                            ->required()
+                            ->live(),
+                        Toggle::make('required')->default(false),
+                        TagsInput::make('options')
+                            ->label('Choices')
+                            ->helperText('One tag per choice.')
+                            ->visible(fn (Get $get): bool => $get('type') === 'select'),
+                    ]),
             ]);
     }
 }

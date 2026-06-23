@@ -55,6 +55,27 @@ class ActivityAdminTest extends TestCase
         ]);
     }
 
+    public function test_admin_can_attach_registration_questions(): void
+    {
+        Livewire::test(CreateActivity::class)
+            ->fillForm([
+                'title' => 'Workshop',
+                'starts_at' => now()->addMonth(),
+                'registration_fields' => [
+                    ['key' => 'diet', 'label' => 'Dietary needs', 'type' => 'text', 'required' => true, 'options' => []],
+                    ['key' => 'shirt', 'label' => 'T-shirt size', 'type' => 'select', 'required' => false, 'options' => ['S', 'M', 'L']],
+                ],
+            ])
+            ->call('create')
+            ->assertHasNoFormErrors();
+
+        $activity = Activity::where('title', 'Workshop')->firstOrFail();
+        $this->assertCount(2, $activity->registration_fields);
+        $this->assertSame('Dietary needs', $activity->registration_fields[0]['label']);
+        $this->assertSame('select', $activity->registration_fields[1]['type']);
+        $this->assertSame(['S', 'M', 'L'], $activity->registration_fields[1]['options']);
+    }
+
     public function test_publish_sets_status_and_notifies_only_activated_members(): void
     {
         Notification::fake();
