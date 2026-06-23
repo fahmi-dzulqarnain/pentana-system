@@ -10,16 +10,17 @@
     {{-- Filament's compiled component/theme CSS (forms, wizard, inputs, buttons). On a
          panel page @filamentStyles emits this, but this standalone guest route has no
          panel context, so link the published file directly — otherwise the Wizard renders
-         unstyled. --}}
+         unstyled. We deliberately do NOT @vite the app's Tailwind CSS here: it would
+         double-load Tailwind preflight on top of Filament's and break the layout.
+         Livewire's JS is injected on its own, so no @vite app.js is needed either. --}}
     <link rel="stylesheet" href="{{ asset('css/filament/filament/app.css') }}">
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="antialiased" style="margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1.5rem;background-color:#f3f4f6;">
     <style>
         .dark body { background-color: #0a0a0a; }
     </style>
 
-    <main style="width:100%;max-width:32rem;">
+    <main style="width:100%;max-width:42rem;">
         {{ $slot }}
     </main>
 
