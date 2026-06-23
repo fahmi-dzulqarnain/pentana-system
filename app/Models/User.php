@@ -40,6 +40,7 @@ class User extends Authenticatable implements FilamentUser, HasPasskeys
         'member_category_id',
         'custom_fee',
         'birthday',
+        'birthday_email_sent_at',
         'activated_at',
     ];
 
@@ -66,6 +67,7 @@ class User extends Authenticatable implements FilamentUser, HasPasskeys
             'is_admin' => 'boolean',
             'custom_fee' => 'decimal:2',
             'birthday' => 'date',
+            'birthday_email_sent_at' => 'datetime',
             'activated_at' => 'datetime',
         ];
     }
