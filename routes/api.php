@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\BillController;
 use App\Http\Controllers\Api\V1\MeController;
+use App\Http\Controllers\Api\V1\PaymentProofController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
@@ -14,6 +15,8 @@ Route::prefix('v1')->group(function () {
 
         Route::get('bills', [BillController::class, 'index']);
         Route::get('bills/summary', [BillController::class, 'summary']);
-        // payment-proofs routes added in API-3
+
+        Route::get('payment-proofs', [PaymentProofController::class, 'index']);
+        Route::post('payment-proofs', [PaymentProofController::class, 'store']);
     });
 });
