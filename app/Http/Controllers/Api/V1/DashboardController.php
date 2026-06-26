@@ -45,26 +45,36 @@ class DashboardController extends Controller
         ];
     }
 
-    /** The earliest upcoming published lunch within the voting window (matches the Lunch tab). */
+    /**
+     * Prefer the earliest upcoming lunch the member still needs to vote on (open +
+     * not responded); otherwise fall back to the next upcoming lunch (so the card
+     * still shows the menu). Window matches the Lunch tab.
+     */
     private function nextLunch(User $user): ?array
     {
-        $lunch = Lunch::query()
-            ->with(['responses' => fn ($query) => $query->where('user_id', $user->id)])
+        $lunches = Lunch::query()
+            ->with(['catererMeal', 'caterer', 'responses' => fn ($query) => $query->where('user_id', $user->id)])
             ->where('status', 'published')
             ->whereDate('date', '>=', today())
             ->whereDate('date', '<=', today()->addDays(14))
             ->orderBy('date')
-            ->first();
+            ->get();
 
-        if (! $lunch) {
+        if ($lunches->isEmpty()) {
             return null;
         }
 
+        $target = $lunches->first(
+            fn (Lunch $lunch) => $lunch->isOpenForVoting() && $lunch->responses->first() === null
+        ) ?? $lunches->first();
+
         return [
-            'id' => $lunch->id,
-            'date' => $lunch->date->toDateString(),
-            'is_open' => $lunch->isOpenForVoting(),
-            'responded' => $lunch->responses->first() !== null,
+            'id' => $target->id,
+            'date' => $target->date->toDateString(),
+            'caterer' => $target->caterer?->name,
+            'menu' => $target->catererMeal?->name,
+            'is_open' => $target->isOpenForVoting(),
+            'responded' => $target->responses->first() !== null,
         ];
     }
 
