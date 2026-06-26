@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\V1\BillController;
 use App\Http\Controllers\Api\V1\DashboardController;
 use App\Http\Controllers\Api\V1\LunchController;
 use App\Http\Controllers\Api\V1\MeController;
+use App\Http\Controllers\Api\V1\NotificationController;
 use App\Http\Controllers\Api\V1\PaymentProofController;
 use Illuminate\Support\Facades\Route;
 
@@ -17,6 +18,9 @@ Route::prefix('v1')->group(function () {
         Route::get('me', [MeController::class, 'show']);
 
         Route::get('dashboard', [DashboardController::class, 'show']);
+
+        Route::get('notifications', [NotificationController::class, 'index']);
+        Route::post('notifications/read', [NotificationController::class, 'markRead']);
 
         Route::get('bills', [BillController::class, 'index']);
         Route::get('bills/summary', [BillController::class, 'summary']);
