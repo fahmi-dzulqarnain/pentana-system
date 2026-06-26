@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\BillController;
+use App\Http\Controllers\Api\V1\LunchController;
 use App\Http\Controllers\Api\V1\MeController;
 use App\Http\Controllers\Api\V1\PaymentProofController;
 use Illuminate\Support\Facades\Route;
@@ -18,5 +19,8 @@ Route::prefix('v1')->group(function () {
 
         Route::get('payment-proofs', [PaymentProofController::class, 'index']);
         Route::post('payment-proofs', [PaymentProofController::class, 'store']);
+
+        Route::get('lunches', [LunchController::class, 'index']);
+        Route::post('lunches/{lunch}/respond', [LunchController::class, 'respond']);
     });
 });
