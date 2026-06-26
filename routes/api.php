@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\V1\ActivityController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\BillController;
 use App\Http\Controllers\Api\V1\LunchController;
@@ -22,5 +23,9 @@ Route::prefix('v1')->group(function () {
 
         Route::get('lunches', [LunchController::class, 'index']);
         Route::post('lunches/{lunch}/respond', [LunchController::class, 'respond']);
+
+        Route::get('activities', [ActivityController::class, 'index']);
+        Route::post('activities/{activity}/register', [ActivityController::class, 'register']);
+        Route::post('activities/{activity}/cancel', [ActivityController::class, 'cancel']);
     });
 });
