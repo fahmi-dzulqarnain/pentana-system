@@ -20,6 +20,7 @@ Internet ──HTTPS──> Cloudflare edge ──tunnel──> cloudflared (on 
 - A **scheduler** drives recurring jobs (monthly billing, lunch order close, birthday + activity emails) and needs `schedule:run` every minute.
 - **Passkeys (WebAuthn) require HTTPS in production** — the app must trust Cloudflare's forwarded scheme (see step 2e). This is the #1 thing that breaks if skipped.
 - **Mail is on the `log` driver** until SMTP is configured — "sent" emails land in `storage/logs/laravel.log`, not real inboxes.
+- **Push notifications (APNs) are off until configured** — member push needs an APNs `.p8` key + `APN_*` env (step 2i). Until then in-app + email notifications still work and push is silently skipped.
 
 > Throughout, replace these placeholders:
 > - `pentana.example.com` → your real public hostname (must be on a Cloudflare-managed domain)
@@ -88,6 +89,13 @@ QUEUE_CONNECTION=sync                        # inline; no worker
 
 # Mail stays on log until SMTP is wired up
 MAIL_MAILER=log
+
+# Push notifications (APNs) — leave unset until you have the .p8 key (see step 2i)
+# APN_KEY_ID=
+# APN_TEAM_ID=7778Y2522V
+# APN_BUNDLE_ID=my.silentmode.pentana
+# APN_PRIVATE_KEY_PATH=storage/app/private/apns/AuthKey_XXXXXXXXXX.p8
+# APN_PRODUCTION=false
 ```
 
 Lock the file down (it holds live credentials):
@@ -270,6 +278,62 @@ php artisan schedule:list
 
 There is **no queue worker to start** — notifications are delivered inline by design.
 
+### 2i. Push notifications (APNs) — optional, enable when ready
+
+Member push (activity + lunch alerts — the same events as the in-app bell) is sent through Apple Push Notification service using a **token-based `.p8` key**. It stays dormant until the key + env below are in place: with nothing configured the app still sends in-app + email notifications and simply skips push, so this step can be deferred.
+
+**1. Apple Developer (one time).** In the [developer portal](https://developer.apple.com/account):
+- Enable the **Push Notifications** capability on App ID `my.silentmode.pentana`.
+- Create an **APNs Auth Key**: *Keys → ➕ → tick "Apple Push Notifications service (APNs)"* → download the `.p8` **once** (it can't be re-downloaded). Note the **Key ID**; the **Team ID** is `7778Y2522V`. One key covers both sandbox and production and never expires.
+
+**2. Put the key on the server (never in git).** Store it outside the web root and lock it down:
+
+```bash
+mkdir -p storage/app/private/apns
+mv ~/Downloads/AuthKey_XXXXXXXXXX.p8 storage/app/private/apns/
+chmod 600 storage/app/private/apns/AuthKey_XXXXXXXXXX.p8
+```
+
+nginx only serves `public/`, and `storage/app` is gitignored — so the key is both unreachable over HTTP and uncommittable.
+
+**3. Set the `APN_*` env** in `.env` (these map 1:1 to `config/broadcasting.php`):
+
+```dotenv
+APN_KEY_ID=XXXXXXXXXX                         # the Key ID from step 1
+APN_TEAM_ID=7778Y2522V
+APN_BUNDLE_ID=my.silentmode.pentana           # must match the app's bundle id
+APN_PRIVATE_KEY_PATH=storage/app/private/apns/AuthKey_XXXXXXXXXX.p8
+# APN_PRIVATE_KEY_SECRET=                      # only if the .p8 is passphrase-protected (it usually isn't)
+APN_PRODUCTION=false                           # see step 4
+```
+
+**4. Match `APN_PRODUCTION` to the app build.** APNs has two environments and the server must target the one the installed app was built for:
+
+| App build | App entitlement (`aps-environment`) | Set |
+|-----------|-------------------------------------|-----|
+| Run from Xcode (debug) | `development` | `APN_PRODUCTION=false` |
+| **TestFlight or App Store** | `production` | `APN_PRODUCTION=true` |
+
+> **Gotcha:** TestFlight already uses the **production** APNs environment. A token from a TestFlight build fails (`BadDeviceToken`) against the sandbox — so flip this to `true` the moment you ship to TestFlight. The repo's entitlement is currently `development`.
+
+**5. Apply the schema + reload config.** The `device_tokens` table is created by the normal migrations (already applied to Supabase on 2026‑06‑27; a fresh host gets it from `php artisan migrate --force` in step 2c). After editing `.env`, re-cache so the new values are read:
+
+```bash
+php artisan optimize        # or: php artisan config:clear && php artisan config:cache
+```
+
+**How delivery works (no queue worker).** Push is sent **inline**, inside the request that triggers the notification (e.g. an admin publishing an activity in Filament), and only to members with a registered device token. The app POSTs its APNs token to `POST /api/v1/device-tokens` after sign-in and removes it on logout; members without a token — or everyone, when APNs is unconfigured — are silently skipped, nothing errors. The server needs outbound HTTPS to `api.push.apple.com` (and `api.sandbox.push.apple.com` for dev builds).
+
+**Verify it's working** (push needs a **physical device** — the simulator can't register a real APNs token):
+
+```bash
+# After a member signs in on a real device:
+php artisan tinker --execute="echo \App\Models\DeviceToken::count();"   # expect >= 1
+
+# Then publish an activity/lunch to trigger a notification and watch for APNs errors:
+tail -f storage/logs/laravel.log
+```
+
 ---
 
 ## 3. Redeploy / update workflow
@@ -344,6 +408,7 @@ php artisan about                              # env, cache, DB connection summa
 **Pending follow-ups for this app**
 - **SMTP**: while `MAIL_MAILER=log`, birthday/activity/publish emails are only written to the log. Switch `MAIL_*` to a real provider when ready; the in-app notification bell already works.
 - **First-run passkeys**: confirm a passkey can be registered and used over the live HTTPS domain (this is the canary that step 2e is correct).
+- **Push notifications**: dormant until the APNs `.p8` key + `APN_*` env are set (step 2i) and the iOS build has the Push capability. Confirm a real device receives a push after publishing an activity; remember TestFlight builds need `APN_PRODUCTION=true`.
 
 ---
 
@@ -351,6 +416,7 @@ php artisan about                              # env, cache, DB connection summa
 
 - [ ] `APP_DEBUG=false` and `APP_ENV=production` in `.env`
 - [ ] `.env` is `chmod 600` and never committed (it's gitignored)
+- [ ] APNs `.p8` key (if push is enabled) is `chmod 600`, stored outside `public/`, and never committed
 - [ ] nginx listens on `127.0.0.1` only — the Mac is reachable from the internet **only** through the tunnel
 - [ ] `APP_URL` is the `https://` hostname and `trustProxies` is configured (step 2e)
 - [ ] Strong password on the admin account; rotate the Tinker-set one after first login
