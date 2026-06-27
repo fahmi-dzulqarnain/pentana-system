@@ -25,6 +25,12 @@ class ActivityForm
                     ->maxLength(255),
                 RichEditor::make('description')
                     ->columnSpanFull(),
+                DateTimePicker::make('registration_closes_at')
+                    ->label('Registration closes')
+                    ->native(false)
+                    ->seconds(false)
+                    ->before('starts_at')
+                    ->helperText('Leave blank to close when the activity starts. Must be before the start time.'),
                 DateTimePicker::make('starts_at')
                     ->label('Starts at')
                     ->required()
@@ -35,11 +41,6 @@ class ActivityForm
                     ->native(false)
                     ->seconds(false)
                     ->after('starts_at'),
-                DateTimePicker::make('registration_closes_at')
-                    ->label('Registration closes')
-                    ->native(false)
-                    ->seconds(false)
-                    ->helperText('Leave blank to close when the activity starts.'),
                 TextInput::make('location')
                     ->maxLength(255),
                 TextInput::make('capacity')

@@ -55,6 +55,32 @@ class ActivityAdminTest extends TestCase
         ]);
     }
 
+    public function test_registration_deadline_must_be_before_the_start(): void
+    {
+        Livewire::test(CreateActivity::class)
+            ->fillForm([
+                'title' => 'Late Reg',
+                'starts_at' => now()->addMonth(),
+                'registration_closes_at' => now()->addMonth()->addDay(), // after the start
+            ])
+            ->call('create')
+            ->assertHasFormErrors(['registration_closes_at']);
+    }
+
+    public function test_registration_deadline_before_the_start_is_accepted(): void
+    {
+        Livewire::test(CreateActivity::class)
+            ->fillForm([
+                'title' => 'Good Reg',
+                'starts_at' => now()->addMonth(),
+                'registration_closes_at' => now()->addWeeks(3), // before the start
+            ])
+            ->call('create')
+            ->assertHasNoFormErrors();
+
+        $this->assertDatabaseHas('activities', ['title' => 'Good Reg']);
+    }
+
     public function test_admin_can_attach_registration_questions(): void
     {
         Livewire::test(CreateActivity::class)
