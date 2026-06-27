@@ -22,12 +22,17 @@ class ActivityReminder extends ActivityNotification
         return $mail->action('View activities', $this->url());
     }
 
+    protected function pushTitle(): string
+    {
+        return 'Reminder: '.$this->activity->title;
+    }
+
     /** @return array<string, mixed> */
     public function toDatabase(object $notifiable): array
     {
         return FilamentNotification::make()
-            ->title('Reminder: '.$this->activity->title)
-            ->body($this->whenLabel().$this->whereSuffix())
+            ->title($this->pushTitle())
+            ->body($this->pushBody())
             ->icon('heroicon-o-bell-alert')
             ->info()
             ->actions([

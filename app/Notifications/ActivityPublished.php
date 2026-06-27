@@ -22,12 +22,17 @@ class ActivityPublished extends ActivityNotification
         return $mail->action('View activities', $this->url());
     }
 
+    protected function pushTitle(): string
+    {
+        return 'New activity: '.$this->activity->title;
+    }
+
     /** @return array<string, mixed> */
     public function toDatabase(object $notifiable): array
     {
         return FilamentNotification::make()
-            ->title('New activity: '.$this->activity->title)
-            ->body($this->whenLabel().$this->whereSuffix())
+            ->title($this->pushTitle())
+            ->body($this->pushBody())
             ->icon('heroicon-o-sparkles')
             ->success()
             ->actions([

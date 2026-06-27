@@ -17,12 +17,22 @@ class WaitlistPromoted extends ActivityNotification
             ->action('View activities', $this->url());
     }
 
+    protected function pushTitle(): string
+    {
+        return "You're in: ".$this->activity->title;
+    }
+
+    protected function pushBody(): string
+    {
+        return 'A spot opened up — '.$this->whenLabel().$this->whereSuffix();
+    }
+
     /** @return array<string, mixed> */
     public function toDatabase(object $notifiable): array
     {
         return FilamentNotification::make()
-            ->title("You're in: ".$this->activity->title)
-            ->body('A spot opened up — '.$this->whenLabel().$this->whereSuffix())
+            ->title($this->pushTitle())
+            ->body($this->pushBody())
             ->icon('heroicon-o-check-badge')
             ->success()
             ->actions([

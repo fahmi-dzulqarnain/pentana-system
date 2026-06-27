@@ -99,6 +99,17 @@ class User extends Authenticatable implements FilamentUser, HasPasskeys
         return $this->hasMany(PaymentProof::class);
     }
 
+    public function deviceTokens(): HasMany
+    {
+        return $this->hasMany(DeviceToken::class);
+    }
+
+    /** APNs device tokens this member has registered (used by the apn notification channel). */
+    public function routeNotificationForApn(): array
+    {
+        return $this->deviceTokens()->pluck('token')->all();
+    }
+
     /**
      * The member's available credit: the sum of every verified payment proof's
      * unallocated remainder (amount_verified minus what it has paid towards bills).

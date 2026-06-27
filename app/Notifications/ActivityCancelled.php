@@ -17,12 +17,17 @@ class ActivityCancelled extends ActivityNotification
             ->action('View activities', $this->url());
     }
 
+    protected function pushTitle(): string
+    {
+        return 'Activity cancelled: '.$this->activity->title;
+    }
+
     /** @return array<string, mixed> */
     public function toDatabase(object $notifiable): array
     {
         return FilamentNotification::make()
-            ->title('Activity cancelled: '.$this->activity->title)
-            ->body($this->whenLabel().$this->whereSuffix())
+            ->title($this->pushTitle())
+            ->body($this->pushBody())
             ->icon('heroicon-o-x-circle')
             ->warning()
             ->actions([
