@@ -68,8 +68,10 @@
     .pl svg { stroke-linecap: round; stroke-linejoin: round; }
     .pl a { color: inherit; }
 
-    @media (prefers-color-scheme: dark) {
-      .pl {
+    /* Dark theme — applied by JS via data-pl-theme (resolves the OS default on first
+       load, then remembers an explicit toggle). Single block, no media query, so a
+       manual choice always wins. */
+    html[data-pl-theme="dark"] .pl {
         --surface-page:#0D0B16; --surface-subtle:#12101E; --surface-card:#1A1729;
         --ink:#F2F1F9; --text-primary:#F2F1F9; --text-secondary:#B2AFC8; --text-muted:#9693AE;
         --text-link:#C9C4F0; --text-link-hover:#FAB85B; --text-brand:#FAB85B;
@@ -85,7 +87,6 @@
         --lunch:#FBB04C; --lunch-bg:rgba(247,147,30,.18);  --lunch-text:#FBB04C;
         --activ:#34C77E; --activ-bg:rgba(45,192,126,.16);  --activ-text:#4FD394;
         --proof:#A78BFF; --proof-bg:rgba(167,139,255,.18); --proof-text:#B9A3FF;
-      }
     }
 
     .pl-wrap { max-width: 1160px; margin: 0 auto; }
@@ -109,10 +110,8 @@
     .pl-btn--primary:hover { background:var(--orange-600); }
     .pl-btn--outline { background:transparent; color:var(--text-primary); border-color:var(--border-strong); }
     .pl-btn--outline:hover { background:color-mix(in srgb, var(--text-primary) 6%, transparent); }
-    @media (prefers-color-scheme: dark) {
-      .pl-btn--outline { color:#F2F1F9; border-color:rgba(255,255,255,.28); background:rgba(255,255,255,.04); }
-      .pl-btn--outline:hover { background:rgba(255,255,255,.09); }
-    }
+    html[data-pl-theme="dark"] .pl-btn--outline { color:#F2F1F9; border-color:rgba(255,255,255,.28); background:rgba(255,255,255,.04); }
+    html[data-pl-theme="dark"] .pl-btn--outline:hover { background:rgba(255,255,255,.09); }
 
     /* top bar */
     .pl-nav { position:sticky; top:0; z-index:20; background:var(--pl-nav-bg); backdrop-filter:blur(12px);
@@ -120,6 +119,13 @@
     .pl-nav .pl-wrap { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:16px 32px; }
     .pl-nav nav { display:flex; align-items:center; gap:26px; }
     .pl-nav nav a { font-size:14.5px; }
+    .pl-theme-toggle { display:inline-flex; align-items:center; justify-content:center; width:38px; height:38px; border-radius:10px;
+        border:1px solid var(--border-subtle); background:transparent; color:var(--text-secondary); cursor:pointer;
+        transition:background 140ms ease, color 140ms ease; }
+    .pl-theme-toggle:hover { background:color-mix(in srgb, var(--text-primary) 6%, transparent); color:var(--text-primary); }
+    .pl-theme-toggle .sun { display:none; }
+    html[data-pl-theme="dark"] .pl-theme-toggle .sun { display:inline-flex; }
+    html[data-pl-theme="dark"] .pl-theme-toggle .moon { display:none; }
 
     /* hero */
     .pl-hero { position:relative; overflow:hidden; }
@@ -246,6 +252,10 @@
     }
     </style>
     @endverbatim
+    {{-- Resolve theme before paint: explicit choice from localStorage, else the OS default. No flash. --}}
+    <script>
+    (function(){try{var s=localStorage.getItem('pl-theme');var d=window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches;document.documentElement.setAttribute('data-pl-theme',(s==='light'||s==='dark')?s:(d?'dark':'light'));}catch(e){document.documentElement.setAttribute('data-pl-theme','light');}})();
+    </script>
 </head>
 <body>
 <div class="pl">
@@ -260,6 +270,10 @@
             <nav>
                 <a href="{{ route('claim') }}" class="pl-link">Claim account</a>
                 <a href="{{ url('/account') }}" class="pl-link" style="color:var(--text-muted)">Admin</a>
+                <button type="button" class="pl-theme-toggle" id="pl-theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">
+                    <svg class="moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+                    <svg class="sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+                </button>
             </nav>
         </div>
     </header>
@@ -435,5 +449,23 @@
     </footer>
 
 </div>
+<script>
+(function(){
+    var btn = document.getElementById('pl-theme-toggle');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+        var cur = document.documentElement.getAttribute('data-pl-theme') === 'dark' ? 'dark' : 'light';
+        var next = cur === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-pl-theme', next);
+        try { localStorage.setItem('pl-theme', next); } catch (e) {}
+    });
+    if (window.matchMedia) {
+        matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function (e) {
+            try { if (localStorage.getItem('pl-theme')) return; } catch (err) {}
+            document.documentElement.setAttribute('data-pl-theme', e.matches ? 'dark' : 'light');
+        });
+    }
+})();
+</script>
 </body>
 </html>

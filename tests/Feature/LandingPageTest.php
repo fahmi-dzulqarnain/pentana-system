@@ -24,5 +24,8 @@ class LandingPageTest extends TestCase
         $response->assertSee('Lunch');
         $response->assertSee('Activities');
         $response->assertSee('How it works');
+
+        // Dark-mode toggle.
+        $response->assertSee('Toggle dark mode');
     }
 }
