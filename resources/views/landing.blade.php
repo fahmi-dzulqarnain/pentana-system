@@ -133,7 +133,7 @@
     .pl-hero h1 { font-family:var(--font-display); font-weight:800; font-size:58px; line-height:1.05; letter-spacing:-1.8px; color:var(--pl-heading); margin-top:16px; }
     .pl-hero .sub { font-size:18px; color:var(--text-secondary); line-height:1.55; margin-top:18px; max-width:480px; }
     .pl-hero .cta { display:flex; gap:12px; margin-top:28px; flex-wrap:wrap; }
-    .pl-hero .staff { margin-top:22px; font-size:13.5px; color:var(--text-muted); }
+    .pl-hero .hero-signin { margin-top:22px; font-size:13.5px; color:var(--text-muted); }
     .pl-hero .snap-col { display:flex; justify-content:flex-end; padding-right:24px; }
 
     /* hero snapshot card */
@@ -269,7 +269,7 @@
             </a>
             <nav>
                 <a href="{{ route('claim') }}" class="pl-link">Claim account</a>
-                <a href="{{ url('/account') }}" class="pl-link" style="color:var(--text-muted)">Admin</a>
+                <a href="{{ url('/account') }}" class="pl-link">Sign in</a>
                 <button type="button" class="pl-theme-toggle" id="pl-theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">
                     <svg class="moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
                     <svg class="sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
@@ -295,7 +295,7 @@
                         Get the app
                     </a>
                 </div>
-                <div class="staff">Staff or committee? <a href="{{ url('/account') }}" class="pl-link" style="font-size:13.5px">Admin sign-in →</a></div>
+                <div class="hero-signin">Already claimed your account? <a href="{{ url('/account') }}" class="pl-link" style="font-size:13.5px">Sign in →</a></div>
             </div>
             <div class="snap-col">
                 <div class="pl-snap">
@@ -433,11 +433,11 @@
                 <div class="col">
                     <h4>Members</h4>
                     <a href="{{ route('claim') }}">Claim account</a>
-                    <a href="#get-app">Get the app</a>
+                    <a href="{{ url('/account') }}">Sign in</a>
                 </div>
                 <div class="col">
-                    <h4>Organisation</h4>
-                    <a href="{{ url('/account') }}">Admin sign-in</a>
+                    <h4>PENTANA</h4>
+                    <a href="#get-app">Get the app</a>
                     <a href="#">Privacy</a>
                 </div>
             </div>
