@@ -438,7 +438,7 @@
                 <div class="col">
                     <h4>PENTANA</h4>
                     <a href="#get-app">Get the app</a>
-                    <a href="#">Privacy</a>
+                    <a href="{{ route('privacy') }}">Privacy</a>
                 </div>
             </div>
         </div>

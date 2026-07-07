@@ -7,6 +7,8 @@ Route::get('/', function () {
     return view('landing');
 });
 
+Route::view('/privacy', 'privacy')->name('privacy');
+
 Route::get('/claim', ClaimAccount::class)->name('claim');
 
 // spatie/laravel-passkeys route macro. NOT auto-registered by the package —
