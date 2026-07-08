@@ -45,8 +45,8 @@
         <h1>Privacy Policy</h1>
         <p class="updated">Last updated: 7 July 2026</p>
 
-        <p>PENTANA (“the app”) is the member companion to a welfare &amp; membership fund operated by
-        <strong>[Organisation name]</strong> (“we”, “us”, “our”). This policy explains what personal information
+        <p>PENTANA Mobile (“the app”) is the member companion to a welfare &amp; membership fund operated by
+        <strong>Pentana Org</strong> (“we”, “us”, “our”). This policy explains what personal information
         we handle when you use PENTANA and the PENTANA web portal, and your rights over it. We handle personal
         data in line with Malaysia’s Personal Data Protection Act 2010 (PDPA).</p>
 
