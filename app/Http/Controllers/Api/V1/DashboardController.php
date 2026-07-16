@@ -7,6 +7,7 @@ use App\Models\Activity;
 use App\Models\Lunch;
 use App\Models\Payment\FeePeriod;
 use App\Models\User;
+use App\Services\FinanceService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -33,10 +34,7 @@ class DashboardController extends Controller
     {
         $bills = FeePeriod::forMember($user->id)->get();
 
-        $totalOutstanding = $bills->sum(fn (FeePeriod $bill) => max(
-            0,
-            (float) $bill->amount_due - (float) ($bill->allocations_sum_amount_allocated ?? 0)
-        ));
+        $totalOutstanding = FinanceService::outstanding($bills);
 
         return [
             'total_outstanding' => number_format(round($totalOutstanding, 2), 2, '.', ''),

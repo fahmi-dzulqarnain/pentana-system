@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\BillResource;
 use App\Models\Payment\FeePeriod;
+use App\Services\FinanceService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -22,10 +23,7 @@ class BillController extends Controller
     {
         $bills = FeePeriod::forMember($request->user()->id)->get();
 
-        $totalOutstanding = $bills->sum(fn (FeePeriod $bill) => max(
-            0,
-            (float) $bill->amount_due - (float) ($bill->allocations_sum_amount_allocated ?? 0)
-        ));
+        $totalOutstanding = FinanceService::outstanding($bills);
 
         return response()->json([
             'data' => [
