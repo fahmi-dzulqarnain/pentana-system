@@ -61,7 +61,7 @@ class SendLunchVoteNudgesTest extends TestCase
 
     public function test_a_failed_send_does_not_abort_the_rest_of_the_run(): void
     {
-        Lunch::factory()->create(['status' => 'published', 'deadline' => now()->addHours(12)]);
+        $lunch = Lunch::factory()->create(['status' => 'published', 'deadline' => now()->addHours(12)]);
         $failing = User::factory()->create();
         $succeeding = User::factory()->create();
 
@@ -82,5 +82,6 @@ class SendLunchVoteNudgesTest extends TestCase
         $this->artisan('app:send-lunch-vote-nudges')->assertSuccessful();
 
         $this->assertSame([$succeeding->id], $notified);
+        $this->assertNotNull($lunch->fresh()->vote_nudge_sent_at);
     }
 }
