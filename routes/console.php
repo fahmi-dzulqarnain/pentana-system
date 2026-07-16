@@ -12,3 +12,5 @@ Schedule::command('app:generate-monthly-fees')->monthlyOn(1, '00:00');
 Schedule::command('app:close-lunch-orders')->everyFifteenMinutes();
 Schedule::command('app:send-birthday-emails')->dailyAt('08:00');
 Schedule::command('app:send-activity-reminders')->dailyAt('09:00');
+Schedule::command('app:send-bill-reminders')->monthlyOn(15, '09:00');
+Schedule::command('app:send-bill-reminders')->lastDayOfMonth('09:00');
