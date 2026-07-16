@@ -109,4 +109,31 @@ class FinanceServiceTest extends TestCase
         $this->assertEquals(50, $feb->allocations()->sum('amount_allocated'));
         $this->assertSame(0.0, $user->fresh()->credit);
     }
+
+    public function test_outstanding_sums_unpaid_remainders_and_clamps_overpaid_bills(): void
+    {
+        $user = User::factory()->create();
+        $this->bill($user, '2026-01-01', 100);
+        $this->bill($user, '2026-02-01', 50);
+
+        // Verify a 30 payment; allocation lands on the oldest bill (2026-01).
+        $proof = $this->pendingProof($user, 30);
+        $this->service()->verifyAndAllocate($proof, 30.0);
+
+        $bills = FeePeriod::forMember($user->id)->get();
+
+        // 100 - 30 = 70 outstanding on the first bill, 50 untouched on the second.
+        $this->assertSame(120.0, FinanceService::outstanding($bills));
+    }
+
+    public function test_outstanding_is_zero_for_fully_paid_bills(): void
+    {
+        $user = User::factory()->create();
+        $this->bill($user, '2026-01-01', 100);
+
+        $proof = $this->pendingProof($user, 100);
+        $this->service()->verifyAndAllocate($proof, 100.0);
+
+        $this->assertSame(0.0, FinanceService::outstanding(FeePeriod::forMember($user->id)->get()));
+    }
 }

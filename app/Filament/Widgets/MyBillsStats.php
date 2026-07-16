@@ -3,6 +3,7 @@
 namespace App\Filament\Widgets;
 
 use App\Models\Payment\FeePeriod;
+use App\Services\FinanceService;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Support\Collection;
@@ -22,9 +23,7 @@ class MyBillsStats extends StatsOverviewWidget
 
     public function getOutstanding(): float
     {
-        return round($this->bills()->sum(
-            fn (FeePeriod $bill) => max(0, (float) $bill->amount_due - (float) $bill->allocations_sum_amount_allocated)
-        ), 2);
+        return FinanceService::outstanding($this->bills());
     }
 
     public function getPaidToDate(): float

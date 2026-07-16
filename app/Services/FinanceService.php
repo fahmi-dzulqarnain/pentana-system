@@ -6,6 +6,7 @@ use App\Models\Payment\FeePeriod;
 use App\Models\Payment\PaymentAllocation;
 use App\Models\Payment\PaymentProof;
 use App\Models\User;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class FinanceService
@@ -83,6 +84,18 @@ class FinanceService
                 ]);
             }
         });
+    }
+
+    /**
+     * Sum of unpaid remainders across a member's bills, as loaded by
+     * FeePeriod::forMember() (relies on allocations_sum_amount_allocated).
+     * An over-paid bill clamps to zero rather than offsetting other bills.
+     */
+    public static function outstanding(Collection $bills): float
+    {
+        return round($bills->sum(
+            fn (FeePeriod $bill) => max(0, (float) $bill->amount_due - (float) $bill->allocations_sum_amount_allocated)
+        ), 2);
     }
 
     private function toCents($amount): int
