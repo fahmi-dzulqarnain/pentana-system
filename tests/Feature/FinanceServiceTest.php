@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Payment\FeePeriod;
+use App\Models\Payment\PaymentAllocation;
 use App\Models\Payment\PaymentProof;
 use App\Models\User;
 use App\Services\FinanceService;
@@ -110,7 +111,7 @@ class FinanceServiceTest extends TestCase
         $this->assertSame(0.0, $user->fresh()->credit);
     }
 
-    public function test_outstanding_sums_unpaid_remainders_and_clamps_overpaid_bills(): void
+    public function test_outstanding_sums_unpaid_remainders(): void
     {
         $user = User::factory()->create();
         $this->bill($user, '2026-01-01', 100);
@@ -124,6 +125,26 @@ class FinanceServiceTest extends TestCase
 
         // 100 - 30 = 70 outstanding on the first bill, 50 untouched on the second.
         $this->assertSame(120.0, FinanceService::outstanding($bills));
+    }
+
+    public function test_outstanding_clamps_an_overpaid_bill_instead_of_offsetting_others(): void
+    {
+        $user = User::factory()->create();
+        $overpaid = $this->bill($user, '2026-01-01', 100);
+        $this->bill($user, '2026-02-01', 50);
+
+        // applyAvailableFunds() never over-allocates, so force the state directly:
+        // a verified 150 proof fully allocated against the 100 bill.
+        $proof = $this->pendingProof($user, 150);
+        $proof->update(['status' => 'verified', 'amount_verified' => 150]);
+        PaymentAllocation::create([
+            'payment_proof_id' => $proof->id,
+            'fee_period_id' => $overpaid->id,
+            'amount_allocated' => 150,
+        ]);
+
+        // The -50 on the overpaid bill must clamp to 0, not offset the unpaid 50.
+        $this->assertSame(50.0, FinanceService::outstanding(FeePeriod::forMember($user->id)->get()));
     }
 
     public function test_outstanding_is_zero_for_fully_paid_bills(): void

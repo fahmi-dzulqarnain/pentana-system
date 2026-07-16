@@ -26,7 +26,9 @@ reminders also already exist (`app:send-activity-reminders`).
 
 **Command:** `app:send-bill-reminders` (`App\Console\Commands\SendBillReminders`)
 
-- Finds every member (non-admin user) whose outstanding balance is > 0.
+- Finds every user whose outstanding balance is > 0. (No admin exclusion:
+  `app:generate-monthly-fees` bills `User::all()`, so admins can owe dues too —
+  the audience is "who owes", not a role.)
 - Sends one `BillReminder` notification per member.
 - No sent-stamp needed: the schedule is date-based and each run is a distinct
   intentional touch. A member with an unpaid bill on both dates gets both —
@@ -93,8 +95,9 @@ PHPUnit feature tests mirroring the existing command tests, using
 `Notification::fake()`:
 
 - **Bill reminders:** member with outstanding balance gets notified; settled
-  member and admin do not; amount/count passed to the notification are
-  correct (partial allocation case).
+  members and users without bills do not; amount/count passed to the
+  notification are correct (partial allocation case); a failed send does not
+  abort the rest of the run.
 - **Lunch nudges:** non-responder notified, responder not; lunch outside the
   24h window not nudged; stamped lunch not re-nudged; stamp is written.
 - **FinanceService helper:** outstanding math matches previous widget
