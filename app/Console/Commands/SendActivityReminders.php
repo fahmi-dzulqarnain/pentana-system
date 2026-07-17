@@ -3,9 +3,9 @@
 namespace App\Console\Commands;
 
 use App\Models\Activity;
-use App\Models\ActivityRegistration;
 use App\Notifications\ActivityReminder;
 use Illuminate\Console\Command;
+use Throwable;
 
 class SendActivityReminders extends Command
 {
@@ -21,11 +21,18 @@ class SendActivityReminders extends Command
             ->get();
 
         foreach ($activities as $activity) {
-            $activity->registrations()
+            $registrations = $activity->registrations()
                 ->where('status', 'registered')
                 ->with('user')
-                ->get()
-                ->each(fn (ActivityRegistration $registration) => $registration->user->notify(new ActivityReminder($activity)));
+                ->get();
+
+            foreach ($registrations as $registration) {
+                try {
+                    $registration->user->notify(new ActivityReminder($activity));
+                } catch (Throwable $e) {
+                    report($e); // one bad APNs token must not abort the whole run
+                }
+            }
 
             // Stamp so a re-run the same day doesn't double-remind (same guard as birthday emails).
             $activity->forceFill(['reminder_sent_at' => now()])->save();
