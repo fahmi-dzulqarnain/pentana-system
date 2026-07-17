@@ -100,5 +100,8 @@ that passkeys require).
 
 ## Docs
 
-Per-feature design specs and implementation plans live under
-[`docs/superpowers/`](docs/superpowers/) (`specs/` and `plans/`).
+- [`docs/notifications.md`](docs/notifications.md) — the complete notification
+  reference: every trigger (admin actions + scheduled commands), audiences,
+  channels (bell/mail/APNs push), double-send guards, and failure semantics.
+- Per-feature design specs and implementation plans live under
+  [`docs/superpowers/`](docs/superpowers/) (`specs/` and `plans/`).
