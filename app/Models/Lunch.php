@@ -13,9 +13,9 @@ class Lunch extends Model
 
     protected $table = 'lunches';
 
-    protected $fillable = ['date', 'caterer_id', 'caterer_meal_id', 'deadline', 'status'];
+    protected $fillable = ['date', 'caterer_id', 'caterer_meal_id', 'deadline', 'status', 'vote_nudge_sent_at'];
 
-    protected $casts = ['date' => 'date', 'deadline' => 'datetime'];
+    protected $casts = ['date' => 'date', 'deadline' => 'datetime', 'vote_nudge_sent_at' => 'datetime'];
 
     public function caterer(): BelongsTo
     {
