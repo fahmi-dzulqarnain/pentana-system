@@ -82,6 +82,12 @@ return [
 
     'fallback_locale' => env('APP_FALLBACK_LOCALE', 'en'),
 
+    /*
+    | Languages offered to members (comma-separated). English is always on.
+    | Add `ms` / `id` only after their translations have been reviewed.
+    */
+    'locales' => env('APP_LOCALES', 'en'),
+
     'faker_locale' => env('APP_FAKER_LOCALE', 'en_US'),
 
     /*

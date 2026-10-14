@@ -59,7 +59,8 @@ disabled value is ignored, as if absent.
   read it). The cookie is excluded from `EncryptCookies` — it holds a public two-letter code,
   and an encrypted value would be unreadable to the script;
 - when authenticated, also writes `users.locale`;
-- returns `204`. The client then writes `localStorage.locale` and reloads.
+- is submitted by a plain HTML form and returns a **303 redirect back** to the page it came
+  from. The sync script copies the new cookie into `localStorage` on that next load.
 
 Invalid or disabled values get `422` and change nothing.
 
