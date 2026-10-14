@@ -69,11 +69,18 @@ class QueuedEmail extends Model
         ]);
     }
 
-    public static function nextPending(): ?self
+    /**
+     * @param  array<int, int>  $skip  ids already attempted in this drain run - a message
+     *                                 that just failed must not be retried immediately, or
+     *                                 a brief provider outage burns all three attempts in
+     *                                 one minute.
+     */
+    public static function nextPending(array $skip = []): ?self
     {
         return static::whereNull('sent_at')
             ->whereNull('failed_at')
             ->where('attempts', '<', self::MAX_ATTEMPTS)
+            ->when($skip !== [], fn ($query) => $query->whereNotIn('id', $skip))
             ->orderBy('priority')
             ->orderBy('created_at')
             ->first();
