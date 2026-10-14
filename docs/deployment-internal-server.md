@@ -272,11 +272,17 @@ ssh pentana 'cd /var/www/pentana && chmod 640 storage/app/private/apns/AuthKey_*
 ```
 
 `chgrp www-data` fails here — the deploy user isn't in that group and the operation needs
-root. Grant access with ACLs instead, which the file owner may set. Both parent directories
-need traverse, not just the key:
+root. Grant access with ACLs instead, which the file owner may set.
+
+`storage/app/private` is the `local` disk root, and Livewire writes temporary uploads
+(CSV imports, payment proofs, images) to `storage/app/private/livewire-tmp`. So `www-data`
+needs full write there — the default ACL (`-d`) makes new subdirectories inherit it. Traverse
+alone breaks every Livewire upload with a generic "failed to upload" error. The `apns`
+directory needs only traverse:
 
 ```bash
-setfacl -m u:www-data:x storage/app/private
+setfacl -m u:www-data:rwx storage/app/private
+setfacl -d -m u:www-data:rwx storage/app/private
 setfacl -m u:www-data:x storage/app/private/apns
 setfacl -m u:www-data:r storage/app/private/apns/AuthKey_XXXXXXXXXX.p8
 ```
