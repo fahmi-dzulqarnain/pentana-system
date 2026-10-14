@@ -161,6 +161,53 @@ There is **no queue worker to start**.
 
 ## 5. Redeploy / update
 
+### Automatic (default)
+
+Every push to `main` deploys itself once CI is green. This covers the public site and the
+member portal (`/account`): both are the same Laravel app.
+
+```
+push to main ──> GitHub Actions "tests" ──green──┐
+                                                 ▼
+cron (every minute, on this host) ── git fetch ── deploy/auto-deploy.sh ──> live
+```
+
+It is **pull-based** on purpose: the host is LAN-only behind the tunnel, so GitHub cannot
+reach it, and the repo is public, so a self-hosted Actions runner here would let fork PRs
+execute code on the server. The script needs no secrets; it reads the public check-runs API.
+
+Install once, as `fahmi` (no sudo):
+
+```bash
+mkdir -p ~/.local/state/pentana-deploy
+(crontab -l; echo '* * * * * /var/www/pentana/deploy/auto-deploy.sh >> $HOME/.local/state/pentana-deploy/deploy.log 2>&1') | crontab -
+```
+
+How it behaves:
+
+- **Waits for CI.** A commit ships only when its `tests` check concluded `success`. Pending
+  is retried each minute; a red build is skipped. The workflow job must stay named `tests`.
+- **Skips `npm ci`** unless `package-lock.json` changed; always rebuilds assets and runs
+  `composer install`, `filament:assets`, `migrate --force` and `optimize`.
+- **Maintenance mode** for the length of the deploy (about a minute; members and the mobile
+  app see a 503 with `Retry-After`).
+- **Rolls back on failure** to the previous commit and does not retry that commit until
+  `main` moves. **Migrations are not rolled back**: a migration that half-applies needs a
+  hand fix.
+- **No php-fpm reload** (that needs sudo). Not required while `opcache.validate_timestamps`
+  stays on, which is the Ubuntu default; turning it off would make deploys serve stale code.
+- **Fast-forward only.** After a force-push to `main` it logs and stops; deploy by hand.
+
+Operating it:
+
+| | |
+|---|---|
+| Log | `~/.local/state/pentana-deploy/deploy.log` |
+| Retry a commit after re-running CI | `rm ~/.local/state/pentana-deploy/failed` |
+| Pause auto-deploy | comment out the cron line (`crontab -e`) |
+
+### Manual
+
 ```bash
 #!/usr/bin/env bash
 set -euo pipefail
