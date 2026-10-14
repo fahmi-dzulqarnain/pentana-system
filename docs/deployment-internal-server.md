@@ -202,11 +202,85 @@ php artisan about
   (`PasswordAuthentication no`, then `sudo systemctl reload ssh`).
 - Consider restricting nginx to the internal subnet if the container is ever multi-homed.
 
-## 7. Open items before go-live
+## 7. Push notifications (APNs)
+
+Working in production as of 2026-10-14. Member push uses a token-based `.p8` key.
+
+**Key on the server** — never in git, and `php-fpm` (running as `www-data`) must read it:
+
+```bash
+ssh pentana 'mkdir -p /var/www/pentana/storage/app/private/apns'
+scp ~/Downloads/AuthKey_XXXXXXXXXX.p8 pentana:/var/www/pentana/storage/app/private/apns/
+ssh pentana 'cd /var/www/pentana && chmod 640 storage/app/private/apns/AuthKey_*.p8'
+```
+
+`chgrp www-data` fails here — the deploy user isn't in that group and the operation needs
+root. Grant access with ACLs instead, which the file owner may set. Both parent directories
+need traverse, not just the key:
+
+```bash
+setfacl -m u:www-data:x storage/app/private
+setfacl -m u:www-data:x storage/app/private/apns
+setfacl -m u:www-data:r storage/app/private/apns/AuthKey_XXXXXXXXXX.p8
+```
+
+**Env** (then `php artisan optimize` — config is cached, so edits don't take effect without it):
+
+```dotenv
+APN_KEY_ID=XXXXXXXXXX
+APN_TEAM_ID=7778Y2522V
+APN_BUNDLE_ID=my.silentmode.pentana
+APN_PRIVATE_KEY_PATH=storage/app/private/apns/AuthKey_XXXXXXXXXX.p8
+APN_PRODUCTION=true
+```
+
+### The `APN_PRODUCTION` trap
+
+Apple runs two independent APNs environments, and a device token is valid in exactly one:
+
+| Build | Token valid against | `APN_PRODUCTION` |
+|---|---|---|
+| Run from Xcode (debug) | sandbox | `false` |
+| **TestFlight or App Store** | **production** | **`true`** |
+
+TestFlight uses the *production* environment despite being a pre-release channel — this
+catches people out. The setting is **global**, so one server targets one environment: with
+`true`, Xcode debug builds silently stop receiving push, and vice versa.
+
+**Failure is silent.** `laravel-notification-channels/apn` throws nothing on
+`BadDeviceToken`, so a wrong flag looks exactly like success — `notify()` returns cleanly,
+the bell notification appears, the email is logged, and the phone simply stays quiet.
+Nothing in `laravel.log` indicates a problem.
+
+### Diagnosing silent non-delivery
+
+Ask Apple directly rather than inferring from the absence of errors. Post to both
+environments with the same token and read the `reason`:
+
+```
+POST https://api.push.apple.com/3/device/<token>          # production
+POST https://api.sandbox.push.apple.com/3/device/<token>  # sandbox
+  authorization: bearer <ES256 JWT: {alg,kid} / {iss=team,iat}>
+  apns-topic: my.silentmode.pentana
+  apns-push-type: alert
+```
+
+`200` means accepted; `400 BadDeviceToken` means that token belongs to the *other*
+environment. Which one answers `200` tells you what `APN_PRODUCTION` must be. Note the JWS
+signature needs the raw R‖S form, not the DER that `openssl_sign` returns.
+
+Tokens from a build type you no longer target are permanently dead and can be deleted from
+`device_tokens`.
+
+## 8. Open items before go-live
 
 - [x] TLS — Cloudflare edge certificate (trusted) via the tunnel; origin keeps a self-signed cert for the loopback hop
-- [ ] SMTP configured, or members told email is not yet delivered
-- [ ] APNs push key, if the mobile app is in scope for launch
+- [ ] SMTP configured, or members told email is not yet delivered — `MAIL_FROM_ADDRESS` is
+      still Laravel's `hello@example.com` placeholder
+- [ ] Demo data removed from production (DemoContentSeeder lunches/activities, the
+      `member@silentmode.my` test account) — it is there because local dev shares the live
+      Supabase instance, which is worth separating before real dues data exists
+- [x] APNs push — key `CVS8SF75ZU` deployed, `APN_PRODUCTION=true`, delivery verified on device
 - [x] Member access from outside — resolved by the tunnel; mobile app can now reach it
 - [ ] Cloudflare Access (or equivalent) in front, and a change-request addendum for the public exposure
 - [x] Change request approved (2026-10-14)
