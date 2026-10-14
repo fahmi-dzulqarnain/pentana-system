@@ -1,21 +1,21 @@
 #!/usr/bin/env bash
 # Pull-based auto-deploy for the internal server. Cron runs it every minute as the
-# deploy user; it ships origin/main once GitHub's "tests" check for that commit passes.
+# deploy user; it ships each new commit on origin/main once the test suite passes for it
+# here on the server (GitHub Actions is unavailable while the account is billing-locked).
 #
 #   * * * * * /var/www/pentana/deploy/auto-deploy.sh >> $HOME/.local/state/pentana-deploy/deploy.log 2>&1
 #
 # Pull, not push: the host sits on the LAN behind a Cloudflare Tunnel, and the repo is
 # public, so a self-hosted runner here would let fork PRs execute on the server.
 #
-# A failed deploy rolls the code back to the previous commit and is not retried until
+# A commit whose tests fail is skipped. A failed deploy rolls the code back to the previous commit and is not retried until
 # main moves again. Migrations are NOT rolled back - check the log if one fails.
 set -Eeuo pipefail   # -E: the ERR trap must also fire inside build()
 
 APP_DIR=${APP_DIR:-/var/www/pentana}
-REPO=fahmi-dzulqarnain/pentana-system
 BRANCH=main
-CHECK_NAME=tests
 STATE_DIR="$HOME/.local/state/pentana-deploy"   # outside the repo: keeps the work tree clean
+TEST_DIR="$HOME/.cache/pentana-test"            # throwaway checkout the gate runs in
 export PATH=/usr/local/bin:/usr/bin:/bin
 
 mkdir -p "$STATE_DIR"
@@ -41,20 +41,34 @@ if ! git merge-base --is-ancestor "$current" "$target"; then
     exit 0
 fi
 
-ci=$(curl -fsS --max-time 20 -H 'Accept: application/vnd.github+json' \
-    "https://api.github.com/repos/$REPO/commits/$target/check-runs?check_name=$CHECK_NAME" |
-    php -r '$r = json_decode(stream_get_contents(STDIN), true)["check_runs"][0] ?? null;
-            echo $r === null ? "missing" : ($r["status"] === "completed" ? $r["conclusion"] : "pending");') ||
-    { note "GitHub API unreachable - will retry"; exit 0; }
-
-case "$ci" in
-    success) ;;
-    pending|missing) note "$short waiting for CI ($ci)"; exit 0 ;;
-    # Marked failed so we stop polling; delete $STATE_DIR/failed after a CI re-run to retry.
-    *) log "$short CI $ci - not deploying"; echo "$target" > "$STATE_DIR/failed"; exit 0 ;;
-esac
-
 changed() { ! git diff --quiet "$1" "$2" -- "${@:3}"; }
+
+# Gate: run the suite against $target in a separate checkout before touching production.
+# It uses .env.example (SQLite, log mailer), never the live .env.
+# Every step ends in `|| return`: set -e does not apply inside a function called from `if`.
+test_commit() {
+    [ -d "$TEST_DIR/.git" ] || git clone --quiet "$APP_DIR" "$TEST_DIR" || return
+    cd "$TEST_DIR" || return
+    git fetch --quiet "$APP_DIR" "$target" || return
+    local before; before=$(git rev-parse HEAD) || return
+    git checkout --quiet --force "$target" || return
+    { [ -d node_modules ] && ! changed "$before" "$target" package-lock.json; } || npm ci --no-audit --no-fund || return
+    npm run build || return
+    composer install --no-interaction --no-progress || return
+    [ -f .env ] || { cp .env.example .env && php artisan key:generate --quiet; } || return
+    php artisan config:clear --quiet || return
+    php artisan test
+}
+
+log "$short testing"
+rm -f "$STATE_DIR/note"
+if ! test_commit > "$STATE_DIR/test.log" 2>&1; then
+    log "$short tests FAILED - not deploying (see $STATE_DIR/test.log)"
+    echo "$target" > "$STATE_DIR/failed"
+    exit 0
+fi
+log "$short tests passed"
+cd "$APP_DIR"
 
 build() {
     changed "$1" "$2" package-lock.json && npm ci --no-audit --no-fund
@@ -77,7 +91,6 @@ rollback() {
 }
 
 log "deploying ${current:0:7} -> $short"
-rm -f "$STATE_DIR/note"
 php artisan down --retry=30 || true
 trap rollback ERR
 

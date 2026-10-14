@@ -163,20 +163,28 @@ There is **no queue worker to start**.
 
 ### Automatic (default)
 
-Every push to `main` deploys itself once CI is green. This covers the public site and the
-member portal (`/account`): both are the same Laravel app.
+Every push to `main` deploys itself once the test suite passes **on this host**. This
+covers the public site and the member portal (`/account`): both are the same Laravel app.
 
 ```
-push to main ──> GitHub Actions "tests" ──green──┐
-                                                 ▼
-cron (every minute, on this host) ── git fetch ── deploy/auto-deploy.sh ──> live
+push to main          cron, every minute, on this host
+     │                deploy/auto-deploy.sh
+     └──> git fetch ──> tests in ~/.cache/pentana-test ──pass──> deploy /var/www/pentana
 ```
 
-It is **pull-based** on purpose: the host is LAN-only behind the tunnel, so GitHub cannot
-reach it, and the repo is public, so a self-hosted Actions runner here would let fork PRs
-execute code on the server. The script needs no secrets; it reads the public check-runs API.
+It is **pull-based** on purpose: the host is LAN-only behind the tunnel, so nothing outside
+can reach it, and the repo is public, so a self-hosted Actions runner here would let fork PRs
+execute code on the server. Tests run here rather than on GitHub Actions because the GitHub
+account is billing-locked; the script needs no secrets either way.
 
-Install once, as `fahmi` (no sudo):
+The test checkout uses `.env.example` (SQLite in memory, log mailer), never the live `.env`,
+and needs the SQLite PHP extension, which production itself does not:
+
+```bash
+sudo apt-get install -y php8.4-sqlite3 && sudo systemctl reload php8.4-fpm
+```
+
+Install the cron once, as `fahmi` (no sudo):
 
 ```bash
 mkdir -p ~/.local/state/pentana-deploy
@@ -185,8 +193,9 @@ mkdir -p ~/.local/state/pentana-deploy
 
 How it behaves:
 
-- **Waits for CI.** A commit ships only when its `tests` check concluded `success`. Pending
-  is retried each minute; a red build is skipped. The workflow job must stay named `tests`.
+- **Tests first, outside production.** The suite runs against the new commit in
+  `~/.cache/pentana-test` (dev dependencies, its own `node_modules` and build). Production is
+  untouched until it passes, so testing adds no downtime. A failing commit is skipped.
 - **Skips `npm ci`** unless `package-lock.json` changed; always rebuilds assets and runs
   `composer install`, `filament:assets`, `migrate --force` and `optimize`.
 - **Maintenance mode** for the length of the deploy (about a minute; members and the mobile
@@ -203,7 +212,8 @@ Operating it:
 | | |
 |---|---|
 | Log | `~/.local/state/pentana-deploy/deploy.log` |
-| Retry a commit after re-running CI | `rm ~/.local/state/pentana-deploy/failed` |
+| Last test run | `~/.local/state/pentana-deploy/test.log` |
+| Retry a skipped commit (e.g. a flaky test) | `rm ~/.local/state/pentana-deploy/failed` |
 | Pause auto-deploy | comment out the cron line (`crontab -e`) |
 
 ### Manual
