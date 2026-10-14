@@ -4,9 +4,11 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Models\Payment\PaymentProof;
+use App\Support\Locales;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
+use Illuminate\Contracts\Translation\HasLocalePreference;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -15,7 +17,7 @@ use Laravel\Sanctum\HasApiTokens;
 use Spatie\LaravelPasskeys\Models\Concerns\HasPasskeys;
 use Spatie\LaravelPasskeys\Models\Concerns\InteractsWithPasskeys;
 
-class User extends Authenticatable implements FilamentUser, HasPasskeys
+class User extends Authenticatable implements FilamentUser, HasLocalePreference, HasPasskeys
 {
     /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasFactory, InteractsWithPasskeys, Notifiable;
@@ -36,6 +38,7 @@ class User extends Authenticatable implements FilamentUser, HasPasskeys
     protected $fillable = [
         'name',
         'email',
+        'locale',
         'password',
         'is_admin',
         'member_category_id',
@@ -44,6 +47,15 @@ class User extends Authenticatable implements FilamentUser, HasPasskeys
         'birthday_email_sent_at',
         'activated_at',
     ];
+
+    /**
+     * Language for notifications and email. Laravel renders each notification in
+     * the recipient's preference; disabled or unset falls back to English.
+     */
+    public function preferredLocale(): ?string
+    {
+        return Locales::isEnabled($this->locale) ? $this->locale : null;
+    }
 
     /**
      * The attributes that should be hidden for serialization.
