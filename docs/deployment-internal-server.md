@@ -395,7 +395,28 @@ delivery, bounces and spam complaints.
 `noreply@pentana.silentmode.net` is send-only. The MX record above makes inbound possible
 for later use.
 
-## 9. Open items before go-live
+## 9. Languages (English, Bahasa Melayu, Bahasa Indonesia)
+
+The web pages and portal support `en`, `ms` and `id`. Which are offered is set by
+`APP_LOCALES`; it defaults to `en`, which hides the chooser and switchers entirely.
+
+Enable a language only after its strings are reviewed (`docs/translations/review.xlsx`,
+regenerated with `python3 docs/translations/build-review-sheet.py`, which needs
+`pip install openpyxl`):
+
+```dotenv
+APP_LOCALES=en,ms,id
+```
+
+then `php artisan optimize` (config is cached). One language can be enabled first
+(`en,ms`). Removing a language later is safe: people who chose it see English and are
+asked again.
+
+A member's choice is stored on their account (`users.locale`) and in a `locale` cookie
+mirrored to `localStorage`. Emails, push and in-app notifications use the account's
+language, so the iOS app shows notification text in it while its own screens stay English.
+
+## 10. Open items before go-live
 
 - [x] TLS — Cloudflare edge certificate (trusted) via the tunnel; origin keeps a self-signed cert for the loopback hop
 - [x] Email — Resend SMTP, sending as `noreply@pentana.silentmode.net`, verified end to end
