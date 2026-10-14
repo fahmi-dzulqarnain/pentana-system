@@ -28,4 +28,15 @@ class LandingPageTest extends TestCase
         // Dark-mode toggle.
         $response->assertSee('Toggle dark mode');
     }
+
+    public function test_landing_page_links_to_the_live_app_store_listing(): void
+    {
+        $response = $this->get('/');
+
+        $response->assertSee('href="https://apps.apple.com/my/app/pentana/id6784914158"', false);
+        $response->assertSee('<meta name="apple-itunes-app" content="app-id=6784914158">', false);
+        // Android isn't out yet: no Play link, and the page says so.
+        $response->assertDontSee('play.google.com', false);
+        $response->assertSee('Coming soon to Android');
+    }
 }
