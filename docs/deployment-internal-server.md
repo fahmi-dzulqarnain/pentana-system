@@ -5,7 +5,10 @@ This replaces `DEPLOYMENT.md` — that runbook targets macOS + Homebrew + Cloudf
 and does not apply here.
 
 ```
-Internal network ──HTTPS──> nginx ──FastCGI──> php-fpm ──> Laravel (public/)
+Internet ──HTTPS──> Cloudflare edge ──tunnel──> cloudflared (on the host)
+                                                    │  https://localhost:443
+                                                    ▼
+LAN ─────HTTPS────────────────────────────────> nginx ──FastCGI──> php-fpm ──> Laravel (public/)
                               │
       PostgreSQL (Supabase, remote) ◀── app ──▶ storage/ (uploads), logs
                               ▲
@@ -19,7 +22,8 @@ Internal network ──HTTPS──> nginx ──FastCGI──> php-fpm ──> L
 | Host | `pentana` / 192.168.50.20, alias `ssh pentana` |
 | OS | Ubuntu 24.04 LTS |
 | Type | LXC container on Proxmox — 4 GB RAM, ~92 GB free |
-| Access | SSH key only (`~/.ssh/pentana_ed25519`); internal network, not internet-facing |
+| Public URL | **https://pentana.silentmode.net** via Cloudflare Tunnel (token-managed) |
+| Access | SSH key only (`~/.ssh/pentana_ed25519`). The app is **publicly reachable** through the tunnel — this departs from the original change request's "internal network only"; put Cloudflare Access in front to restore an equivalent control |
 | Database | Supabase PostgreSQL (remote) — verified reachable on 5432 from this host |
 
 **Stack facts that shape the steps below**
@@ -82,8 +86,19 @@ Passkey sign-in is the app's primary auth and needs a secure context. Three opti
 Whichever is chosen, add the `listen 443 ssl;` server block and redirect port 80 to it, then
 set `APP_URL=https://<hostname>` in `.env`.
 
-> Unlike the macOS runbook, there is **no Cloudflare Tunnel here**, so the `trustProxies`
-> step in `DEPLOYMENT.md` §2e is not needed — nginx terminates TLS directly.
+> **A Cloudflare Tunnel does front this host**, so `trustProxies(at: '*')` in
+> `bootstrap/app.php` **is** required — cloudflared forwards `X-Forwarded-Proto`, and
+> without trusting it Laravel generates `http://` URLs and passkeys break. It is already
+> configured.
+>
+> **Tunnel origin must be `https://localhost:443` with No TLS Verify on.** Pointing it at
+> `http://localhost:80` produces an infinite redirect loop, because the port-80 server block
+> 301s everything to HTTPS. No TLS Verify is needed because the origin cert is self-signed —
+> it only protects the loopback hop; Cloudflare serves a publicly trusted cert at the edge.
+>
+> **`APP_URL` must match the hostname actually served.** `config/passkeys.php` derives the
+> WebAuthn relying-party ID from it (`parse_url(config('app.url'), PHP_URL_HOST)`), and a
+> mismatch fails passkey registration with a SecurityError even when TLS is perfect.
 
 ## 3. Deploy the application
 
@@ -189,8 +204,9 @@ php artisan about
 
 ## 7. Open items before go-live
 
-- [ ] TLS certificate chosen and installed (§2) — blocks passkey sign-in
+- [x] TLS — Cloudflare edge certificate (trusted) via the tunnel; origin keeps a self-signed cert for the loopback hop
 - [ ] SMTP configured, or members told email is not yet delivered
 - [ ] APNs push key, if the mobile app is in scope for launch
-- [ ] Member access from outside the internal network decided (VPN, or internal-only)
-- [ ] Change request approved
+- [x] Member access from outside — resolved by the tunnel; mobile app can now reach it
+- [ ] Cloudflare Access (or equivalent) in front, and a change-request addendum for the public exposure
+- [x] Change request approved (2026-10-14)
