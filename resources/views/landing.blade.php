@@ -1,7 +1,8 @@
 <!doctype html>
-<html lang="en">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="utf-8">
+    <x-locale.sync-script />
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>PENTANA | Welfare &amp; membership</title>
     <meta name="apple-itunes-app" content="app-id=6784914158">
@@ -280,6 +281,7 @@
             <nav>
                 <a href="{{ route('claim') }}" class="pl-link pl-nav-claim">Claim account</a>
                 <a href="{{ url('/account') }}" class="pl-link">Sign in</a>
+                <x-locale.switcher />
                 <button type="button" class="pl-theme-toggle" id="pl-theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">
                     <svg class="moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
                     <svg class="sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
@@ -477,5 +479,6 @@
     }
 })();
 </script>
+<x-locale.chooser />
 </body>
 </html>

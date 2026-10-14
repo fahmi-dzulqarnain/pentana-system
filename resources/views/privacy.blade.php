@@ -1,7 +1,8 @@
 <!doctype html>
-<html lang="en">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="utf-8">
+    <x-locale.sync-script />
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Privacy Policy | PENTANA</title>
     <meta name="description" content="How PENTANA handles your personal information.">
@@ -19,7 +20,8 @@
         body { margin:0; font-family:'IBM Plex Sans', system-ui, -apple-system, sans-serif; color:var(--ink); background:var(--bg); line-height:1.6; }
         .w { max-width:740px; margin:0 auto; padding:0 20px; }
         header { border-bottom:1px solid var(--line); }
-        header .w { padding:16px 20px; }
+        header .w { padding:16px 20px; display:flex; align-items:center; justify-content:space-between; gap:12px; }
+        header .ls { --border-subtle:var(--line); }
         .brand { font-weight:800; letter-spacing:.12em; color:var(--navy); text-decoration:none; font-size:18px; }
         main { padding:40px 20px 64px; }
         main.w { max-width:740px; }
@@ -38,7 +40,7 @@
 </head>
 <body>
     <header>
-        <div class="w"><a href="{{ url('/') }}" class="brand">PENTANA</a></div>
+        <div class="w"><a href="{{ url('/') }}" class="brand">PENTANA</a><x-locale.switcher /></div>
     </header>
 
     <main class="w">
@@ -118,5 +120,6 @@
             <a href="{{ url('/') }}">pentana.silentmode.net</a>
         </div>
     </footer>
+<x-locale.chooser />
 </body>
 </html>

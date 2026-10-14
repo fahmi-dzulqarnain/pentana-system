@@ -2,6 +2,7 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="utf-8">
+    <x-locale.sync-script />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $title ?? config('app.name') }}</title>
@@ -16,6 +17,7 @@
     <link rel="stylesheet" href="{{ asset('css/filament/filament/app.css') }}">
 </head>
 <body class="antialiased" style="margin:0;min-height:100vh;background-color:#ffffff;">
+    <div style="position:fixed;top:8px;right:8px;z-index:50;background:#fff;border-radius:10px;"><x-locale.switcher /></div>
     {{-- Full-viewport canvas: the white page fills the screen and the claim component
          lays itself out inside (header group at the top, field centred, footer button
          pinned to the bottom). It manages its own padding per stage. --}}
@@ -24,5 +26,6 @@
     </main>
 
     @filamentScripts
+    <x-locale.chooser />
 </body>
 </html>

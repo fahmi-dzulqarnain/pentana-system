@@ -4,7 +4,11 @@ namespace App\Providers\Filament;
 
 use App\Filament\Auth\Login;
 use App\Filament\Auth\Profile;
+use App\Support\LocaleCookie;
+use App\Support\Locales;
+use Filament\Actions\Action;
 use Filament\Enums\UserMenuPosition;
+use Filament\Forms\Components\Radio;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -36,6 +40,32 @@ class AccountPanelProvider extends PanelProvider
             ->profile(Profile::class, isSimple: false)
             ->userMenu(position: UserMenuPosition::Sidebar)
             ->databaseNotifications()
+            ->renderHook(PanelsRenderHook::HEAD_START, fn (): string => Blade::render('<x-locale.sync-script />'))
+            ->renderHook(PanelsRenderHook::BODY_END, fn (): string => Blade::render('<x-locale.chooser />'))
+            ->renderHook(PanelsRenderHook::AUTH_LOGIN_FORM_BEFORE, fn (): string => Blade::render('<div style="display:flex;justify-content:center;margin-bottom:1rem"><x-locale.switcher /></div>'))
+            ->userMenuItems([
+                Action::make('language')
+                    ->label(fn (): string => __('Language'))
+                    ->icon('heroicon-o-language')
+                    ->visible(fn (): bool => Locales::multipleEnabled())
+                    ->schema([
+                        Radio::make('locale')
+                            ->hiddenLabel()
+                            ->options(fn (): array => collect(Locales::enabled())
+                                ->mapWithKeys(fn ($c) => [$c => Locales::nativeName($c)])->all())
+                            ->default(fn (): string => app()->getLocale())
+                            ->required(),
+                    ])
+                    ->action(function (array $data) {
+                        if (! Locales::isEnabled($data['locale'] ?? null)) {
+                            return;
+                        }
+                        auth()->user()->forceFill(['locale' => $data['locale']])->save();
+                        LocaleCookie::queue($data['locale']);
+
+                        return redirect(request()->header('Referer') ?? '/account');
+                    }),
+            ])
             ->renderHook(
                 PanelsRenderHook::AUTH_LOGIN_FORM_AFTER,
                 fn (): HtmlString => new HtmlString(

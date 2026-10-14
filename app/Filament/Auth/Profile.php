@@ -2,8 +2,11 @@
 
 namespace App\Filament\Auth;
 
+use App\Support\LocaleCookie;
+use App\Support\Locales;
 use Filament\Auth\Pages\EditProfile;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Select;
 use Filament\Schemas\Components\Livewire;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Text;
@@ -18,6 +21,13 @@ class Profile extends EditProfile
             ->components([
                 $this->getNameFormComponent(),
                 $this->getEmailFormComponent(),
+                Select::make('locale')
+                    ->label(__('Language'))
+                    ->options(fn (): array => collect(Locales::enabled())
+                        ->mapWithKeys(fn ($c) => [$c => Locales::nativeName($c)])->all())
+                    ->visible(fn (): bool => Locales::multipleEnabled())
+                    ->in(fn (): array => Locales::enabled())
+                    ->native(false),
                 DatePicker::make('birthday')
                     ->native(false)
                     ->disabled()
@@ -51,5 +61,12 @@ class Profile extends EditProfile
                         Livewire::make('passkeys'),
                     ]),
             ]);
+    }
+
+    protected function afterSave(): void
+    {
+        if (Locales::isEnabled($this->getUser()->locale)) {
+            LocaleCookie::queue($this->getUser()->locale);
+        }
     }
 }
