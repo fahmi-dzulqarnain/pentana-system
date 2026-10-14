@@ -10,6 +10,7 @@ Route::get('/', function () {
 Route::view('/privacy', 'privacy')->name('privacy');
 
 Route::get('/claim', ClaimAccount::class)->name('claim');
+Route::post('/locale', [\App\Http\Controllers\LocaleController::class, 'update'])->name('locale.update');
 
 // spatie/laravel-passkeys route macro. NOT auto-registered by the package -
 // the host app must opt in. Registers:
