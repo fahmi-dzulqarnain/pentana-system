@@ -66,7 +66,7 @@
     .pl h1, .pl h2, .pl h3 { text-wrap: balance; margin: 0; }
     .pl p { text-wrap: pretty; margin: 0; }
     .pl svg { stroke-linecap: round; stroke-linejoin: round; }
-    .pl a { color: inherit; }
+    :where(.pl) a { color: inherit; }
 
     /* Dark theme — applied by JS via data-pl-theme (resolves the OS default on first
        load, then remembers an explicit toggle). Single block, no media query, so a
@@ -106,8 +106,8 @@
     .pl-btn { display:inline-flex; align-items:center; justify-content:center; gap:9px; height:52px; padding:0 22px;
         border-radius:12px; font-family:var(--font-ui); font-size:15.5px; font-weight:600; text-decoration:none;
         border:1px solid transparent; cursor:pointer; transition:background 140ms ease, border-color 140ms ease; white-space:nowrap; }
-    .pl-btn--primary { background:var(--orange-500); color:var(--text-on-brand); box-shadow:var(--shadow-brand); }
-    .pl-btn--primary:hover { background:var(--orange-600); }
+    .pl .pl-btn--primary { background:var(--orange-500); color:var(--text-on-brand); box-shadow:var(--shadow-brand); }
+    .pl .pl-btn--primary:hover { background:var(--orange-600); }
     .pl-btn--outline { background:transparent; color:var(--text-primary); border-color:var(--border-strong); }
     .pl-btn--outline:hover { background:color-mix(in srgb, var(--text-primary) 6%, transparent); }
     html[data-pl-theme="dark"] .pl-btn--outline { color:#F2F1F9; border-color:rgba(255,255,255,.28); background:rgba(255,255,255,.04); }
@@ -116,9 +116,9 @@
     /* top bar */
     .pl-nav { position:sticky; top:0; z-index:20; background:var(--pl-nav-bg); backdrop-filter:blur(12px);
         border-bottom:1px solid var(--border-subtle); }
-    .pl-nav .pl-wrap { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:16px 32px; }
+    .pl-nav .pl-wrap { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:13px 32px; }
     .pl-nav nav { display:flex; align-items:center; gap:26px; }
-    .pl-nav nav a { font-size:14.5px; }
+    .pl-nav nav a { font-size:14.5px; display:inline-flex; align-items:center; min-height:44px; }
     .pl-theme-toggle { display:inline-flex; align-items:center; justify-content:center; width:38px; height:38px; border-radius:10px;
         border:1px solid var(--border-subtle); background:transparent; color:var(--text-secondary); cursor:pointer;
         transition:background 140ms ease, color 140ms ease; }
@@ -133,7 +133,8 @@
     .pl-hero h1 { font-family:var(--font-display); font-weight:800; font-size:58px; line-height:1.05; letter-spacing:-1.8px; color:var(--pl-heading); margin-top:16px; }
     .pl-hero .sub { font-size:18px; color:var(--text-secondary); line-height:1.55; margin-top:18px; max-width:480px; }
     .pl-hero .cta { display:flex; gap:12px; margin-top:28px; flex-wrap:wrap; }
-    .pl-hero .hero-signin { margin-top:22px; font-size:13.5px; color:var(--text-muted); }
+    .pl-hero .hero-signin { margin-top:12px; font-size:13.5px; color:var(--text-muted); }
+    .pl-hero .hero-signin a { display:inline-flex; align-items:center; min-height:44px; }
     .pl-hero .snap-col { display:flex; justify-content:flex-end; padding-right:24px; }
 
     /* hero snapshot card */
@@ -178,14 +179,14 @@
     .pl-band .copy { position:relative; z-index:2; padding:60px 0 60px 56px; }
     .pl-band h2 { font-family:var(--font-display); font-size:36px; font-weight:700; letter-spacing:-.9px; color:#fff; margin-top:12px; }
     .pl-band .copy p.sub { font-size:16.5px; color:rgba(255,255,255,.78); line-height:1.55; margin-top:12px; max-width:440px; }
-    .pl-band .badges { display:flex; gap:12px; margin-top:26px; flex-wrap:wrap; align-items:center; }
+    .pl-band .badges { display:flex; gap:12px; margin-top:12px; flex-wrap:wrap; align-items:center; }
     .pl-band .note { font-size:13px; color:rgba(255,255,255,.6); margin-top:16px; max-width:420px; }
     .pl-storebadge { display:inline-flex; align-items:center; gap:10px; height:52px; padding:0 18px 0 14px; border-radius:12px;
-        background:#101114; color:#fff; border:1px solid rgba(255,255,255,.22); opacity:.72; white-space:nowrap; }
+        background:#101114; color:#fff; border:1px solid rgba(255,255,255,.22); opacity:.5; white-space:nowrap; cursor:default; user-select:none; }
     .pl-storebadge .two { display:flex; flex-direction:column; line-height:1.15; text-align:left; }
     .pl-storebadge .two .s { font-size:10.5px; opacity:.75; letter-spacing:.02em; }
     .pl-storebadge .two .b { font-family:var(--font-display); font-size:16.5px; font-weight:700; letter-spacing:-.01em; }
-    .pl-soon { display:inline-flex; align-items:center; gap:5px; padding:3px 9px; border-radius:99px; background:var(--amber-subtle); color:var(--amber-dark); font-size:12px; font-weight:700; }
+    .pl-soon { margin-top:24px; display:inline-flex; align-items:center; gap:5px; padding:3px 9px; border-radius:99px; background:var(--amber-subtle); color:var(--amber-dark); font-size:12px; font-weight:700; }
     .pl-soon .dot { width:6px; height:6px; border-radius:3px; background:currentColor; }
     .pl-phonecol { position:relative; z-index:1; min-height:460px; overflow:hidden; display:flex; justify-content:center; }
     .pl-phone { position:absolute; top:56px; width:236px; height:488px; background:#0b0b0f; border-radius:40px; padding:9px;
@@ -220,10 +221,10 @@
     .pl-footer .top { display:flex; justify-content:space-between; gap:48px; flex-wrap:wrap; padding:48px 32px 28px; max-width:1160px; margin:0 auto; }
     .pl-footer .about { max-width:300px; }
     .pl-footer .about p { font-size:13.5px; color:#9497A9; line-height:1.55; margin-top:14px; }
-    .pl-footer .about a.mail { font-size:13.5px; color:#CBC8E8; text-decoration:none; font-family:var(--font-mono); display:inline-block; margin-top:10px; }
+    .pl-footer .about a.mail { font-size:13.5px; color:#CBC8E8; text-decoration:none; font-family:var(--font-mono); display:inline-block; margin-top:4px; padding:6px 0; }
     .pl-footer .cols { display:flex; gap:56px; flex-wrap:wrap; }
-    .pl-footer .col h4 { font-size:12px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:#7269BE; margin:0 0 12px; }
-    .pl-footer .col a { display:block; font-size:13.5px; color:#B9BBC7; text-decoration:none; margin-bottom:9px; }
+    .pl-footer .col h4 { font-size:12px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:#7269BE; margin:0 0 6px; }
+    .pl-footer .col a { display:block; font-size:13.5px; color:#B9BBC7; text-decoration:none; padding:5px 0; }
     .pl-footer .col a:hover { color:#fff; }
     .pl-footer .bar { border-top:1px solid rgba(255,255,255,.1); display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap;
         font-size:12.5px; color:#686B82; padding:20px 32px 26px; max-width:1160px; margin:0 auto; }
@@ -249,6 +250,10 @@
       .pl-how { padding:10px 20px 56px; }
       .pl-grid3 { grid-template-columns:1fr; gap:18px; }
       .pl-footer .top { flex-direction:column; gap:28px; padding:36px 20px 26px; }
+      .pl-footer .col a { padding:12px 0; }
+    }
+    @media (max-width: 480px) {
+      .pl-nav-claim { display:none !important; }
     }
     </style>
     @endverbatim
@@ -268,7 +273,7 @@
                 <span>PENTANA</span>
             </a>
             <nav>
-                <a href="{{ route('claim') }}" class="pl-link">Claim account</a>
+                <a href="{{ route('claim') }}" class="pl-link pl-nav-claim">Claim account</a>
                 <a href="{{ url('/account') }}" class="pl-link">Sign in</a>
                 <button type="button" class="pl-theme-toggle" id="pl-theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">
                     <svg class="moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
@@ -290,9 +295,9 @@
                         Claim your account
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                     </a>
-                    <a href="#get-app" class="pl-btn pl-btn--outline">
-                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="20" x="5" y="2" rx="2"/><path d="M12 18h.01"/></svg>
-                        Get the app
+                    <a href="#how" class="pl-btn pl-btn--outline">
+                        See how it works
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>
                     </a>
                 </div>
                 <div class="hero-signin">Already claimed your account? <a href="{{ url('/account') }}" class="pl-link" style="font-size:13.5px">Sign in →</a></div>
@@ -362,16 +367,16 @@
                 <div class="pl-eyebrow on-dark">Get the app</div>
                 <h2>Take PENTANA with you</h2>
                 <p class="sub">Dues, lunch votes and activity sign-ups — all in a native app for iOS and Android.</p>
-                <div class="badges">
-                    <span class="pl-storebadge">
+                <span class="pl-soon"><span class="dot"></span> Coming soon to iOS &amp; Android</span>
+                <div class="badges" aria-label="App Store and Google Play — not yet available">
+                    <span class="pl-storebadge" aria-hidden="true">
                         <svg width="22" height="22" viewBox="0 0 384 512" fill="currentColor" aria-hidden="true"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.7-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg>
                         <span class="two"><span class="s">Download on the</span><span class="b">App Store</span></span>
                     </span>
-                    <span class="pl-storebadge">
+                    <span class="pl-storebadge" aria-hidden="true">
                         <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path fill="#00D7FE" d="M3.9 1.6c-.55.3-.9.88-.9 1.55v17.7c0 .67.35 1.25.9 1.55L14.6 12 3.9 1.6z"/><path fill="#00F076" d="M5.3 1.06 17.5 8.1l-2.9 2.83L5.3 1.06z"/><path fill="#FF3A44" d="M5.3 22.94 14.6 13.07l2.9 2.83L5.3 22.94z"/><path fill="#FFC900" d="M17.5 8.1 14.6 11v2.07l2.9 2.83 3.3-1.9c1.2-.7 1.2-2.3 0-3L17.5 8.1z"/></svg>
                         <span class="two"><span class="s">GET IT ON</span><span class="b">Google Play</span></span>
                     </span>
-                    <span class="pl-soon"><span class="dot"></span> Coming soon</span>
                 </div>
                 <p class="note">Store links aren't live yet. <a href="{{ route('claim') }}" style="color:#fff;font-weight:600;text-decoration:underline">Claim your account</a> now — we'll notify you the day they land.</p>
             </div>
@@ -400,7 +405,7 @@
     </section>
 
     {{-- 5 · How it works --}}
-    <section class="pl-how">
+    <section class="pl-how" id="how">
         <div class="head">
             <div class="pl-eyebrow">How it works</div>
             <h2>Up and running in three steps</h2>
