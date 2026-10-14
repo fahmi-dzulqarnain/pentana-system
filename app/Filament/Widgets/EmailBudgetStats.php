@@ -20,7 +20,10 @@ class EmailBudgetStats extends StatsOverviewWidget
 {
     protected static ?int $sort = -5;
 
-    protected ?string $heading = 'Email budget';
+    protected function getHeading(): ?string
+    {
+        return __('Email budget');
+    }
 
     public static function canView(): bool
     {
@@ -88,16 +91,16 @@ class EmailBudgetStats extends StatsOverviewWidget
         $dailyColour = $this->dailyColour();
 
         $todayDescription = $usedToday >= EmailBudget::DAILY_LIMIT
-            ? 'cap reached - mail is queued'
-            : (EmailBudget::DAILY_LIMIT - $usedToday).' remaining today';
+            ? __('cap reached - mail is queued')
+            : __(':count remaining today', ['count' => EmailBudget::DAILY_LIMIT - $usedToday]);
 
         $monthPercent = (int) round($usedMonth / EmailBudget::MONTHLY_LIMIT * 100);
         $monthlyColour = $this->monthlyColourFor($usedMonth, $projected);
 
         $monthDescription = match ($monthlyColour) {
-            'danger' => 'monthly limit exceeded',
-            'warning' => "projected {$projected} - over limit",
-            default => "{$monthPercent}% used · projected {$projected}",
+            'danger' => __('monthly limit exceeded'),
+            'warning' => __('projected :projected - over limit', ['projected' => $projected]),
+            default => __(':percent% used · projected :projected', ['percent' => $monthPercent, 'projected' => $projected]),
         };
 
         $queueColour = $this->queueColour();
@@ -105,24 +108,24 @@ class EmailBudgetStats extends StatsOverviewWidget
         $failed = $this->failedCount();
 
         $queueDescription = match (true) {
-            $failed > 0 => $failed.' permanently failed - mail was lost',
-            $pending === 0 => 'nothing waiting',
-            $queueColour === 'danger' => 'oldest '.$oldest->diffForHumans().' - not draining',
-            default => 'oldest '.$oldest->diffForHumans(),
+            $failed > 0 => __(':count permanently failed - mail was lost', ['count' => $failed]),
+            $pending === 0 => __('nothing waiting'),
+            $queueColour === 'danger' => __('oldest :age - not draining', ['age' => $oldest->diffForHumans()]),
+            default => __('oldest :age', ['age' => $oldest->diffForHumans()]),
         };
 
         return [
-            Stat::make('Email today', $usedToday.' / '.EmailBudget::DAILY_LIMIT)
+            Stat::make(__('Email today'), $usedToday.' / '.EmailBudget::DAILY_LIMIT)
                 ->description($todayDescription)
                 ->descriptionIcon($dailyColour === 'gray' ? 'heroicon-m-envelope' : 'heroicon-m-exclamation-triangle')
                 ->color($dailyColour),
 
-            Stat::make('This month', number_format($usedMonth).' / '.number_format(EmailBudget::MONTHLY_LIMIT))
+            Stat::make(__('This month'), number_format($usedMonth).' / '.number_format(EmailBudget::MONTHLY_LIMIT))
                 ->description($monthDescription)
                 ->descriptionIcon($monthlyColour === 'gray' ? 'heroicon-m-calendar' : 'heroicon-m-arrow-trending-up')
                 ->color($monthlyColour),
 
-            Stat::make('Queued', (string) $pending)
+            Stat::make(__('Queued'), (string) $pending)
                 ->description($queueDescription)
                 ->descriptionIcon($queueColour === 'danger' ? 'heroicon-m-exclamation-triangle' : 'heroicon-m-clock')
                 ->color($queueColour),
