@@ -20,7 +20,8 @@
         body { margin:0; font-family:'IBM Plex Sans', system-ui, -apple-system, sans-serif; color:var(--ink); background:var(--bg); line-height:1.6; }
         .w { max-width:740px; margin:0 auto; padding:0 20px; }
         header { border-bottom:1px solid var(--line); }
-        header .w { padding:16px 20px; display:flex; align-items:center; justify-content:space-between; gap:12px; }
+        header .w { padding:16px 20px; }
+        header .w.has-locale { display:flex; align-items:center; justify-content:space-between; gap:12px; }
         header .ls { --border-subtle:var(--line); }
         .brand { font-weight:800; letter-spacing:.12em; color:var(--navy); text-decoration:none; font-size:18px; }
         main { padding:40px 20px 64px; }
@@ -40,7 +41,7 @@
 </head>
 <body>
     <header>
-        <div class="w"><a href="{{ url('/') }}" class="brand">PENTANA</a><x-locale.switcher /></div>
+        <div class="w{{ \App\Support\Locales::multipleEnabled() ? ' has-locale' : '' }}"><a href="{{ url('/') }}" class="brand">PENTANA</a><x-locale.switcher /></div>
     </header>
 
     <main class="w">

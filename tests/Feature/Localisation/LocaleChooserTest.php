@@ -35,6 +35,8 @@ class LocaleChooserTest extends TestCase
             ->assertDontSee('data-locale-chooser', false)
             ->assertSee('data-locale-switcher', false)
             ->assertSee('<nav class="has-locale">', false);
+        $this->withUnencryptedCookie('locale', 'ms')->get('/privacy')
+            ->assertSee('<div class="w has-locale">', false);
     }
 
     public function test_member_with_saved_locale_is_not_asked_in_the_portal(): void
@@ -50,6 +52,8 @@ class LocaleChooserTest extends TestCase
 
         $this->get('/')->assertDontSee('data-locale-chooser', false)->assertDontSee('data-locale-switcher', false)
             ->assertSee('<nav>', false); // no has-locale class, so the pre-i18n nav CSS applies
+        $this->get('/privacy')->assertOk()->assertDontSee('data-locale-switcher', false)
+            ->assertSee('<div class="w"><a', false); // header keeps its pre-i18n block layout
         $this->get('/account/login')->assertDontSee('data-locale-chooser', false)
             ->assertDontSee('data-locale-sync', false)
             ->assertDontSee('account-login-locale-switcher', false);
