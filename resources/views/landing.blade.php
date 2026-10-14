@@ -4,9 +4,9 @@
     <meta charset="utf-8">
     <x-locale.sync-script />
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>PENTANA | Welfare &amp; membership</title>
+    <title>PENTANA | {{ __('Welfare & membership') }}</title>
     <meta name="apple-itunes-app" content="app-id=6784914158">
-    <meta name="description" content="PENTANA is the member companion to your organisation's welfare fund. Pay monthly dues, vote on lunch, and register for activities.">
+    <meta name="description" content="{{ __('PENTANA is the member companion to your organisation\'s welfare fund. Pay monthly dues, vote on lunch, and register for activities.') }}">
 
     <link rel="icon" type="image/png" href="{{ asset('images/pentana-mark.png') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -120,7 +120,7 @@
         border-bottom:1px solid var(--border-subtle); }
     .pl-nav .pl-wrap { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:13px 32px; }
     .pl-nav nav { display:flex; align-items:center; gap:26px; }
-    .pl-nav nav a { font-size:14.5px; display:inline-flex; align-items:center; min-height:44px; }
+    .pl-nav nav a { font-size:14.5px; display:inline-flex; align-items:center; min-height:44px; white-space:nowrap; }
     .pl-theme-toggle { display:inline-flex; align-items:center; justify-content:center; width:38px; height:38px; border-radius:10px;
         border:1px solid var(--border-subtle); background:transparent; color:var(--text-secondary); cursor:pointer;
         transition:background 140ms ease, color 140ms ease; }
@@ -260,6 +260,7 @@
     }
     @media (max-width: 480px) {
       .pl-nav-claim { display:none !important; }
+      .pl-nav nav { gap:12px; }
     }
     </style>
     @endverbatim
@@ -274,15 +275,15 @@
     {{-- 1 · Top bar --}}
     <header class="pl-nav">
         <div class="pl-wrap">
-            <a href="/" class="pl-brand" aria-label="PENTANA home">
+            <a href="/" class="pl-brand" aria-label="{{ __('PENTANA home') }}">
                 <img src="{{ asset('images/pentana-mark.png') }}" alt="">
                 <span>PENTANA</span>
             </a>
             <nav>
-                <a href="{{ route('claim') }}" class="pl-link pl-nav-claim">Claim account</a>
-                <a href="{{ url('/account') }}" class="pl-link">Sign in</a>
+                <a href="{{ route('claim') }}" class="pl-link pl-nav-claim">{{ __('Claim account') }}</a>
+                <a href="{{ url('/account') }}" class="pl-link">{{ __('Sign in') }}</a>
                 <x-locale.switcher />
-                <button type="button" class="pl-theme-toggle" id="pl-theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">
+                <button type="button" class="pl-theme-toggle" id="pl-theme-toggle" aria-label="{{ __('Toggle dark mode') }}" title="{{ __('Toggle dark mode') }}">
                     <svg class="moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
                     <svg class="sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
                 </button>
@@ -294,41 +295,41 @@
     <section class="pl-hero">
         <div class="pl-wrap">
             <div>
-                <div class="pl-eyebrow">PENTANA · member companion</div>
-                <h1>Your dues, lunch and activities, all in one place.</h1>
-                <p class="sub">PENTANA is the member companion to your organisation's welfare fund. Pay monthly dues, vote on lunch, and register for activities.</p>
+                <div class="pl-eyebrow">PENTANA · {{ __('member companion') }}</div>
+                <h1>{{ __('Your dues, lunch and activities, all in one place.') }}</h1>
+                <p class="sub">{{ __('PENTANA is the member companion to your organisation\'s welfare fund. Pay monthly dues, vote on lunch, and register for activities.') }}</p>
                 <div class="cta">
                     <a href="{{ route('claim') }}" class="pl-btn pl-btn--primary">
-                        Claim your account
+                        {{ __('Claim your account') }}
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                     </a>
                     <a href="#get-app" class="pl-btn pl-btn--outline">
                         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="20" x="5" y="2" rx="2"/><path d="M12 18h.01"/></svg>
-                        Get the app
+                        {{ __('Get the app') }}
                     </a>
                 </div>
-                <div class="hero-signin">Already claimed your account? <a href="{{ url('/account') }}" class="pl-link" style="font-size:13.5px">Sign in →</a></div>
+                <div class="hero-signin">{{ __('Already claimed your account?') }} <a href="{{ url('/account') }}" class="pl-link" style="font-size:13.5px">{{ __('Sign in') }} →</a></div>
             </div>
             <div class="snap-col">
                 <div class="pl-snap">
                     <div class="pl-snap-card">
                         <div class="pl-snap-top">
-                            <span class="lbl">This month's dues</span>
-                            <span class="pl-pill-ok"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg> Paid</span>
+                            <span class="lbl">{{ __('This month\'s dues') }}</span>
+                            <span class="pl-pill-ok"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg> {{ __('Paid') }}</span>
                         </div>
                         <div class="pl-snap-money">MYR 70.00</div>
-                        <div class="pl-snap-recpt">June 2026 · receipt #PT-48213</div>
+                        <div class="pl-snap-recpt">{{ __('June 2026') }} · {{ __('receipt :number', ['number' => '#PT-48213']) }}</div>
                         <div class="pl-snap-div"></div>
                         <div class="pl-snap-rows">
                             <div class="pl-snap-row">
                                 <span class="ic" style="background:var(--lunch-bg);color:var(--lunch)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg></span>
-                                <span class="txt">Lunch vote closes Friday</span>
-                                <span class="act" style="color:var(--lunch-text)">Vote</span>
+                                <span class="txt">{{ __('Lunch vote closes Friday') }}</span>
+                                <span class="act" style="color:var(--lunch-text)">{{ __('Vote') }}</span>
                             </div>
                             <div class="pl-snap-row">
                                 <span class="ic" style="background:var(--activ-bg);color:var(--activ)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg></span>
-                                <span class="txt">Hiking at Bukit Tabur · 3 Jul</span>
-                                <span class="act" style="color:var(--activ-text)">Registered</span>
+                                <span class="txt">{{ __('Hiking at :place', ['place' => 'Bukit Tabur']) }} · 3 Jul</span>
+                                <span class="act" style="color:var(--activ-text)">{{ __('Registered') }}</span>
                             </div>
                         </div>
                     </div>
@@ -342,25 +343,25 @@
     <section class="pl-features">
         <div class="pl-wrap">
             <div class="head">
-                <div class="pl-eyebrow">What members do here</div>
-                <h2>Everything your membership covers</h2>
+                <div class="pl-eyebrow">{{ __('What members do here') }}</div>
+                <h2>{{ __('Everything your membership covers') }}</h2>
             </div>
             <div class="pl-grid4">
                 <div class="pl-card dues">
                     <span class="chip"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg></span>
-                    <div><div class="t">Dues &amp; payments</div><p>See what you owe each month and submit payment proof in seconds.</p></div>
+                    <div><div class="t">{{ __('Dues & payments') }}</div><p>{{ __('See what you owe each month and submit payment proof in seconds.') }}</p></div>
                 </div>
                 <div class="pl-card lunch">
                     <span class="chip"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg></span>
-                    <div><div class="t">Lunch</div><p>Vote on the catered menu before each lunch is locked in.</p></div>
+                    <div><div class="t">{{ __('Lunch') }}</div><p>{{ __('Vote on the catered menu before each lunch is locked in.') }}</p></div>
                 </div>
                 <div class="pl-card activ">
                     <span class="chip"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/></svg></span>
-                    <div><div class="t">Activities</div><p>Register for events and outings, and see who else is going.</p></div>
+                    <div><div class="t">{{ __('Activities') }}</div><p>{{ __('Register for events and outings, and see who else is going.') }}</p></div>
                 </div>
                 <div class="pl-card proof">
                     <span class="chip"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></span>
-                    <div><div class="t">Stay in the loop</div><p>One dashboard plus notifications for anything that needs you.</p></div>
+                    <div><div class="t">{{ __('Stay in the loop') }}</div><p>{{ __('One dashboard plus notifications for anything that needs you.') }}</p></div>
                 </div>
             </div>
         </div>
@@ -371,34 +372,34 @@
         <div class="pl-band">
             <img src="{{ asset('images/pentana-mark.png') }}" alt="" class="pl-mark-bg" style="width:340px;height:340px;left:-110px;bottom:-130px;opacity:.1;transform:rotate(-14deg)">
             <div class="copy">
-                <div class="pl-eyebrow on-dark">Get the app</div>
-                <h2>Take PENTANA with you</h2>
-                <p class="sub">Dues, lunch votes and activity sign-ups, all in a native app for iOS and Android.</p>
+                <div class="pl-eyebrow on-dark">{{ __('Get the app') }}</div>
+                <h2>{{ __('Take PENTANA with you') }}</h2>
+                <p class="sub">{{ __('Dues, lunch votes and activity sign-ups, all in a native app for iOS and Android.') }}</p>
                 <div class="badges">
-                    <a class="pl-storebadge" href="https://apps.apple.com/my/app/pentana/id6784914158" target="_blank" rel="noopener" aria-label="Download PENTANA on the App Store">
+                    <a class="pl-storebadge" href="https://apps.apple.com/my/app/pentana/id6784914158" target="_blank" rel="noopener" aria-label="{{ __('Download PENTANA on the App Store') }}">
                         <svg width="22" height="22" viewBox="0 0 384 512" fill="currentColor" aria-hidden="true"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.7-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg>
-                        <span class="two"><span class="s">Download on the</span><span class="b">App Store</span></span>
+                        <span class="two"><span class="s">{{ __('Download on the') }}</span><span class="b">App Store</span></span>
                     </a>
                     <span class="pl-storebadge is-soon" aria-hidden="true">
                         <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path fill="#00D7FE" d="M3.9 1.6c-.55.3-.9.88-.9 1.55v17.7c0 .67.35 1.25.9 1.55L14.6 12 3.9 1.6z"/><path fill="#00F076" d="M5.3 1.06 17.5 8.1l-2.9 2.83L5.3 1.06z"/><path fill="#FF3A44" d="M5.3 22.94 14.6 13.07l2.9 2.83L5.3 22.94z"/><path fill="#FFC900" d="M17.5 8.1 14.6 11v2.07l2.9 2.83 3.3-1.9c1.2-.7 1.2-2.3 0-3L17.5 8.1z"/></svg>
-                        <span class="two"><span class="s">GET IT ON</span><span class="b">Google Play</span></span>
+                        <span class="two"><span class="s">{{ __('GET IT ON') }}</span><span class="b">Google Play</span></span>
                     </span>
-                    <span class="pl-soon"><span class="dot"></span> Coming soon to Android</span>
+                    <span class="pl-soon"><span class="dot"></span> {{ __('Coming soon to Android') }}</span>
                 </div>
-                <p class="note">Android is on the way. <a href="{{ route('claim') }}" style="color:#fff;font-weight:600;text-decoration:underline">Claim your account</a> now and we'll let you know when it lands.</p>
+                <p class="note">{!! __('Android is on the way. :claim now and we\'ll let you know when it lands.', ['claim' => '<a href="'.e(route('claim')).'" style="color:#fff;font-weight:600;text-decoration:underline">'.e(__('Claim your account')).'</a>']) !!}</p>
             </div>
             <div class="pl-phonecol">
                 <div class="pl-phone">
                     <div class="pl-phone-screen">
-                        <div class="pl-mini-hero"><div class="d">Friday, 27 June</div><div class="h">Hi, Aisyah</div></div>
+                        <div class="pl-mini-hero"><div class="d">{{ __('Friday, 27 June') }}</div><div class="h">{{ __('Hi, :name', ['name' => 'Aisyah']) }}</div></div>
                         <div class="pl-mini-card">
-                            <div class="pl-mini-row"><span class="l">This month's dues</span><span class="p">Paid</span></div>
+                            <div class="pl-mini-row"><span class="l">{{ __('This month\'s dues') }}</span><span class="p">{{ __('Paid') }}</span></div>
                             <div class="pl-mini-money">MYR 70.00</div>
                         </div>
                         <div class="pl-mini-card">
                             <div class="pl-mini-item">
                                 <span class="mc" style="background:var(--lunch-bg);color:var(--lunch)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg></span>
-                                Lunch vote <span class="end" style="color:var(--lunch-text)">Vote</span>
+                                {{ __('Lunch vote') }} <span class="end" style="color:var(--lunch-text)">{{ __('Vote') }}</span>
                             </div>
                             <div class="pl-mini-item">
                                 <span class="mc" style="background:var(--activ-bg);color:var(--activ)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg></span>
@@ -414,21 +415,21 @@
     {{-- 5 · How it works --}}
     <section class="pl-how" id="how">
         <div class="head">
-            <div class="pl-eyebrow">How it works</div>
-            <h2>Up and running in three steps</h2>
+            <div class="pl-eyebrow">{{ __('How it works') }}</div>
+            <h2>{{ __('Up and running in three steps') }}</h2>
         </div>
         <div class="pl-grid3">
             <div class="pl-step">
                 <span class="num">01</span>
-                <div><div class="t">Claim your account</div><p>Verify your details on the web and set a password or passkey.</p></div>
+                <div><div class="t">{{ __('Claim your account') }}</div><p>{{ __('Verify your details on the web and set a password or passkey.') }}</p></div>
             </div>
             <div class="pl-step">
                 <span class="num">02</span>
-                <div><div class="t">Download the app</div><p>Get PENTANA on the App Store. Android is coming soon.</p></div>
+                <div><div class="t">{{ __('Download the app') }}</div><p>{{ __('Get PENTANA on the App Store. Android is coming soon.') }}</p></div>
             </div>
             <div class="pl-step">
                 <span class="num">03</span>
-                <div><div class="t">Sign in</div><p>Sign in with a password or passkey. Your dues, lunch and activities are ready.</p></div>
+                <div><div class="t">{{ __('Sign in') }}</div><p>{{ __('Sign in with a password or passkey. Your dues, lunch and activities are ready.') }}</p></div>
             </div>
         </div>
     </section>
@@ -438,24 +439,24 @@
         <div class="top">
             <div class="about">
                 <span class="pl-brand on-dark"><img src="{{ asset('images/pentana-mark.png') }}" alt=""><span>PENTANA</span></span>
-                <p>The member companion to your organisation's welfare fund.</p>
+                <p>{{ __('The member companion to your organisation\'s welfare fund.') }}</p>
                 <a class="mail" href="mailto:hello@pentanaorg.my">hello@pentanaorg.my</a>
             </div>
             <div class="cols">
                 <div class="col">
-                    <h4>Members</h4>
-                    <a href="{{ route('claim') }}">Claim account</a>
-                    <a href="{{ url('/account') }}">Sign in</a>
+                    <h4>{{ __('Members') }}</h4>
+                    <a href="{{ route('claim') }}">{{ __('Claim account') }}</a>
+                    <a href="{{ url('/account') }}">{{ __('Sign in') }}</a>
                 </div>
                 <div class="col">
                     <h4>PENTANA</h4>
-                    <a href="#get-app">Get the app</a>
-                    <a href="{{ route('privacy') }}">Privacy</a>
+                    <a href="#get-app">{{ __('Get the app') }}</a>
+                    <a href="{{ route('privacy') }}">{{ __('Privacy') }}</a>
                 </div>
             </div>
         </div>
         <div class="bar">
-            <span>&copy; {{ date('Y') }} PENTANA. All rights reserved.</span>
+            <span>&copy; {{ date('Y') }} PENTANA. {{ __('All rights reserved.') }}</span>
             <span>pentana.silentmode.net</span>
         </div>
     </footer>

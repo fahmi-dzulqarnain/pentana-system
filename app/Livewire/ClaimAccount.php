@@ -64,8 +64,8 @@ class ClaimAccount extends Component implements HasSchemas
 
         $existing = User::where('email', trim($this->email))->first();
         $this->lookupMessage = $existing
-            ? 'This account is already active. Please log in.'
-            : "We couldn't find that email. Please check with your admin.";
+            ? __('This account is already active. Please log in.')
+            : __("We couldn't find that email. Please check with your admin.");
     }
 
     public function claimForm(Schema $schema): Schema
@@ -74,19 +74,20 @@ class ClaimAccount extends Component implements HasSchemas
             ->statePath('data')
             ->components([
                 Wizard::make([
-                    Step::make('Confirm your details')
-                        ->description('Make sure this is you, then pick your date of birth.')
+                    Step::make(__('Confirm your details'))
+                        ->description(__('Make sure this is you, then pick your date of birth.'))
                         ->schema([
                             DatePicker::make('birthday')
-                                ->label('Date of birth')
+                                ->label(__('Date of birth'))
                                 ->required()
                                 ->native(false)
                                 ->maxDate(now()),
                         ]),
-                    Step::make('Set a password')
-                        ->description('Choose a password you will use to sign in.')
+                    Step::make(__('Set a password'))
+                        ->description(__('Choose a password you will use to sign in.'))
                         ->schema([
                             TextInput::make('password')
+                                ->label(__('Password'))
                                 ->password()
                                 ->required()
                                 ->rule(Password::defaults())
@@ -94,7 +95,7 @@ class ClaimAccount extends Component implements HasSchemas
                             TextInput::make('password_confirmation')
                                 ->password()
                                 ->required()
-                                ->label('Confirm password')
+                                ->label(__('Confirm password'))
                                 ->dehydrated(false),
                         ]),
                 ])

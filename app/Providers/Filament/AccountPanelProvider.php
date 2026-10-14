@@ -70,7 +70,7 @@ class AccountPanelProvider extends PanelProvider
                 PanelsRenderHook::AUTH_LOGIN_FORM_AFTER,
                 fn (): HtmlString => new HtmlString(
                     '<div style="margin-top:1rem;text-align:center;font-size:0.875rem;">'
-                    .'New here? <a href="/claim" style="color:var(--primary-600,#d97706);font-weight:600;">Claim your account</a>'
+                    .e(__('New here?')).' <a href="/claim" style="color:var(--primary-600,#d97706);font-weight:600;">'.e(__('Claim your account')).'</a>'
                     .'</div>'
                 ),
             )

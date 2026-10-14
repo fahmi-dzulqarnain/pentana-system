@@ -18,20 +18,20 @@ class Login extends \Filament\Auth\Pages\Login
 
             if ($user && ! $user->isActivated()) {
                 Notification::make()
-                    ->title('Account not yet activated')
-                    ->body('Your account hasn\'t been claimed yet. Use the link below to set your password and activate your account.')
+                    ->title(__('Account not yet activated'))
+                    ->body(__('Your account hasn\'t been claimed yet. Use the link below to set your password and activate your account.'))
                     ->warning()
                     ->persistent()
                     ->actions([
                         Action::make('claim')
-                            ->label('Claim your account')
+                            ->label(__('Claim your account'))
                             ->url('/claim')
                             ->button(),
                     ])
                     ->send();
 
                 throw ValidationException::withMessages([
-                    'data.email' => 'This account hasn\'t been activated yet. Please claim your account first.',
+                    'data.email' => __('This account hasn\'t been activated yet. Please claim your account first.'),
                 ]);
             }
         }

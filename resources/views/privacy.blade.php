@@ -4,8 +4,8 @@
     <meta charset="utf-8">
     <x-locale.sync-script />
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Privacy Policy | PENTANA</title>
-    <meta name="description" content="How PENTANA handles your personal information.">
+    <title>{{ __('Privacy Policy') }} | PENTANA</title>
+    <meta name="description" content="{{ __('How PENTANA handles your personal information.') }}">
     <link rel="icon" type="image/png" href="{{ asset('images/pentana-mark.png') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -44,74 +44,60 @@
     </header>
 
     <main class="w">
-        <h1>Privacy Policy</h1>
-        <p class="updated">Last updated: 7 July 2026</p>
+        <h1>{{ __('Privacy Policy') }}</h1>
+        <p class="updated">{{ __('Last updated: :date', ['date' => \Illuminate\Support\Carbon::create(2026, 7, 7)->locale(app()->getLocale())->translatedFormat('j F Y')]) }}</p>
 
-        <p>PENTANA Mobile (“the app”) is the member companion to a welfare &amp; membership fund operated by
-        <strong>Pentana Org</strong> (“we”, “us”, “our”). This policy explains what personal information
-        we handle when you use PENTANA and the PENTANA web portal, and your rights over it. We handle personal
-        data in line with Malaysia’s Personal Data Protection Act 2010 (PDPA).</p>
+        <p>{!! __('PENTANA Mobile (“the app”) is the member companion to a welfare & membership fund operated by :org (“we”, “us”, “our”). This policy explains what personal information we handle when you use PENTANA and the PENTANA web portal, and your rights over it. We handle personal data in line with Malaysia’s Personal Data Protection Act 2010 (PDPA).', ['org' => '<strong>Pentana Org</strong>']) !!}</p>
 
-        <h2>Information we collect</h2>
-        <p>We only collect what’s needed to run your membership:</p>
+        <h2>{{ __('Information we collect') }}</h2>
+        <p>{{ __('We only collect what’s needed to run your membership:') }}</p>
         <ul>
-            <li><strong>Account details</strong>: your name, email address, membership category, date of birth,
-            and welfare-credit balance. These are provided by your organisation and/or by you when you claim your account.</li>
-            <li><strong>Dues &amp; payments</strong>: your monthly dues, balances and payment history, and any
-            <strong>payment-proof images</strong>, amounts and notes you submit.</li>
-            <li><strong>Lunch responses</strong>: the meal option you choose, or that you are not attending.</li>
-            <li><strong>Activity registrations</strong>: your sign-ups and the answers you give to event questions.</li>
-            <li><strong>Notifications</strong>: an anonymous device token so we can send push notifications about
-            lunches, activities and updates. You can turn notifications off in your device settings at any time.</li>
-            <li><strong>Sign-in credentials</strong>: a securely hashed password and/or a passkey (a public key
-            registered on your device; we never receive your biometric data).</li>
-            <li><strong>Technical data</strong>: basic server logs (such as IP address and request time) kept for
-            security and troubleshooting.</li>
+            <li><strong>{{ __('Account details') }}</strong>: {{ __('your name, email address, membership category, date of birth, and welfare-credit balance. These are provided by your organisation and/or by you when you claim your account.') }}</li>
+            <li><strong>{{ __('Dues & payments') }}</strong>: {!! __('your monthly dues, balances and payment history, and any :images, amounts and notes you submit.', ['images' => '<strong>'.e(__('payment-proof images')).'</strong>']) !!}</li>
+            <li><strong>{{ __('Lunch responses') }}</strong>: {{ __('the meal option you choose, or that you are not attending.') }}</li>
+            <li><strong>{{ __('Activity registrations') }}</strong>: {{ __('your sign-ups and the answers you give to event questions.') }}</li>
+            <li><strong>{{ __('Notifications') }}</strong>: {{ __('an anonymous device token so we can send push notifications about lunches, activities and updates. You can turn notifications off in your device settings at any time.') }}</li>
+            <li><strong>{{ __('Sign-in credentials') }}</strong>: {{ __('a securely hashed password and/or a passkey (a public key registered on your device; we never receive your biometric data).') }}</li>
+            <li><strong>{{ __('Technical data') }}</strong>: {{ __('basic server logs (such as IP address and request time) kept for security and troubleshooting.') }}</li>
         </ul>
-        <p>We do <strong>not</strong> use third-party advertising or analytics/tracking SDKs, and we do not track
-        you across other apps or websites.</p>
+        <p>{!! __('We do :not use third-party advertising or analytics/tracking SDKs, and we do not track you across other apps or websites.', ['not' => '<strong>'.e(__('not')).'</strong>']) !!}</p>
 
-        <h2>How we use your information</h2>
+        <h2>{{ __('How we use your information') }}</h2>
         <ul>
-            <li>To show your dues, accept payment proof, and record your lunch and activity responses.</li>
-            <li>To send the notifications you’ve allowed.</li>
-            <li>To authenticate you and keep your account secure.</li>
-            <li>To operate, maintain and improve the service, and to meet welfare-administration and legal obligations.</li>
+            <li>{{ __('To show your dues, accept payment proof, and record your lunch and activity responses.') }}</li>
+            <li>{{ __('To send the notifications you’ve allowed.') }}</li>
+            <li>{{ __('To authenticate you and keep your account secure.') }}</li>
+            <li>{{ __('To operate, maintain and improve the service, and to meet welfare-administration and legal obligations.') }}</li>
         </ul>
 
-        <h2>Legal basis</h2>
-        <p>We process your data to administer your membership of the welfare fund, and (for push notifications)
-        on the basis of your consent.</p>
+        <h2>{{ __('Legal basis') }}</h2>
+        <p>{{ __('We process your data to administer your membership of the welfare fund, and (for push notifications) on the basis of your consent.') }}</p>
 
-        <h2>How your information is shared</h2>
-        <p>We do <strong>not</strong> sell your personal data. We share it only:</p>
+        <h2>{{ __('How your information is shared') }}</h2>
+        <p>{!! __('We do :not sell your personal data. We share it only:', ['not' => '<strong>'.e(__('not')).'</strong>']) !!}</p>
         <ul>
-            <li>with <strong>Apple Push Notification service</strong> (and Google, on Android) solely to deliver push notifications;</li>
-            <li>with service providers that host our servers, under confidentiality obligations; and</li>
-            <li>where required by law.</li>
+            <li>{!! __('with :service (and Google, on Android) solely to deliver push notifications;', ['service' => '<strong>Apple Push Notification service</strong>']) !!}</li>
+            <li>{{ __('with service providers that host our servers, under confidentiality obligations; and') }}</li>
+            <li>{{ __('where required by law.') }}</li>
         </ul>
 
-        <h2>Data retention</h2>
-        <p>We keep your information for as long as you are a member and as needed for welfare-fund records and legal
-        obligations, after which we delete or anonymise it.</p>
+        <h2>{{ __('Data retention') }}</h2>
+        <p>{{ __('We keep your information for as long as you are a member and as needed for welfare-fund records and legal obligations, after which we delete or anonymise it.') }}</p>
 
-        <h2>Security</h2>
-        <p>Data is encrypted in transit (HTTPS). Passwords are stored only as salted hashes; passkeys use public-key
-        cryptography and never expose a secret. Payment-proof images are held on access-controlled storage.</p>
+        <h2>{{ __('Security') }}</h2>
+        <p>{{ __('Data is encrypted in transit (HTTPS). Passwords are stored only as salted hashes; passkeys use public-key cryptography and never expose a secret. Payment-proof images are held on access-controlled storage.') }}</p>
 
-        <h2>Your rights</h2>
-        <p>You may request access to, correction of, or deletion of your personal data, and you may withdraw consent
-        for notifications at any time. Contact us using the details below.</p>
+        <h2>{{ __('Your rights') }}</h2>
+        <p>{{ __('You may request access to, correction of, or deletion of your personal data, and you may withdraw consent for notifications at any time. Contact us using the details below.') }}</p>
 
-        <h2>Children</h2>
-        <p>PENTANA is intended for members of the organisation and is not directed at children under 13.</p>
+        <h2>{{ __('Children') }}</h2>
+        <p>{{ __('PENTANA is intended for members of the organisation and is not directed at children under 13.') }}</p>
 
-        <h2>Changes to this policy</h2>
-        <p>We may update this policy from time to time. Material changes will be posted here with a new
-        “last updated” date.</p>
+        <h2>{{ __('Changes to this policy') }}</h2>
+        <p>{{ __('We may update this policy from time to time. Material changes will be posted here with a new “last updated” date.') }}</p>
 
-        <h2>Contact</h2>
-        <p>Questions or requests about your data: <a href="mailto:privacy@silentmode.my">privacy@silentmode.my</a>.</p>
+        <h2>{{ __('Contact') }}</h2>
+        <p>{{ __('Questions or requests about your data:') }} <a href="mailto:privacy@silentmode.my">privacy@silentmode.my</a>.</p>
     </main>
 
     <footer>

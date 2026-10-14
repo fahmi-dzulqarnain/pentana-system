@@ -57,16 +57,16 @@
     @if ($stage === 'lookup')
         <div style="width:100%;max-width:28rem;margin:0 auto;padding:3rem 1.5rem;box-sizing:border-box;">
             <h1 style="font-size:1.5rem;font-weight:700;margin:0 0 0.25rem;color:#111827;">
-                Activate your account
+                {{ __('Activate your account') }}
             </h1>
 
             <p style="margin:0 0 1.5rem;color:#6b7280;">
-                Enter the email your admin registered for you.
+                {{ __('Enter the email your admin registered for you.') }}
             </p>
 
             <form wire:submit="lookup">
                 <label for="claim-email" style="display:block;font-size:0.875rem;font-weight:500;margin-bottom:0.375rem;color:#374151;">
-                    Email address
+                    {{ __('Email address') }}
                 </label>
                 <input
                     id="claim-email"
@@ -82,7 +82,7 @@
                 @if ($lookupMessage)
                     <div style="margin-top:1rem;padding:0.75rem 1rem;border:1px solid #fcd34d;background-color:#fffbeb;border-radius:0.5rem;color:#92400e;font-size:0.875rem;">
                         {{ $lookupMessage }}
-                        <a href="/account/login" wire:navigate style="color:inherit;font-weight:600;text-decoration:underline;">Go to sign in</a>
+                        <a href="/account/login" wire:navigate style="color:inherit;font-weight:600;text-decoration:underline;">{{ __('Go to sign in') }}</a>
                     </div>
                 @endif
 
@@ -90,8 +90,8 @@
                     type="submit"
                     style="margin-top:1.5rem;width:100%;padding:0.625rem 1rem;border:none;border-radius:0.5rem;background-color:#f59e0b;color:#ffffff;font-size:0.95rem;font-weight:600;cursor:pointer;"
                 >
-                    <span wire:loading.remove wire:target="lookup">Find my account</span>
-                    <span wire:loading wire:target="lookup">Searching…</span>
+                    <span wire:loading.remove wire:target="lookup">{{ __('Find my account') }}</span>
+                    <span wire:loading wire:target="lookup">{{ __('Searching…') }}</span>
                 </button>
             </form>
         </div>
@@ -99,12 +99,12 @@
         <div class="claim-stage">
             <header>
                 <h1 style="font-size:1.5rem;font-weight:700;margin:0 0 0.25rem;color:#111827;">
-                    Activate your account
+                    {{ __('Activate your account') }}
                 </h1>
 
                 <p style="margin:0;color:#6b7280;">
-                    Welcome, <strong style="color:#111827;">{{ $memberName }}</strong>@if($memberGrade) ({{ $memberGrade }})@endif.
-                    Just two quick steps to finish setting up.
+                    {!! __('Welcome, :name.', ['name' => '<strong style="color:#111827;">'.e($memberName).'</strong>'.($memberGrade !== '' ? ' ('.e($memberGrade).')' : '')]) !!}
+                    {{ __('Just two quick steps to finish setting up.') }}
                 </p>
             </header>
 
