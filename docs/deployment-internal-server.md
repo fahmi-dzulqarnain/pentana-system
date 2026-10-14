@@ -395,7 +395,85 @@ delivery, bounces and spam complaints.
 `noreply@pentana.silentmode.net` is send-only. The MX record above makes inbound possible
 for later use.
 
-## 9. Languages (English, Bahasa Melayu, Bahasa Indonesia)
+## 9. Email send cap
+
+Live since 2026-10-14. Resend's free tier allows 100 emails/day and 3,000/month; a message
+over either limit is rejected and lost. `BudgetedTransport` wraps the real mail transport,
+caps sends at **99/day** and **3,000/month**, and spools the overflow to `queued_emails` as
+raw MIME. `app:drain-email-queue` sends what fits, every minute, in priority order.
+
+Design and rationale: `docs/superpowers/specs/2026-10-14-email-send-cap-design.md`.
+
+```dotenv
+MAIL_MAILER=budgeted          # the cap is INERT on any other value
+MAIL_INNER_MAILER=smtp        # what BudgetedTransport wraps
+```
+
+Setting `MAIL_MAILER=smtp` silently disables the cap while everything still looks deployed:
+the tables exist, the drain runs, the widget renders, and every email bypasses the budget.
+Check `config('mail.default')`, not the presence of the migrations.
+
+`MAIL_INNER_MAILER` must name an **SMTP-family** mailer. API transports (`resend`, `ses`,
+`postmark`, `mailgun`) cannot send a stored `RawMessage` — they call
+`MessageConverter::toEmail()` and throw. The drain refuses to run against one rather than
+burning attempts, but the misconfiguration is easy to make precisely because the provider
+*is* Resend.
+
+Admins see `EmailBudgetStats` on the account dashboard. The normal state is colourless;
+amber warns on the monthly **projection** while there is still time to act; red means either
+the queue has stopped draining or mail has permanently failed.
+
+### Supabase pooler: 15 connections
+
+The pooler rejects the sixteenth concurrent client:
+
+```
+FATAL: (EMAXCONNSESSION) max clients reached in session mode
+       - max clients are limited to pool_size: 15
+```
+
+This bit during the concurrency verification below, where 20 parallel workers killed five of
+themselves. It does not affect normal operation — PHP-FPM serves requests sequentially, and
+a 150-member publish is one connection in a loop — but it is a hard ceiling to know about
+before anything in this app runs in parallel, and it sharpens the risk in *Known issue*
+below. Any script that fans out against this database must stay under 15 workers.
+
+### Verifying the lock against Postgres
+
+`EmailBudget::claim()` uses `lockForUpdate()`, which is a **no-op on SQLite**, so the test
+suite cannot prove the budget holds under contention. It must be checked against Supabase by
+hand after any change to `claim()`:
+
+Run N concurrent workers (N < 15) each calling `App\Models\EmailBudget::claim()` in a loop,
+with total attempts well above the remaining headroom. Then assert that claims granted equals
+exactly the headroom and `sent_count` equals exactly 99 — never more. A broken lock shows up
+as two workers reading the same count and both incrementing.
+
+Verified 2026-10-14: 8 workers, 400 attempts, 1 slot already used. Exactly 98 granted, final
+count exactly 99, no errors. Restore the live counter afterwards — the check inflates a real
+production row, and anything sent while it is inflated gets queued rather than delivered.
+
+### Known issue: the budget lock is held across SMTP sends
+
+`App\Services\ActivityRegistrationService::promoteWaitlist()` calls `$next->user->notify()`
+inside a loop, and its callers (`cancel()`, `reconcileWaitlist()`) wrap that in
+`DB::transaction()`. Nested inside an outer transaction, Laravel's `DB::transaction()`
+degrades to a SAVEPOINT, and releasing a savepoint does **not** release Postgres row locks.
+
+So the `lockForUpdate()` on today's `email_budget` row is held until the outer COMMIT - that
+is, across every synchronous SMTP send in the loop. Two consequences:
+
+- Every other outbound email in the application blocks behind one activity cancellation,
+  against a connection pool of 15.
+- If anything after the `notify()` throws, the `sent_count` increment and the `queued_emails`
+  insert both roll back while the message has already gone to SMTP. The budget then
+  undercounts, and real sends can exceed 99.
+
+Not fixed. A proper fix gives budget writes their own database connection so they commit
+independently of the caller's transaction, which is a design change deserving its own spec.
+Until then, treat activity cancellation on a large waitlist as a known contention point.
+
+## 10. Languages (English, Bahasa Melayu, Bahasa Indonesia)
 
 The web pages and portal support `en`, `ms` and `id`. Which are offered is set by
 `APP_LOCALES`; it defaults to `en`, which hides the chooser and switchers entirely.
@@ -416,7 +494,7 @@ A member's choice is stored on their account (`users.locale`) and in a `locale` 
 mirrored to `localStorage`. Emails, push and in-app notifications use the account's
 language, so the iOS app shows notification text in it while its own screens stay English.
 
-## 10. Open items before go-live
+## 11. Open items before go-live
 
 - [x] TLS — Cloudflare edge certificate (trusted) via the tunnel; origin keeps a self-signed cert for the loopback hop
 - [x] Email — Resend SMTP, sending as `noreply@pentana.silentmode.net`, verified end to end
@@ -426,4 +504,6 @@ language, so the iOS app shows notification text in it while its own screens sta
 - [x] APNs push — key `CVS8SF75ZU` deployed, `APN_PRODUCTION=true`, delivery verified on device
 - [x] Member access from outside — resolved by the tunnel; mobile app can now reach it
 - [ ] Cloudflare Access (or equivalent) in front, and a change-request addendum for the public exposure
+- [ ] Give `EmailBudget` writes a dedicated connection so the budget lock is not held across
+      SMTP sends (see *Known issue* in section 9)
 - [x] Change request approved (2026-10-14)

@@ -49,6 +49,11 @@ return [
             'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST)),
         ],
 
+        'budgeted' => [
+            'transport' => 'budgeted',
+            'inner' => env('MAIL_INNER_MAILER', 'smtp'),
+        ],
+
         'ses' => [
             'transport' => 'ses',
         ],

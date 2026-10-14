@@ -4,12 +4,14 @@ namespace App\Notifications;
 
 use App\Filament\Pages\MyLunch;
 use App\Models\Lunch;
+use App\Models\QueuedEmail;
 use App\Notifications\Concerns\PushesViaApn;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification as FilamentNotification;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use NotificationChannels\Apn\ApnMessage;
+use Symfony\Component\Mime\Email as SymfonyEmail;
 
 class LunchPublished extends Notification
 {
@@ -51,7 +53,10 @@ class LunchPublished extends Notification
                 'date' => $this->lunch->date->translatedFormat('l, j M'),
             ]))
             ->line($this->pushBody())
-            ->action(__('Place your order'), MyLunch::getUrl(panel: 'account'));
+            ->action(__('Place your order'), MyLunch::getUrl(panel: 'account'))
+            ->withSymfonyMessage(function (SymfonyEmail $message) {
+                $message->getHeaders()->addTextHeader(QueuedEmail::PRIORITY_HEADER, '10');
+            });
     }
 
     /** @return array<string, mixed> */

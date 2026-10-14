@@ -4,12 +4,14 @@ namespace App\Notifications;
 
 use App\Filament\Pages\MyLunch;
 use App\Models\Lunch;
+use App\Models\QueuedEmail;
 use App\Notifications\Concerns\PushesViaApn;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification as FilamentNotification;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use NotificationChannels\Apn\ApnMessage;
+use Symfony\Component\Mime\Email as SymfonyEmail;
 
 /**
  * Last-call nudge for members who haven't voted on a lunch closing within a day.
@@ -49,7 +51,10 @@ class LunchVoteNudge extends Notification
             ->greeting(__('Voting closes soon'))
             ->line(__("You haven't responded to the lunch for :date.", ['date' => $this->lunch->date->translatedFormat('l, j M')]))
             ->line(__('Voting closes at :deadline.', ['deadline' => $this->deadline()]))
-            ->action(__('Place your order'), $this->url());
+            ->action(__('Place your order'), $this->url())
+            ->withSymfonyMessage(function (SymfonyEmail $message) {
+                $message->getHeaders()->addTextHeader(QueuedEmail::PRIORITY_HEADER, '10');
+            });
     }
 
     /** @return array<string, mixed> */
