@@ -42,5 +42,16 @@ class AppServiceProvider extends ServiceProvider
         // SetLocale), but persistent middleware also re-applies it to routes that get it
         // only from a custom group, so a re-render never falls back to English mid-form.
         \Livewire\Livewire::addPersistentMiddleware([\App\Http\Middleware\SetLocale::class]);
+
+        // Route Filament's auto-generated labels ("Send at") through __() so they can
+        // be translated in lang/*.json like any explicit label.
+        foreach ([
+            \Filament\Forms\Components\Field::class,
+            \Filament\Tables\Columns\Column::class,
+            \Filament\Tables\Filters\BaseFilter::class,
+            \Filament\Infolists\Components\Entry::class,
+        ] as $component) {
+            $component::configureUsing(fn ($c) => $c->translateLabel());
+        }
     }
 }
