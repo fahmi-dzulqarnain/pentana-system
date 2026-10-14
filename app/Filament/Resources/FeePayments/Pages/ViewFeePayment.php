@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\FeePayments\Pages;
 
 use App\Filament\Resources\FeePayments\FeePaymentResource;
+use App\Support\StatusLabel;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
 use Filament\Infolists\Components\ImageEntry;
@@ -21,29 +22,29 @@ class ViewFeePayment extends ViewRecord
     {
         return $infolist
             ->schema([
-                Section::make('Payment Details')
+                Section::make(__('Payment Details'))
                     ->schema([
-                        TextEntry::make('user.name')->label('Member Name'),
+                        TextEntry::make('user.name')->label(__('Member Name')),
                         TextEntry::make('amount_claimed')->money('MYR'),
                         ImageEntry::make('proof_image_path')
-                            ->label('Receipt Proof')
+                            ->label(__('Receipt Proof'))
                             ->disk('public')
                             ->visibility('public')
                             ->extraImgAttributes([
-                                'alt' => 'Receipt proof',
+                                'alt' => __('Receipt proof'),
                                 // Inline styles: Filament's precompiled CSS doesn't ship arbitrary Tailwind utilities,
                                 // so class-based styling here would silently do nothing.
                                 'style' => 'width:100%;height:14rem;object-fit:cover;border-radius:0.75rem;cursor:zoom-in;',
                             ])
                             ->action(
                                 Action::make('viewReceipt')
-                                    ->label('View receipt')
-                                    ->modalHeading('Receipt proof')
+                                    ->label(__('View receipt'))
+                                    ->modalHeading(__('Receipt proof'))
                                     ->modalContent(fn ($record) => view('filament.infolists.receipt-modal', [
                                         'url' => Storage::disk('public')->url($record->proof_image_path),
                                     ]))
                                     ->modalSubmitAction(false)
-                                    ->modalCancelActionLabel('Close'),
+                                    ->modalCancelActionLabel(__('Close')),
                             )
                             ->columnSpanFull(),
                         TextEntry::make('status')
@@ -54,18 +55,17 @@ class ViewFeePayment extends ViewRecord
                                 'rejected' => 'danger',
                                 default => 'gray',
                             })
-                            ->formatStateUsing(fn (string $state): string => ucwords(str_replace('_', ' ', $state))
-                            ),
+                            ->formatStateUsing(fn (string $state): string => StatusLabel::for($state)),
                     ])
                     ->columns(2),
 
-                Section::make('Allocations')
-                    ->description('This shows which months this payment covered.')
+                Section::make(__('Allocations'))
+                    ->description(__('This shows which months this payment covered.'))
                     ->schema([
                         RepeatableEntry::make('allocations')
                             ->schema([
                                 TextEntry::make('feePeriod.month_date')
-                                    ->label('Month')
+                                    ->label(__('Month'))
                                     ->date('F Y'),
                                 TextEntry::make('amount_allocated')
                                     ->money('MYR'),

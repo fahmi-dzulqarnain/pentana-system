@@ -28,6 +28,7 @@ class EditLunch extends EditRecord
     {
         return [
             Action::make('publish')
+                ->label(__('Publish'))
                 ->visible(fn () => $this->record->status === 'draft')
                 ->requiresConfirmation()
                 ->color('success')
@@ -45,7 +46,7 @@ class EditLunch extends EditRecord
                     Notification::send(User::all(), new LunchPublished($this->record->fresh()));
 
                     FilamentNotification::make()
-                        ->title('Published: members notified')
+                        ->title(__('Published: members notified'))
                         ->success()
                         ->send();
                 }),

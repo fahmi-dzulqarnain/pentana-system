@@ -16,7 +16,7 @@ class MealsTable
             ->columns([
                 TextColumn::make('name')->searchable()->sortable(),
                 TextColumn::make('base_price')->money('MYR')->sortable(),
-                TextColumn::make('options.name')->badge()->label('Options'),
+                TextColumn::make('options.name')->badge()->label(__('Options')),
             ])
             ->recordActions([
                 EditAction::make(),

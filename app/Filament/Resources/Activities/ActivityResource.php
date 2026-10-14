@@ -13,7 +13,6 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
-use UnitEnum;
 
 class ActivityResource extends Resource
 {
@@ -21,13 +20,29 @@ class ActivityResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::Sparkles;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Activity';
-
-    protected static ?string $navigationLabel = 'Activity Management';
-
     public static function canAccess(): bool
     {
         return (bool) auth()->user()?->is_admin;
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('Activity');
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('Activity Management');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('activity');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('activities');
     }
 
     public static function form(Schema $schema): Schema

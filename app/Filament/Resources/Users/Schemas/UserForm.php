@@ -19,13 +19,13 @@ class UserForm
                 TextInput::make('name')
                     ->required(),
                 TextInput::make('email')
-                    ->label('Email address')
+                    ->label(__('Email address'))
                     ->email()
                     ->required(),
                 DatePicker::make('birthday')
                     ->native(false)
                     ->maxDate(today())
-                    ->helperText('Set or correct the member\'s date of birth.'),
+                    ->helperText(__('Set or correct the member\'s date of birth.')),
                 DateTimePicker::make('email_verified_at')->native(false)->seconds(false),
                 TextInput::make('password')
                     ->password()
@@ -33,20 +33,20 @@ class UserForm
                     ->required(fn (string $operation): bool => $operation === 'create')
                     ->dehydrated(fn (?string $state): bool => filled($state)),
                 Toggle::make('is_admin')
-                    ->label('Administrator')
-                    ->helperText('Admins manage all members and bills, and verify payments.'),
+                    ->label(__('Administrator'))
+                    ->helperText(__('Admins manage all members and bills, and verify payments.')),
                 Select::make('member_category_id')
                     ->relationship('memberCategory', 'name')
                     ->required()
                     ->live(),
                 TextInput::make('custom_fee')
-                    ->label('Custom Monthly Fee (Override)')
+                    ->label(__('Custom Monthly Fee (Override)'))
                     ->numeric()
                     ->prefix('MYR')
-                    ->helperText('Leave empty to use the Category default fee.'),
+                    ->helperText(__('Leave empty to use the Category default fee.')),
                 // Credit is derived from unallocated payment proofs, so it is read-only here.
                 Placeholder::make('credit')
-                    ->label('Available Credit')
+                    ->label(__('Available Credit'))
                     ->content(fn ($record): string => 'MYR '.number_format((float) ($record?->credit ?? 0), 2)),
             ]);
     }

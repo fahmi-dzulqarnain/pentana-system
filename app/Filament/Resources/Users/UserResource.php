@@ -15,7 +15,6 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
-use UnitEnum;
 
 class UserResource extends Resource
 {
@@ -25,11 +24,24 @@ class UserResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::UserGroup;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Accounts';
-
     public static function canAccess(): bool
     {
         return (bool) auth()->user()?->is_admin;
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('Accounts');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('user');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('users');
     }
 
     public static function form(Schema $schema): Schema

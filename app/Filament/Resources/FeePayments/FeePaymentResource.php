@@ -16,7 +16,6 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use UnitEnum;
 
 class FeePaymentResource extends Resource
 {
@@ -24,11 +23,22 @@ class FeePaymentResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'Fee Payment';
 
-    protected static ?string $modelLabel = 'Fee Payment';
-
-    protected static string|UnitEnum|null $navigationGroup = 'Finance';
-
     protected static string|BackedEnum|null $navigationIcon = Heroicon::CreditCard;
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('Finance');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('Fee Payment');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('Fee Payments');
+    }
 
     public static function form(Schema $schema): Schema
     {

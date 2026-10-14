@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\FeePeriods\Tables;
 
+use App\Support\StatusLabel;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -15,11 +16,11 @@ class FeePeriodsTable
         return $table
             ->columns([
                 TextColumn::make('user.name')
-                    ->label('Member')
+                    ->label(__('Member'))
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('month_date')
-                    ->label('Billing Month')
+                    ->label(__('Billing Month'))
                     ->date('F Y')
                     ->sortable(),
                 TextColumn::make('amount_due')
@@ -27,6 +28,7 @@ class FeePeriodsTable
                     ->sortable(),
                 TextColumn::make('status')
                     ->badge()
+                    ->formatStateUsing(fn (string $state): string => StatusLabel::for($state))
                     ->color(fn (string $state): string => match ($state) {
                         'paid' => 'success',
                         'partial' => 'warning',
@@ -34,6 +36,7 @@ class FeePeriodsTable
                     }),
                 TextColumn::make('type')
                     ->badge()
+                    ->formatStateUsing(fn (string $state): string => StatusLabel::for($state))
                     ->color('gray')
                     ->toggleable(),
             ])

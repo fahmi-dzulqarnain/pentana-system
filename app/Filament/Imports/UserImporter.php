@@ -16,10 +16,10 @@ class UserImporter extends Importer
     public static function getColumns(): array
     {
         return [
-            ImportColumn::make('email')->requiredMapping()->rules(['required', 'email']),
-            ImportColumn::make('name')->requiredMapping()->rules(['required', 'string']),
+            ImportColumn::make('email')->label(__('Email'))->requiredMapping()->rules(['required', 'email']),
+            ImportColumn::make('name')->label(__('Name'))->requiredMapping()->rules(['required', 'string']),
             // 'grade' is not a User attribute - validate it but don't let Filament write it to the model.
-            ImportColumn::make('grade')->requiredMapping()->rules(['required', 'string'])->fillRecordUsing(fn () => null),
+            ImportColumn::make('grade')->label(__('Grade'))->requiredMapping()->rules(['required', 'string'])->fillRecordUsing(fn () => null),
         ];
     }
 
@@ -29,14 +29,14 @@ class UserImporter extends Importer
         $email = trim((string) ($row['email'] ?? ''));
 
         if (User::where('email', $email)->exists()) {
-            throw new RowImportFailedException("An account with email {$email} already exists; skipped.");
+            throw new RowImportFailedException(__('An account with email :email already exists; skipped.', ['email' => $email]));
         }
 
         $grade = trim((string) ($row['grade'] ?? ''));
         $category = MemberCategory::whereRaw('lower(name) = ?', [strtolower($grade)])->first();
 
         if (! $category) {
-            throw new RowImportFailedException("Unknown grade '{$grade}'.");
+            throw new RowImportFailedException(__("Unknown grade ':grade'.", ['grade' => $grade]));
         }
 
         return new User([
@@ -53,8 +53,11 @@ class UserImporter extends Importer
 
     public static function getCompletedNotificationBody(Import $import): string
     {
-        return 'Imported '.number_format($import->successful_rows).' member(s). '
-            .number_format($import->getFailedRowsCount()).' row(s) skipped or failed.';
+        $imported = (int) $import->successful_rows;
+        $failed = $import->getFailedRowsCount();
+
+        return trans_choice('Imported :count member.|Imported :count members.', $imported, ['count' => number_format($imported)])
+            .' '.trans_choice(':count row skipped or failed.|:count rows skipped or failed.', $failed, ['count' => number_format($failed)]);
     }
 
     // No queue worker runs in this app - import inline.

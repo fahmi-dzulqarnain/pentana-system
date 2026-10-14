@@ -13,7 +13,7 @@ class MemberCategoryForm
             ->components([
                 TextInput::make('name')
                     ->required()
-                    ->placeholder('e.g. Grade 7-10'),
+                    ->placeholder(__('e.g. Grade 7-10')),
                 TextInput::make('default_fee')
                     ->numeric()
                     ->prefix('MYR')

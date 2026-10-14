@@ -37,11 +37,13 @@ class FeePaymentsTable
             ->recordActions([
                 EditAction::make(),
                 Action::make('Verify Payment')
+                    ->label(__('Verify Payment'))
                     ->action(function (PaymentProof $record, array $data, FinanceService $service) {
                         $service->verifyAndAllocate($record, $data['actual_amount']);
                     })
                     ->schema([
                         TextInput::make('actual_amount')
+                            ->label(__('Actual amount'))
                             ->numeric()
                             ->default(fn ($record) => $record->amount_claimed)
                             ->required(),
@@ -50,6 +52,7 @@ class FeePaymentsTable
                     ->color('success')
                     ->icon('heroicon-o-banknotes'),
                 Action::make('Reject Payment')
+                    ->label(__('Reject Payment'))
                     ->action(function (PaymentProof $record, array $data) {
                         // A rejected proof is never allocated, so no credit is granted.
                         $record->update([
@@ -59,7 +62,7 @@ class FeePaymentsTable
                     })
                     ->schema([
                         Textarea::make('admin_note')
-                            ->label('Reason for rejection')
+                            ->label(__('Reason for rejection'))
                             ->required(),
                     ])
                     ->visible(fn ($record) => $record->status === 'pending' && auth()->user()?->is_admin)

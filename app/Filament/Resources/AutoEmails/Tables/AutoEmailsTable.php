@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\AutoEmails\Tables;
 
+use App\Support\StatusLabel;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -16,13 +17,14 @@ class AutoEmailsTable
             ->columns([
                 TextColumn::make('type')
                     ->badge()
-                    ->formatStateUsing(fn (string $state): string => $state === 'birthday' ? 'Birthday' : 'One-off')
+                    ->formatStateUsing(fn (string $state): string => StatusLabel::for($state === 'birthday' ? 'birthday' : 'one_off'))
                     ->color(fn (string $state): string => $state === 'birthday' ? 'info' : 'gray'),
                 TextColumn::make('subject')
                     ->searchable()
                     ->limit(50),
                 TextColumn::make('status')
                     ->badge()
+                    ->formatStateUsing(fn (string $state): string => StatusLabel::for($state))
                     ->color(fn (string $state): string => match ($state) {
                         'sent' => 'success',
                         'scheduled' => 'warning',

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\FeePeriods\Schemas;
 
+use App\Support\StatusLabel;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -19,7 +20,7 @@ class FeePeriodForm
                     ->searchable()
                     ->required(),
                 DatePicker::make('month_date')
-                    ->label('Billing Month')
+                    ->label(__('Billing Month'))
                     ->format('Y-m-01') // Force start of month
                     ->required()
                     ->native(false),
@@ -29,17 +30,13 @@ class FeePeriodForm
                     ->default(100)
                     ->required(),
                 Select::make('type')
-                    ->options([
-                        'regular' => 'Regular Fee',
-                        'free' => 'Free Month',
-                        'adjustment' => 'Manual Adjustment',
-                    ])
+                    ->options(StatusLabel::options(['regular', 'free', 'adjustment']))
                     ->live(),
                 // ->afterStateUpdated(fn ($state, set) =>
                 //     $state === 'free' ? set('amount_due', 0) : null
                 // ),
                 Textarea::make('remarks')
-                    ->placeholder('Reason for free month or adjustment'),
+                    ->placeholder(__('Reason for free month or adjustment')),
             ]);
     }
 }

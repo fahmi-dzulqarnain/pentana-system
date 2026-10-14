@@ -13,7 +13,6 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
-use UnitEnum;
 
 class MealOptionResource extends Resource
 {
@@ -21,13 +20,29 @@ class MealOptionResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::Swatch;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Welfare & Social';
-
-    protected static ?string $navigationLabel = 'Meal Options';
-
     public static function canAccess(): bool
     {
         return (bool) auth()->user()?->is_admin;
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('Welfare & Social');
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('Meal Options');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('meal option');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('meal options');
     }
 
     public static function form(Schema $schema): Schema

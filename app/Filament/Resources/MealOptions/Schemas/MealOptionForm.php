@@ -16,7 +16,7 @@ class MealOptionForm
                     ->required()
                     ->maxLength(255),
                 Toggle::make('is_active')
-                    ->label('Active')
+                    ->label(__('Active'))
                     ->default(true),
                 TextInput::make('sort')
                     ->numeric()

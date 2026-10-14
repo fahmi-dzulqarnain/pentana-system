@@ -17,26 +17,26 @@ class FeePaymentForm
     {
         return $schema
             ->components([
-                Section::make('Submit Fee Payment')
-                    ->description('Please enter the total amount transferred and upload your bank receipt.')
+                Section::make(__('Submit Fee Payment'))
+                    ->description(__('Please enter the total amount transferred and upload your bank receipt.'))
                     ->schema([
                         // Automatically associate with the logged-in member
                         Hidden::make('user_id')
                             ->default(fn () => Auth::id()),
 
                         TextInput::make('amount_claimed')
-                            ->label('Total Amount Transferred')
+                            ->label(__('Total Amount Transferred'))
                             ->mask(RawJs::make('$money($input)'))
                             ->stripCharacters(',')
                             ->numeric()
                             ->prefix('MYR')
-                            ->placeholder('e.g. 100.00')
+                            ->placeholder(__('e.g. 100.00'))
                             ->default(fn () => Auth::user()->active_fee)
-                            ->helperText(fn () => "Your category rate is MYR " . number_format(Auth::user()->active_fee, 2))
+                            ->helperText(fn () => __('Your category rate is MYR :amount', ['amount' => number_format(Auth::user()->active_fee, 2)]))
                             ->required(),
 
                         FileUpload::make('proof_image_path')
-                            ->label('Upload Receipt')
+                            ->label(__('Upload Receipt'))
                             ->image()
                             ->imageEditor()
                             ->disk('public')
@@ -45,11 +45,11 @@ class FeePaymentForm
                             ->required(),
 
                         Textarea::make('member_note')
-                            ->label('Notes (Optional)')
-                            ->placeholder('e.g. Paying for Jan and Feb 2026')
+                            ->label(__('Notes (Optional)'))
+                            ->placeholder(__('e.g. Paying for Jan and Feb 2026'))
                             ->rows(3),
                     ])
-                    ->columnSpanFull()
+                    ->columnSpanFull(),
             ]);
     }
 }

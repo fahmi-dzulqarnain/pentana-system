@@ -20,6 +20,7 @@ class EditActivity extends EditRecord
     {
         return [
             Action::make('publish')
+                ->label(__('Publish'))
                 ->visible(fn (): bool => $this->record->status === 'draft' && ! $this->record->isPast())
                 ->requiresConfirmation()
                 ->color('success')
@@ -37,10 +38,10 @@ class EditActivity extends EditRecord
                         new ActivityPublished($this->record->fresh()),
                     );
 
-                    FilamentNotification::make()->title('Published: members notified')->success()->send();
+                    FilamentNotification::make()->title(__('Published: members notified'))->success()->send();
                 }),
             Action::make('cancelActivity')
-                ->label('Cancel activity')
+                ->label(__('Cancel activity'))
                 ->visible(fn (): bool => in_array($this->record->status, ['draft', 'published'], true) && ! $this->record->isPast())
                 ->requiresConfirmation()
                 ->color('danger')
@@ -59,7 +60,7 @@ class EditActivity extends EditRecord
                         Notification::send($recipients, new ActivityCancelled($this->record->fresh()));
                     }
 
-                    FilamentNotification::make()->title('Activity cancelled')->warning()->send();
+                    FilamentNotification::make()->title(__('Activity cancelled'))->warning()->send();
                 }),
             DeleteAction::make(),
         ];

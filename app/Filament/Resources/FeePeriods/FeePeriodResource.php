@@ -13,7 +13,6 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
-use UnitEnum;
 
 class FeePeriodResource extends Resource
 {
@@ -21,9 +20,22 @@ class FeePeriodResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'Fee Period';
 
-    protected static string|UnitEnum|null $navigationGroup = 'Finance';
-
     protected static string|BackedEnum|null $navigationIcon = Heroicon::Calendar;
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('Finance');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('fee period');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('fee periods');
+    }
 
     public static function form(Schema $schema): Schema
     {

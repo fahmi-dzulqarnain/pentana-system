@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Activities\Tables;
 
 use App\Models\Activity;
+use App\Support\StatusLabel;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -23,20 +24,21 @@ class ActivitiesTable
                     ->sortable(),
                 TextColumn::make('status')
                     ->badge()
+                    ->formatStateUsing(fn (string $state): string => StatusLabel::for($state))
                     ->color(fn (string $state): string => match ($state) {
                         'published' => 'success',
                         'cancelled' => 'danger',
                         default => 'gray',
                     }),
                 TextColumn::make('registered')
-                    ->label('Registered')
+                    ->label(__('Registered'))
                     ->state(fn (Activity $record): string => $record->registeredCount().' / '.($record->capacity ?? '∞')),
                 TextColumn::make('location')
                     ->toggleable(),
             ])
             ->filters([
                 SelectFilter::make('status')
-                    ->options(['draft' => 'Draft', 'published' => 'Published', 'cancelled' => 'Cancelled']),
+                    ->options(StatusLabel::options(['draft', 'published', 'cancelled'])),
             ])
             ->defaultSort('starts_at', 'desc')
             ->recordActions([

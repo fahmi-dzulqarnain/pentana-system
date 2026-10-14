@@ -20,7 +20,7 @@ class UsersTable
                 TextColumn::make('name')
                     ->searchable(),
                 TextColumn::make('email')
-                    ->label('Email address')
+                    ->label(__('Email address'))
                     ->searchable(),
                 TextColumn::make('email_verified_at')
                     ->dateTime()
@@ -35,7 +35,7 @@ class UsersTable
                     ->toggleable(isToggledHiddenByDefault: true),
                 // Derived from unallocated payment proofs, so not a sortable DB column.
                 TextColumn::make('credit')
-                    ->label('Credit')
+                    ->label(__('Credit'))
                     ->money('MYR'),
             ])
             ->filters([
@@ -48,7 +48,7 @@ class UsersTable
             ->toolbarActions([
                 ImportAction::make()
                     ->importer(UserImporter::class)
-                    ->label('Import members'),
+                    ->label(__('Import members')),
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                 ]),

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\AutoEmails\Schemas;
 
+use App\Support\StatusLabel;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
@@ -17,7 +18,7 @@ class AutoEmailForm
         return $schema
             ->components([
                 Select::make('type')
-                    ->options(['one_off' => 'One-off', 'birthday' => 'Birthday'])
+                    ->options(StatusLabel::options(['one_off', 'birthday']))
                     ->default('one_off')
                     ->required()
                     ->live(),
@@ -26,23 +27,23 @@ class AutoEmailForm
                     ->required()
                     ->columnSpanFull()
                     ->helperText(fn (Get $get): ?string => $get('type') === 'birthday'
-                        ? 'Use {name} where the member\'s name should appear.'
+                        ? __('Use {name} where the member\'s name should appear.')
                         : null),
                 DateTimePicker::make('send_at')
-                    ->label('Send at')
-                    ->helperText('Leave blank to keep as a draft.')
+                    ->label(__('Send at'))
+                    ->helperText(__('Leave blank to keep as a draft.'))
                     ->native(false)
                     ->seconds(false)
                     ->visible(fn (Get $get): bool => $get('type') === 'one_off'),
                 Select::make('status')
-                    ->options(['draft' => 'Draft', 'scheduled' => 'Scheduled', 'sent' => 'Sent'])
+                    ->options(StatusLabel::options(['draft', 'scheduled', 'sent']))
                     ->default('draft')
                     ->required()
                     ->visible(fn (Get $get): bool => $get('type') === 'one_off'),
                 Toggle::make('is_active')
-                    ->label('Active')
+                    ->label(__('Active'))
                     ->default(true)
-                    ->helperText('When on, this birthday email is sent to members on their birthday.')
+                    ->helperText(__('When on, this birthday email is sent to members on their birthday.'))
                     ->visible(fn (Get $get): bool => $get('type') === 'birthday'),
             ]);
     }

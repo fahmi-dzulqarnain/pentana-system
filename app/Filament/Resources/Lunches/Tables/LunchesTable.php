@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Lunches\Tables;
 
+use App\Support\StatusLabel;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -16,9 +17,10 @@ class LunchesTable
             ->columns([
                 TextColumn::make('date')->date()->sortable(),
                 TextColumn::make('caterer.name'),
-                TextColumn::make('catererMeal.name')->label('Menu'),
+                TextColumn::make('catererMeal.name')->label(__('Menu')),
                 TextColumn::make('status')
                     ->badge()
+                    ->formatStateUsing(fn (string $state): string => StatusLabel::for($state))
                     ->color(fn (string $state) => match ($state) {
                         'published' => 'success',
                         'closed' => 'warning',

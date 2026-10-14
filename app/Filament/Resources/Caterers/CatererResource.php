@@ -14,7 +14,6 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
-use UnitEnum;
 
 class CatererResource extends Resource
 {
@@ -22,13 +21,29 @@ class CatererResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::BuildingStorefront;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Welfare & Social';
-
-    protected static ?string $navigationLabel = 'Caterers';
-
     public static function canAccess(): bool
     {
         return (bool) auth()->user()?->is_admin;
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('Welfare & Social');
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('Caterers');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('caterer');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('caterers');
     }
 
     public static function form(Schema $schema): Schema
