@@ -40,9 +40,12 @@ class AccountPanelProvider extends PanelProvider
             ->profile(Profile::class, isSimple: false)
             ->userMenu(position: UserMenuPosition::Sidebar)
             ->databaseNotifications()
-            ->renderHook(PanelsRenderHook::HEAD_START, fn (): string => Blade::render('<x-locale.sync-script />'))
-            ->renderHook(PanelsRenderHook::BODY_END, fn (): string => Blade::render('<x-locale.chooser />'))
-            ->renderHook(PanelsRenderHook::AUTH_LOGIN_FORM_BEFORE, fn (): string => Blade::render('<div style="display:flex;justify-content:center;margin-bottom:1rem"><x-locale.switcher /></div>'))
+            // English-only (production today) renders none of these, so the pages stay byte-for-byte as before.
+            ->renderHook(PanelsRenderHook::HEAD_START, fn (): string => Locales::multipleEnabled() ? Blade::render('<x-locale.sync-script />') : '')
+            ->renderHook(PanelsRenderHook::BODY_END, fn (): string => Locales::multipleEnabled() ? Blade::render('<x-locale.chooser />') : '')
+            ->renderHook(PanelsRenderHook::AUTH_LOGIN_FORM_BEFORE, fn (): string => Locales::multipleEnabled()
+                ? Blade::render('<div class="account-login-locale-switcher" style="display:flex;justify-content:center;margin-bottom:1rem"><x-locale.switcher /></div>')
+                : '')
             ->userMenuItems([
                 Action::make('language')
                     ->label(fn (): string => __('Language'))

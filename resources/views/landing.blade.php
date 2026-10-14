@@ -120,7 +120,8 @@
         border-bottom:1px solid var(--border-subtle); }
     .pl-nav .pl-wrap { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:13px 32px; }
     .pl-nav nav { display:flex; align-items:center; gap:26px; }
-    .pl-nav nav a { font-size:14.5px; display:inline-flex; align-items:center; min-height:44px; white-space:nowrap; }
+    .pl-nav nav a { font-size:14.5px; display:inline-flex; align-items:center; min-height:44px; }
+    .pl-nav nav.has-locale a { white-space:nowrap; }
     .pl-theme-toggle { display:inline-flex; align-items:center; justify-content:center; width:38px; height:38px; border-radius:10px;
         border:1px solid var(--border-subtle); background:transparent; color:var(--text-secondary); cursor:pointer;
         transition:background 140ms ease, color 140ms ease; }
@@ -260,7 +261,7 @@
     }
     @media (max-width: 480px) {
       .pl-nav-claim { display:none !important; }
-      .pl-nav nav { gap:12px; }
+      .pl-nav nav.has-locale { gap:12px; }
     }
     </style>
     @endverbatim
@@ -279,7 +280,7 @@
                 <img src="{{ asset('images/pentana-mark.png') }}" alt="">
                 <span>PENTANA</span>
             </a>
-            <nav>
+            <nav{!! \App\Support\Locales::multipleEnabled() ? ' class="has-locale"' : '' !!}>
                 <a href="{{ route('claim') }}" class="pl-link pl-nav-claim">{{ __('Claim account') }}</a>
                 <a href="{{ url('/account') }}" class="pl-link">{{ __('Sign in') }}</a>
                 <x-locale.switcher />

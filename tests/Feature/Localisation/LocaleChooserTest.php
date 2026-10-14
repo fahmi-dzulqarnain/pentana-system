@@ -33,7 +33,8 @@ class LocaleChooserTest extends TestCase
     {
         $this->withUnencryptedCookie('locale', 'ms')->get('/')
             ->assertDontSee('data-locale-chooser', false)
-            ->assertSee('data-locale-switcher', false);
+            ->assertSee('data-locale-switcher', false)
+            ->assertSee('<nav class="has-locale">', false);
     }
 
     public function test_member_with_saved_locale_is_not_asked_in_the_portal(): void
@@ -47,9 +48,19 @@ class LocaleChooserTest extends TestCase
     {
         config(['app.locales' => 'en']);
 
-        $this->get('/')->assertDontSee('data-locale-chooser', false)->assertDontSee('data-locale-switcher', false);
-        $this->get('/account/login')->assertDontSee('data-locale-chooser', false);
+        $this->get('/')->assertDontSee('data-locale-chooser', false)->assertDontSee('data-locale-switcher', false)
+            ->assertSee('<nav>', false); // no has-locale class, so the pre-i18n nav CSS applies
+        $this->get('/account/login')->assertDontSee('data-locale-chooser', false)
+            ->assertDontSee('data-locale-sync', false)
+            ->assertDontSee('account-login-locale-switcher', false);
         $this->get('/claim')->assertOk()->assertDontSee('guest-locale-switcher', false);
+    }
+
+    public function test_login_page_shows_the_switcher_wrapper_when_several_languages_are_enabled(): void
+    {
+        $this->get('/account/login')->assertOk()
+            ->assertSee('account-login-locale-switcher', false)
+            ->assertSee('data-locale-switcher', false);
     }
 
     public function test_every_page_carries_the_sync_script(): void
@@ -71,5 +82,26 @@ class LocaleChooserTest extends TestCase
 
         $this->assertSame('ms', $user->fresh()->locale);
         $this->assertSame('ms', Cookie::queued('locale')?->getValue());
+    }
+
+    public function test_profile_language_cannot_be_cleared(): void
+    {
+        $user = User::factory()->create(['locale' => 'ms', 'activated_at' => now()]);
+        $this->actingAs($user);
+
+        Livewire::test(Profile::class)
+            ->fillForm(['locale' => null])
+            ->call('save')
+            ->assertHasFormErrors(['locale' => 'required']);
+
+        $this->assertSame('ms', $user->fresh()->locale);
+    }
+
+    public function test_profile_prefills_the_current_language_for_an_account_that_never_chose(): void
+    {
+        $user = User::factory()->create(['locale' => null, 'activated_at' => now()]);
+        $this->actingAs($user);
+
+        Livewire::test(Profile::class)->assertSchemaStateSet(['locale' => 'en']);
     }
 }

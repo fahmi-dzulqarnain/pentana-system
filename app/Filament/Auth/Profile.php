@@ -11,7 +11,9 @@ use Filament\Schemas\Components\Livewire;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Text;
 use Filament\Schemas\Schema;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
+use SensitiveParameter;
 
 class Profile extends EditProfile
 {
@@ -27,6 +29,8 @@ class Profile extends EditProfile
                         ->mapWithKeys(fn ($c) => [$c => Locales::nativeName($c)])->all())
                     ->visible(fn (): bool => Locales::multipleEnabled())
                     ->in(fn (): array => Locales::enabled())
+                    ->required()
+                    ->selectablePlaceholder(false)
                     ->native(false),
                 DatePicker::make('birthday')
                     ->native(false)
@@ -58,6 +62,26 @@ class Profile extends EditProfile
                         Livewire::make('passkeys'),
                     ]),
             ]);
+    }
+
+    protected function mutateFormDataBeforeFill(array $data): array
+    {
+        // An account that never chose starts on the language it is browsing in, so the
+        // now-required field does not block saving the rest of the profile.
+        $data['locale'] = Locales::isEnabled($data['locale'] ?? null) ? $data['locale'] : app()->getLocale();
+
+        return $data;
+    }
+
+    /** `locale` is not mass-assignable; write it explicitly, like every other writer. */
+    protected function handleRecordUpdate(Model $record, #[SensitiveParameter] array $data): Model
+    {
+        if (array_key_exists('locale', $data)) {
+            $record->forceFill(['locale' => $data['locale']]);
+            unset($data['locale']);
+        }
+
+        return parent::handleRecordUpdate($record, $data);
     }
 
     protected function afterSave(): void

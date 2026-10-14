@@ -20,11 +20,12 @@ class UserLocalePreferenceTest extends TestCase
         $this->assertSame('id', $user->fresh()->preferredLocale());
     }
 
-    public function test_no_or_disabled_locale_means_no_preference(): void
+    public function test_no_or_disabled_locale_means_english(): void
     {
         config(['app.locales' => 'en,id']);
+        app()->setLocale('id'); // the current (sender's) locale must not leak in
 
-        $this->assertNull(User::factory()->create(['locale' => null])->preferredLocale());
-        $this->assertNull(User::factory()->create(['locale' => 'ms'])->preferredLocale());
+        $this->assertSame('en', User::factory()->create(['locale' => null])->preferredLocale());
+        $this->assertSame('en', User::factory()->create(['locale' => 'ms'])->preferredLocale());
     }
 }

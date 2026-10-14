@@ -18,6 +18,7 @@ class SyncLocaleOnLogin
     {
         $user = $event->user;
         $device = request()->cookie(SetLocale::COOKIE);
+        $device = is_string($device) ? $device : null; // unencrypted, so it can arrive array-shaped
 
         if (Locales::isEnabled($user->locale ?? null)) {
             LocaleCookie::queue($user->locale);

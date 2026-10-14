@@ -49,6 +49,24 @@ class NotificationsLocalisedTest extends TestCase
         $this->assertStringContainsString('"body":"Order by 12:00 PM, Fri 6 Nov."', $text($en));
     }
 
+    public function test_members_without_an_enabled_locale_get_english_whatever_the_sender_uses(): void
+    {
+        config(['app.locales' => 'en,ms']);
+        $none = User::factory()->create(['locale' => null]);
+        $disabled = User::factory()->create(['locale' => 'id']);
+        $lunch = Lunch::factory()->create(['date' => now(), 'deadline' => now()->addHours(3)]);
+
+        app()->setLocale('ms'); // e.g. an admin browsing in Malay publishes the lunch
+        Notification::send([$none, $disabled], new LunchPublished($lunch));
+
+        $this->assertSame('ms', app()->getLocale(), 'the sender\'s locale was not restored');
+
+        foreach ([$none, $disabled] as $user) {
+            $text = json_encode($user->notifications()->first()->data, JSON_UNESCAPED_UNICODE);
+            $this->assertStringContainsString('"body":"Order by 12:00 PM, Fri 6 Nov."', $text);
+        }
+    }
+
     public function test_mail_and_push_follow_the_recipient(): void
     {
         $id = User::factory()->create(['locale' => 'id']);

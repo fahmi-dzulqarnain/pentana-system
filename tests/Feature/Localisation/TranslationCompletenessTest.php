@@ -78,4 +78,21 @@ class TranslationCompletenessTest extends TestCase
             }
         }
     }
+
+    public function test_no_translation_is_itself_a_key_that_translates_differently(): void
+    {
+        // Filament's global translateLabel() feeds already-translated labels through __() again;
+        // if a Malay/Indonesian value were also a key with a different value, it would be
+        // translated twice and show the wrong text.
+        foreach (['ms', 'id'] as $locale) {
+            $json = $this->translations($locale);
+            $doubled = [];
+            foreach ($json as $key => $value) {
+                if (isset($json[$value]) && $json[$value] !== $value) {
+                    $doubled[$key] = "$value => {$json[$value]}";
+                }
+            }
+            $this->assertSame([], $doubled, "lang/$locale.json values that would be re-translated (key => value => second value)");
+        }
+    }
 }

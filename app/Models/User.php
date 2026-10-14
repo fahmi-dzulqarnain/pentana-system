@@ -38,7 +38,6 @@ class User extends Authenticatable implements FilamentUser, HasLocalePreference,
     protected $fillable = [
         'name',
         'email',
-        'locale',
         'password',
         'is_admin',
         'member_category_id',
@@ -52,9 +51,10 @@ class User extends Authenticatable implements FilamentUser, HasLocalePreference,
      * Language for notifications and email. Laravel renders each notification in
      * the recipient's preference; disabled or unset falls back to English.
      */
-    public function preferredLocale(): ?string
+    public function preferredLocale(): string
     {
-        return Locales::isEnabled($this->locale) ? $this->locale : null;
+        // Not config('app.locale'): App::setLocale() rewrites it, so it is the sender's language.
+        return Locales::isEnabled($this->locale) ? $this->locale : 'en';
     }
 
     /**

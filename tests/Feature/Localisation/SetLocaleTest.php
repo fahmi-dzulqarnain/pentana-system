@@ -69,6 +69,16 @@ class SetLocaleTest extends TestCase
             ->assertJson(['locale' => 'en', 'chosen' => false]);
     }
 
+    public function test_array_shaped_cookie_is_ignored(): void
+    {
+        // `locale[x]=1` arrives as an array; it must not reach the ?string checks.
+        $this->call('GET', '/_locale-probe', [], ['locale' => ['x' => '1']])
+            ->assertOk()
+            ->assertJson(['locale' => 'en', 'chosen' => false]);
+
+        $this->call('GET', '/', [], ['locale' => ['x' => '1']])->assertOk();
+    }
+
     public function test_cookie_is_not_encrypted(): void
     {
         // A raw (unencrypted) cookie must be read as-is; if `locale` were still in

@@ -14,6 +14,9 @@ use Illuminate\Translation\Translator;
  * second lookup is reported as missing. The runtime guards skip a missing key only when it is
  * one of these recorded results from the same render, so a real untranslated label is still
  * reported even when it happens to equal some vendor or JSON value.
+ *
+ * Residual hole: a vendor (namespaced) key with no ms/id file falls back to its English line,
+ * which this translator records as a successful lookup, so it is not reported as untranslated.
  */
 class RecordingTranslator extends Translator
 {

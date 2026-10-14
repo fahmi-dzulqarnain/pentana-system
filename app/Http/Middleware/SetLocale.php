@@ -21,7 +21,9 @@ class SetLocale
 
     public function handle(Request $request, Closure $next): Response
     {
-        $choice = collect([$request->user()?->locale, $request->cookie(self::COOKIE)])
+        // The cookie is unencrypted, so it can arrive array-shaped (`locale[x]=1`); only strings count.
+        $cookie = $request->cookie(self::COOKIE);
+        $choice = collect([$request->user()?->locale, is_string($cookie) ? $cookie : null])
             ->first(fn (?string $code) => Locales::isEnabled($code));
 
         $locale = $choice ?? config('app.locale');

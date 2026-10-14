@@ -18,7 +18,7 @@ class SyncLocaleOnLoginTest extends TestCase
         config(['app.locales' => 'en,ms,id']);
     }
 
-    private function login(User $user, ?string $cookie): void
+    private function login(User $user, mixed $cookie): void
     {
         $this->app['request']->cookies->set('locale', $cookie);
         event(new Login('web', $user, false));
@@ -49,6 +49,16 @@ class SyncLocaleOnLoginTest extends TestCase
         $user = User::factory()->create(['locale' => null]);
 
         $this->login($user, 'xx');
+
+        $this->assertNull($user->fresh()->locale);
+        $this->assertNull(Cookie::queued('locale'));
+    }
+
+    public function test_array_shaped_cookie_is_ignored(): void
+    {
+        $user = User::factory()->create(['locale' => null]);
+
+        $this->login($user, ['x' => '1']);
 
         $this->assertNull($user->fresh()->locale);
         $this->assertNull(Cookie::queued('locale'));
