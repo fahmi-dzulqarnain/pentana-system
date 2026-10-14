@@ -17,7 +17,7 @@ class TranslationCompletenessTest extends TestCase
     {
         $keys = [];
         $files = Finder::create()->files()->in(array_map('base_path', self::SCAN_PATHS))
-            ->name(['*.php'])->notPath('vendor');
+            ->name(['*.php']);
 
         foreach ($files as $file) {
             $src = $file->getContents();

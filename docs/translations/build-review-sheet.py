@@ -13,7 +13,7 @@ Sheets:
   Framework strings  laravel-lang entries whose keys are not in our code.
 Privacy-policy rows are highlighted for legal review. Output is deterministic.
 """
-import datetime, json, pathlib, re, subprocess, zipfile
+import datetime, json, pathlib, re, subprocess, sys, zipfile
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Font, PatternFill
 
@@ -51,6 +51,13 @@ for path in files:
 
 ms = json.loads((ROOT / "lang/ms.json").read_text(encoding="utf-8"))
 idn = json.loads((ROOT / "lang/id.json").read_text(encoding="utf-8"))
+
+missing = {loc: sorted(k for k in uses if k not in tr) for loc, tr in (("ms", ms), ("id", idn))}
+if any(missing.values()):
+    for loc, keys in missing.items():
+        for k in keys:
+            print(f"MISSING in lang/{loc}.json: {k!r}  ({uses[k][0]})", file=sys.stderr)
+    sys.exit(1)
 
 wb = Workbook()
 wb.properties.creator = "build-review-sheet.py"
