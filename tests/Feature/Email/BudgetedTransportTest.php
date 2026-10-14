@@ -6,6 +6,7 @@ use App\Mail\BudgetedTransport;
 use App\Models\EmailBudget;
 use App\Models\QueuedEmail;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Schema;
 use RuntimeException;
 use Symfony\Component\Mailer\Envelope;
 use Symfony\Component\Mailer\SentMessage;
@@ -105,6 +106,23 @@ class BudgetedTransportTest extends TestCase
         $email = $this->email();
 
         $result = (new BudgetedTransport($this->throwingTransport()))->send($email, Envelope::create($email));
+
+        $this->assertNull($result);
+    }
+
+    public function test_a_spool_failure_does_not_propagate_to_the_caller(): void
+    {
+        // The whole point of this transport is that nothing escapes it into a publish
+        // action. A spool that throws (bad column, DB blip) must not reach the admin.
+        Schema::drop('queued_emails');
+
+        for ($i = 0; $i < EmailBudget::DAILY_LIMIT; $i++) {
+            EmailBudget::claim();
+        }
+
+        $email = $this->email();
+
+        $result = (new BudgetedTransport($this->recordingTransport()))->send($email, Envelope::create($email));
 
         $this->assertNull($result);
     }

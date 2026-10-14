@@ -22,9 +22,12 @@ class QueuedEmail extends Model
 
     public const PRIORITY_HEADER = 'X-Pentana-Priority';
 
+    /** Minutes to wait before attempt N+1. Three attempts therefore span ~40 minutes. */
+    public const BACKOFF_MINUTES = [1 => 10, 2 => 30];
+
     protected $fillable = [
         'mime', 'recipients', 'sender', 'subject',
-        'priority', 'attempts', 'last_error', 'failed_at', 'sent_at',
+        'priority', 'attempts', 'last_error', 'failed_at', 'sent_at', 'next_attempt_at',
     ];
 
     protected function casts(): array
@@ -35,6 +38,7 @@ class QueuedEmail extends Model
             'attempts' => 'integer',
             'failed_at' => 'datetime',
             'sent_at' => 'datetime',
+            'next_attempt_at' => 'datetime',
         ];
     }
 
@@ -62,7 +66,7 @@ class QueuedEmail extends Model
             'mime' => $message->toString(),
             'recipients' => $recipients,
             'sender' => $sender,
-            'subject' => $subject,
+            'subject' => $subject === null ? null : mb_substr($subject, 0, 255),
             'priority' => $priority,
             'attempts' => $error === null ? 0 : 1,
             'last_error' => $error,
@@ -81,6 +85,7 @@ class QueuedEmail extends Model
             ->whereNull('failed_at')
             ->where('attempts', '<', self::MAX_ATTEMPTS)
             ->when($skip !== [], fn ($query) => $query->whereNotIn('id', $skip))
+            ->where(fn ($query) => $query->whereNull('next_attempt_at')->orWhere('next_attempt_at', '<=', now()))
             ->orderBy('priority')
             ->orderBy('created_at')
             ->first();
@@ -104,6 +109,33 @@ class QueuedEmail extends Model
         $this->forceFill(['sent_at' => now()])->save();
     }
 
+    /**
+     * Take exclusive ownership of this message for sending. Returns false when another
+     * run already claimed it - `withoutOverlapping()` only guards the SCHEDULED drain,
+     * and an admin running the command by hand would otherwise double-send the batch.
+     */
+    public function claimForSending(): bool
+    {
+        $claimed = static::whereKey($this->getKey())->whereNull('sent_at')
+            ->update(['sent_at' => now()]) === 1;
+
+        // The update above goes through the query builder, which leaves this model's
+        // `original` out of sync. Without re-reading, a later markFailed() setting
+        // sent_at back to null looks unchanged to Eloquent and is silently skipped,
+        // stranding the message as permanently claimed.
+        if ($claimed) {
+            $this->refresh();
+        }
+
+        return $claimed;
+    }
+
+    /** Hand a claim back when the send failed, so the message stays eligible. */
+    public function releaseClaim(): void
+    {
+        $this->forceFill(['sent_at' => null])->save();
+    }
+
     public function markFailed(string $error): void
     {
         $attempts = $this->attempts + 1;
@@ -112,6 +144,8 @@ class QueuedEmail extends Model
             'attempts' => $attempts,
             'last_error' => mb_substr($error, 0, 1000),
             'failed_at' => $attempts >= self::MAX_ATTEMPTS ? now() : null,
+            'sent_at' => null,
+            'next_attempt_at' => now()->addMinutes(self::BACKOFF_MINUTES[$attempts] ?? 0),
         ])->save();
     }
 }

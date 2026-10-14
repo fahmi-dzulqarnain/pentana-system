@@ -62,8 +62,17 @@ class EmailBudgetStats extends StatsOverviewWidget
         return $oldest ? Carbon::parse($oldest) : null;
     }
 
+    public function failedCount(): int
+    {
+        return QueuedEmail::whereNotNull('failed_at')->count();
+    }
+
     public function queueColour(): string
     {
+        if ($this->failedCount() > 0) {
+            return 'danger';
+        }
+
         $oldest = $this->oldestPendingAt();
 
         return $oldest && $oldest->lt(now()->subDay()) ? 'danger' : 'gray';
@@ -93,7 +102,10 @@ class EmailBudgetStats extends StatsOverviewWidget
 
         $queueColour = $this->queueColour();
 
+        $failed = $this->failedCount();
+
         $queueDescription = match (true) {
+            $failed > 0 => $failed.' permanently failed - mail was lost',
             $pending === 0 => 'nothing waiting',
             $queueColour === 'danger' => 'oldest '.$oldest->diffForHumans().' - not draining',
             default => 'oldest '.$oldest->diffForHumans(),

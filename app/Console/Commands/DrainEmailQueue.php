@@ -19,13 +19,29 @@ class DrainEmailQueue extends Command
 {
     public const BATCH = 25;
 
+    /**
+     * Transports that cannot send a RawMessage: they call MessageConverter::toEmail()
+     * and throw. Attempting the send would burn all three attempts and destroy the
+     * queue, so refuse loudly instead - this is a misconfiguration, not a bad minute.
+     */
+    public const RAW_INCAPABLE = ['resend', 'ses', 'ses-v2', 'postmark', 'mailgun', 'sparkpost'];
+
     protected $signature = 'app:drain-email-queue';
 
     protected $description = 'Send queued email within the remaining daily budget';
 
     public function handle(): int
     {
-        $transport = Mail::mailer(config('mail.mailers.budgeted.inner', 'smtp'))->getSymfonyTransport();
+        $innerName = config('mail.mailers.budgeted.inner', 'smtp');
+        $innerTransport = config("mail.mailers.{$innerName}.transport");
+
+        if (in_array($innerTransport, self::RAW_INCAPABLE, true)) {
+            $this->error("Cannot drain: the '{$innerName}' mailer uses the '{$innerTransport}' transport, which cannot send stored MIME. Point MAIL_INNER_MAILER at an SMTP mailer.");
+
+            return self::FAILURE;
+        }
+
+        $transport = Mail::mailer($innerName)->getSymfonyTransport();
 
         $sent = 0;
         $attempted = [];
@@ -41,9 +57,17 @@ class DrainEmailQueue extends Command
                 break;
             }
 
+            // Take the row before sending: withoutOverlapping() only guards the scheduled
+            // run, and a hand-run drain would otherwise send the batch a second time.
+            if (! $queued->claimForSending()) {
+                EmailBudget::release();
+                $attempted[] = $queued->id;
+
+                continue;
+            }
+
             try {
                 $transport->send($queued->rawMessage(), $queued->envelope());
-                $queued->markSent();
                 $sent++;
             } catch (Throwable $e) {
                 EmailBudget::release();

@@ -115,6 +115,17 @@ class QueuedEmailTest extends TestCase
         $this->assertNotNull($queued->fresh()->failed_at);
     }
 
+    public function test_a_subject_longer_than_the_column_is_truncated(): void
+    {
+        // An activity title may be 255 chars, so "New activity: {title}" reaches 269.
+        // On Postgres an untruncated insert throws SQLSTATE 22001 and the mail is lost.
+        $email = $this->email(str_repeat('a', 300));
+
+        $queued = QueuedEmail::spool($email, Envelope::create($email));
+
+        $this->assertLessThanOrEqual(255, mb_strlen($queued->subject));
+    }
+
     public function test_the_envelope_is_rebuilt_from_stored_addresses(): void
     {
         $email = $this->email('x', 'ali@example.com');

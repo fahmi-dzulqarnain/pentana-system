@@ -135,6 +135,74 @@ class DrainEmailQueueTest extends TestCase
         $this->assertSame(1, QueuedEmail::first()->attempts);
     }
 
+    public function test_a_failed_message_is_not_retried_until_its_backoff_elapses(): void
+    {
+        $this->fakeInner(throws: true);
+        $this->queue('doomed');
+
+        // Three drains inside the same minute must NOT burn all three attempts:
+        // a brief provider outage would otherwise destroy the whole backlog.
+        $this->artisan('app:drain-email-queue')->assertSuccessful();
+        $this->artisan('app:drain-email-queue')->assertSuccessful();
+        $this->artisan('app:drain-email-queue')->assertSuccessful();
+
+        $this->assertSame(1, QueuedEmail::first()->attempts);
+        $this->assertNull(QueuedEmail::first()->failed_at);
+    }
+
+    public function test_a_failed_message_is_retried_once_its_backoff_has_passed(): void
+    {
+        $this->fakeInner(throws: true);
+        $this->queue('doomed');
+
+        $this->artisan('app:drain-email-queue')->assertSuccessful();
+        $this->assertSame(1, QueuedEmail::first()->attempts);
+
+        $this->travel(2)->hours();
+        $this->artisan('app:drain-email-queue')->assertSuccessful();
+
+        $this->assertSame(2, QueuedEmail::first()->attempts);
+    }
+
+    public function test_a_message_already_claimed_for_sending_is_not_sent_twice(): void
+    {
+        $this->fakeInner();
+        $queued = $this->queue('once');
+
+        $this->assertTrue($queued->claimForSending());
+        $this->assertFalse($queued->fresh()->claimForSending(), 'a second claim must lose');
+    }
+
+    public function test_it_refuses_to_run_when_the_inner_transport_cannot_send_raw_mime(): void
+    {
+        // API transports (resend, ses, postmark) call MessageConverter::toEmail() and throw
+        // on a RawMessage. Attempting the send would burn attempts and destroy the queue.
+        $apiTransport = new class implements TransportInterface
+        {
+            public function send(RawMessage $message, ?Envelope $envelope = null): ?SentMessage
+            {
+                throw new RuntimeException('should never be called');
+            }
+
+            public function __toString(): string
+            {
+                return 'api://';
+            }
+        };
+
+        Mail::extend('api-ish', fn () => $apiTransport);
+        config([
+            'mail.mailers.api-ish' => ['transport' => 'resend'],
+            'mail.mailers.budgeted.inner' => 'api-ish',
+        ]);
+
+        $this->queue('never sent');
+
+        $this->artisan('app:drain-email-queue')->assertFailed();
+
+        $this->assertSame(0, QueuedEmail::first()->attempts, 'nothing may be attempted');
+    }
+
     public function test_an_exhausted_message_does_not_block_the_queue_head(): void
     {
         $inner = $this->fakeInner();

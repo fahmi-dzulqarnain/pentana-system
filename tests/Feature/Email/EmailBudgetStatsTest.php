@@ -72,6 +72,16 @@ class EmailBudgetStatsTest extends TestCase
         $this->assertSame('danger', (new EmailBudgetStats)->queueColour());
     }
 
+    public function test_permanently_failed_messages_are_surfaced(): void
+    {
+        $this->queueOne()->forceFill(['attempts' => QueuedEmail::MAX_ATTEMPTS, 'failed_at' => now()])->save();
+
+        $widget = new EmailBudgetStats;
+
+        $this->assertSame(1, $widget->failedCount());
+        $this->assertSame('danger', $widget->queueColour(), 'lost mail must be visible');
+    }
+
     public function test_monthly_colour_warns_on_projection_before_going_over(): void
     {
         $widget = new EmailBudgetStats;
