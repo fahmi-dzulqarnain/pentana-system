@@ -17,7 +17,9 @@
     <link rel="stylesheet" href="{{ asset('css/filament/filament/app.css') }}">
 </head>
 <body class="antialiased" style="margin:0;min-height:100vh;background-color:#ffffff;">
-    <div style="position:fixed;top:8px;right:8px;z-index:50;background:#fff;border-radius:10px;"><x-locale.switcher /></div>
+    @if (\App\Support\Locales::multipleEnabled())
+    <div class="guest-locale-switcher" style="position:fixed;top:8px;right:8px;z-index:50;background:#fff;border-radius:10px;"><x-locale.switcher /></div>
+    @endif
     {{-- Full-viewport canvas: the white page fills the screen and the claim component
          lays itself out inside (header group at the top, field centred, footer button
          pinned to the bottom). It manages its own padding per stage. --}}

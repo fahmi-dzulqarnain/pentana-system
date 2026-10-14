@@ -1,7 +1,7 @@
 @if (\App\Support\Locales::multipleEnabled() && ! ($localeChosen ?? false))
 <div data-locale-chooser class="lc-overlay" role="dialog" aria-modal="true" aria-labelledby="lc-title">
     <div class="lc-card">
-        <h2 id="lc-title" class="lc-title">Choose your language · Pilih bahasa anda · Pilih bahasa Anda</h2>
+        <h2 id="lc-title" class="lc-title">Choose your language · Pilih bahasa anda</h2>
         <div class="lc-options">
             @foreach (\App\Support\Locales::enabled() as $code)
                 <form method="POST" action="{{ route('locale.update') }}">

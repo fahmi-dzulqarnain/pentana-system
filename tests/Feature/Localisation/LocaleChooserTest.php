@@ -49,6 +49,7 @@ class LocaleChooserTest extends TestCase
 
         $this->get('/')->assertDontSee('data-locale-chooser', false)->assertDontSee('data-locale-switcher', false);
         $this->get('/account/login')->assertDontSee('data-locale-chooser', false);
+        $this->get('/claim')->assertOk()->assertDontSee('guest-locale-switcher', false);
     }
 
     public function test_every_page_carries_the_sync_script(): void
