@@ -34,29 +34,31 @@ class RenderedPagesAreTranslatedTest extends TestCase
         $this->seedForRendering();
         $admin = User::factory()->create(['is_admin' => true, 'activated_at' => now()]);
 
-        foreach (['ms', 'id'] as $locale) {
-            $missing = [];
-            Lang::handleMissingKeysUsing(function (string $key, array $replace, ?string $l) use (&$missing, $locale) {
-                if (($l ?? app()->getLocale()) === $locale && self::isAppKey($key)) {
-                    $missing[$key] = true;
+        try {
+            foreach (['ms', 'id'] as $locale) {
+                $missing = [];
+                Lang::handleMissingKeysUsing(function (string $key, array $replace, ?string $l) use (&$missing, $locale) {
+                    if (($l ?? app()->getLocale()) === $locale && self::isAppKey($key) && ! self::isVendorTranslatedValue($key, $locale)) {
+                        $missing[$key] = true;
+                    }
+
+                    return $key;
+                });
+
+                foreach (self::guestPages() as $url) {
+                    auth()->logout();
+                    $this->withUnencryptedCookie('locale', $locale)->get($url)->assertOk();
+                }
+                $admin->forceFill(['locale' => $locale])->save();
+                foreach (self::pages() as $url) {
+                    $this->actingAs($admin)->get($url)->assertOk();
                 }
 
-                return $key;
-            });
-
-            foreach (self::guestPages() as $url) {
-                auth()->logout();
-                $this->withUnencryptedCookie('locale', $locale)->get($url)->assertOk();
+                $this->assertSame([], array_keys($missing), "Untranslated strings rendered in $locale");
             }
-            $admin->forceFill(['locale' => $locale])->save();
-            foreach (self::pages() as $url) {
-                $this->actingAs($admin)->get($url)->assertOk();
-            }
-
-            $this->assertSame([], array_keys($missing), "Untranslated strings rendered in $locale");
+        } finally {
+            Lang::handleMissingKeysUsing(null);
         }
-
-        Lang::handleMissingKeysUsing(null);
     }
 
     /** Minimal rows so index/edit pages render content, not just empty states. */

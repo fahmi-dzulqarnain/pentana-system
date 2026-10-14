@@ -21,7 +21,8 @@ class TranslationCompletenessTest extends TestCase
 
         foreach ($files as $file) {
             $src = $file->getContents();
-            preg_match_all('/(?:__|trans|@lang)\(\s*([\'"])((?:\\\\.|(?!\1).)*)\1/s', $src, $m, PREG_OFFSET_CAPTURE);
+            $found = preg_match_all('/(?<![\w>:$])(?:__|trans|@lang)\(\s*([\'"])((?:\\\\.|(?!\1).)*)\1/s', $src, $m, PREG_OFFSET_CAPTURE);
+            $this->assertNotFalse($found, 'Regex failed on '.$file->getRelativePathname());
             foreach ($m[2] as [$raw, $offset]) {
                 $key = stripcslashes($raw);
                 if (self::isAppKey($key)) {
