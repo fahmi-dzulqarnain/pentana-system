@@ -38,8 +38,9 @@ class AppServiceProvider extends ServiceProvider
             Js::make('passkeys-webauthn', Vite::asset('resources/js/passkeys.js'))->module(),
         ]);
 
-        // Livewire update requests re-run only "persistent" middleware; without this a
-        // component re-render falls back to English mid-form.
+        // Safeguard: Livewire's update route already runs the `web` group (which appends
+        // SetLocale), but persistent middleware also re-applies it to routes that get it
+        // only from a custom group, so a re-render never falls back to English mid-form.
         \Livewire\Livewire::addPersistentMiddleware([\App\Http\Middleware\SetLocale::class]);
     }
 }

@@ -106,23 +106,25 @@ class SetLocaleTest extends TestCase
             ->assertOk()
             ->getContent();
 
-        preg_match('/wire:snapshot="([^"]+)"/', $html, $m);
+        $this->assertSame(1, preg_match('/wire:snapshot="([^"]+)"/', $html, $m), 'No wire:snapshot found in the probe page.');
         $snapshot = html_entity_decode($m[1], ENT_QUOTES);
 
         // A real Livewire update request (not Livewire::test(), which bypasses routing
         // middleware) must run as `ms` too, or a re-render falls back to English mid-form.
-        $this->withUnencryptedCookie('locale', 'ms')
+        // The initial GET left `ms` on the shared app instance; reset so only the update request can set it.
+        app()->setLocale('en');
+        \Carbon\Carbon::setLocale('en');
+
+        $response = $this->withUnencryptedCookie('locale', 'ms')
             ->withHeaders(['X-Livewire' => 'true'])
             ->postJson(Livewire::getUpdateUri(), ['components' => [[
                 'snapshot' => $snapshot,
                 'updates' => [],
                 'calls' => [['method' => 'capture', 'params' => [], 'metadata' => []]],
             ]]])
-            ->assertOk()
-            ->assertSee('updateLocale', false)
-            ->assertSee('ms', false);
+            ->assertOk();
 
-        $this->assertSame('ms', app()->getLocale());
+        $this->assertStringContainsString('"updateLocale":"ms"', $response->json('components.0.snapshot'));
     }
 }
 
