@@ -272,11 +272,76 @@ signature needs the raw R‖S form, not the DER that `openssl_sign` returns.
 Tokens from a build type you no longer target are permanently dead and can be deleted from
 `device_tokens`.
 
-## 8. Open items before go-live
+## 8. Email (Resend)
+
+Working in production as of 2026-10-14. Outbound mail goes through Resend's SMTP relay,
+sending as `noreply@pentana.silentmode.net`.
+
+```dotenv
+MAIL_MAILER=smtp
+MAIL_SCHEME=smtp
+MAIL_HOST=smtp.resend.com
+MAIL_PORT=587
+MAIL_USERNAME=resend
+MAIL_PASSWORD=re_...            # Resend API key
+MAIL_FROM_ADDRESS="noreply@pentana.silentmode.net"
+MAIL_FROM_NAME="PENTANA"
+```
+
+Laravel 12 uses `MAIL_SCHEME`, not `MAIL_ENCRYPTION`. Config is cached, so any `.env`
+change needs `php artisan optimize` before it takes effect.
+
+### DNS
+
+Four records on the `pentana` subdomain of `silentmode.net` (changes there need an IT
+ticket — the zone is not self-service):
+
+```
+TXT    resend._domainkey.pentana   p=MIGfMA0GCSqG…          DKIM signing
+CNAME  rsend.pentana               rsend-apne1.forge.rmta.net   sending
+CNAME  send.pentana                send.forge.rmta.net          sending
+MX     pentana                     inbound-smtp.ap-northeast-1.amazonaws.com (10)   receiving
+```
+
+Company email is on **`silentmode.my`** (Microsoft 365). `silentmode.net` has no MX of its
+own, so these records disturb nothing — worth stating in any DNS ticket, since it is the
+first question a reviewer asks.
+
+### Gotchas
+
+**Resend treats subdomains as separate domains.** Verifying `silentmode.net` does *not*
+authorise `pentana.silentmode.net`; each is added and verified in its own right. The
+failure is a clear `550 The <domain> is not verified` at send time.
+
+**Adding the DNS records does not verify the domain.** Resend only checks when you click
+"I've already added the records". Correct, resolving DNS plus an unverified domain still
+gives the same 550.
+
+**Never leave `MAIL_MAILER=smtp` with a broken mailer.** Notifications are sent *inline*,
+not queued, so an SMTP failure throws inside the request that publishes a lunch or
+activity — the admin gets a 500, and the bell and push notifications never fire either.
+When configuring or debugging mail, keep `MAIL_MAILER=log` and only switch once a test
+send succeeds.
+
+**Testing before the domain is verified:** Resend allows `onboarding@resend.dev` as sender
+to your own account address without verification. Useful for isolating the API key and
+connection from the domain question — if that send succeeds, the credentials are fine and
+only verification remains.
+
+### Limits
+
+Free tier is 100 emails/day, 3,000/month. Bill reminders run on the 15th and 31st to every
+member with an outstanding balance; past ~100 members those runs will hit the daily cap and
+some members silently will not be reminded. Resend's Logs tab is the only visibility into
+delivery, bounces and spam complaints.
+
+`noreply@pentana.silentmode.net` is send-only. The MX record above makes inbound possible
+for later use.
+
+## 9. Open items before go-live
 
 - [x] TLS — Cloudflare edge certificate (trusted) via the tunnel; origin keeps a self-signed cert for the loopback hop
-- [ ] SMTP configured, or members told email is not yet delivered — `MAIL_FROM_ADDRESS` is
-      still Laravel's `hello@example.com` placeholder
+- [x] Email — Resend SMTP, sending as `noreply@pentana.silentmode.net`, verified end to end
 - [ ] Demo data removed from production (DemoContentSeeder lunches/activities, the
       `member@silentmode.my` test account) — it is there because local dev shares the live
       Supabase instance, which is worth separating before real dues data exists
