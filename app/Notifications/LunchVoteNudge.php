@@ -34,22 +34,22 @@ class LunchVoteNudge extends Notification
 
     private function pushTitle(): string
     {
-        return 'Last call: '.($this->lunch->catererMeal?->name ?? 'lunch menu');
+        return __('Last call: :menu', ['menu' => $this->lunch->catererMeal?->name ?? __('lunch menu')]);
     }
 
     private function pushBody(): string
     {
-        return 'Voting closes at '.$this->lunch->deadline->format('g:i A, D j M').' and you haven\'t responded.';
+        return __("Voting closes at :deadline and you haven't responded.", ['deadline' => $this->deadline()]);
     }
 
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('Last call to order lunch for '.$this->lunch->date->format('D, j M'))
-            ->greeting('Voting closes soon')
-            ->line('You haven\'t responded to the lunch for '.$this->lunch->date->format('l, j M').'.')
-            ->line('Voting closes at '.$this->lunch->deadline->format('g:i A, D j M').'.')
-            ->action('Place your order', $this->url());
+            ->subject(__('Last call to order lunch for :date', ['date' => $this->lunch->date->translatedFormat('D, j M')]))
+            ->greeting(__('Voting closes soon'))
+            ->line(__("You haven't responded to the lunch for :date.", ['date' => $this->lunch->date->translatedFormat('l, j M')]))
+            ->line(__('Voting closes at :deadline.', ['deadline' => $this->deadline()]))
+            ->action(__('Place your order'), $this->url());
     }
 
     /** @return array<string, mixed> */
@@ -61,9 +61,14 @@ class LunchVoteNudge extends Notification
             ->icon('heroicon-o-clock')
             ->warning()
             ->actions([
-                Action::make('view')->label('Vote now')->url($this->url())->markAsRead(),
+                Action::make('view')->label(__('Vote now'))->url($this->url())->markAsRead(),
             ])
             ->getDatabaseMessage();
+    }
+
+    private function deadline(): string
+    {
+        return $this->lunch->deadline->translatedFormat('g:i A, D j M');
     }
 
     private function url(): string

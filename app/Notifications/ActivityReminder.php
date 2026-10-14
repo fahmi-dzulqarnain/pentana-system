@@ -11,20 +11,20 @@ class ActivityReminder extends ActivityNotification
     public function toMail(object $notifiable): MailMessage
     {
         $mail = (new MailMessage)
-            ->subject('Reminder: '.$this->activity->title)
-            ->greeting('Coming up soon')
-            ->line($this->activity->title.' is on '.$this->whenLabel().'.');
+            ->subject($this->pushTitle())
+            ->greeting(__('Coming up soon'))
+            ->line(__(':activity is on :when.', ['activity' => $this->activity->title, 'when' => $this->whenLabel()]));
 
         if ($this->activity->location) {
-            $mail->line('Where: '.$this->activity->location);
+            $mail->line(__('Where: :location', ['location' => $this->activity->location]));
         }
 
-        return $mail->action('View activities', $this->url());
+        return $mail->action(__('View activities'), $this->url());
     }
 
     protected function pushTitle(): string
     {
-        return 'Reminder: '.$this->activity->title;
+        return __('Reminder: :activity', ['activity' => $this->activity->title]);
     }
 
     /** @return array<string, mixed> */
@@ -36,7 +36,7 @@ class ActivityReminder extends ActivityNotification
             ->icon('heroicon-o-bell-alert')
             ->info()
             ->actions([
-                Action::make('view')->label('View')->url($this->url())->markAsRead(),
+                Action::make('view')->label(__('View'))->url($this->url())->markAsRead(),
             ])
             ->getDatabaseMessage();
     }

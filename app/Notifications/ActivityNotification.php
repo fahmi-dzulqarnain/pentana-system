@@ -42,7 +42,7 @@ abstract class ActivityNotification extends Notification
 
     protected function whenLabel(): string
     {
-        return $this->activity->starts_at->format('l, j M · g:i A');
+        return $this->activity->starts_at->translatedFormat('l, j M · g:i A');
     }
 
     protected function whereSuffix(): string

@@ -11,20 +11,20 @@ class WaitlistPromoted extends ActivityNotification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject("You're in: ".$this->activity->title)
-            ->greeting("You're in!")
-            ->line('A spot opened up, so you are now registered for '.$this->activity->title.' on '.$this->whenLabel().'.')
-            ->action('View activities', $this->url());
+            ->subject($this->pushTitle())
+            ->greeting(__("You're in!"))
+            ->line(__('A spot opened up, so you are now registered for :activity on :when.', ['activity' => $this->activity->title, 'when' => $this->whenLabel()]))
+            ->action(__('View activities'), $this->url());
     }
 
     protected function pushTitle(): string
     {
-        return "You're in: ".$this->activity->title;
+        return __("You're in: :activity", ['activity' => $this->activity->title]);
     }
 
     protected function pushBody(): string
     {
-        return 'A spot opened up: '.$this->whenLabel().$this->whereSuffix();
+        return __('A spot opened up: :when', ['when' => $this->whenLabel()]).$this->whereSuffix();
     }
 
     /** @return array<string, mixed> */
@@ -36,7 +36,7 @@ class WaitlistPromoted extends ActivityNotification
             ->icon('heroicon-o-check-badge')
             ->success()
             ->actions([
-                Action::make('view')->label('View')->url($this->url())->markAsRead(),
+                Action::make('view')->label(__('View'))->url($this->url())->markAsRead(),
             ])
             ->getDatabaseMessage();
     }

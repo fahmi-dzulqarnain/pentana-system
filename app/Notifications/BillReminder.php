@@ -34,24 +34,22 @@ class BillReminder extends Notification
 
     private function pushTitle(): string
     {
-        return 'Outstanding dues reminder';
+        return __('Outstanding dues reminder');
     }
 
     private function pushBody(): string
     {
-        return 'MYR '.number_format($this->outstanding, 2)
-            .' outstanding across '.$this->unpaidCount.' bill(s).';
+        return __('MYR :amount outstanding across :count bill(s).', $this->amounts());
     }
 
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('Reminder: outstanding dues')
-            ->greeting('Friendly reminder')
-            ->line('You have MYR '.number_format($this->outstanding, 2)
-                .' outstanding across '.$this->unpaidCount.' bill(s).')
-            ->line('Once you have transferred, upload a payment proof and an admin will verify it.')
-            ->action('View my bills', $this->url());
+            ->subject(__('Reminder: outstanding dues'))
+            ->greeting(__('Friendly reminder'))
+            ->line(__('You have MYR :amount outstanding across :count bill(s).', $this->amounts()))
+            ->line(__('Once you have transferred, upload a payment proof and an admin will verify it.'))
+            ->action(__('View my bills'), $this->url());
     }
 
     /** @return array<string, mixed> */
@@ -63,9 +61,15 @@ class BillReminder extends Notification
             ->icon('heroicon-o-banknotes')
             ->warning()
             ->actions([
-                Action::make('view')->label('View bills')->url($this->url())->markAsRead(),
+                Action::make('view')->label(__('View bills'))->url($this->url())->markAsRead(),
             ])
             ->getDatabaseMessage();
+    }
+
+    /** @return array{amount: string, count: int} */
+    private function amounts(): array
+    {
+        return ['amount' => number_format($this->outstanding, 2), 'count' => $this->unpaidCount];
     }
 
     private function url(): string

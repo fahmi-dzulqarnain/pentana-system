@@ -11,15 +11,15 @@ class ActivityCancelled extends ActivityNotification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('Activity cancelled: '.$this->activity->title)
-            ->greeting('Activity cancelled')
-            ->line($this->activity->title.' scheduled for '.$this->whenLabel().' has been cancelled.')
-            ->action('View activities', $this->url());
+            ->subject($this->pushTitle())
+            ->greeting(__('Activity cancelled'))
+            ->line(__(':activity scheduled for :when has been cancelled.', ['activity' => $this->activity->title, 'when' => $this->whenLabel()]))
+            ->action(__('View activities'), $this->url());
     }
 
     protected function pushTitle(): string
     {
-        return 'Activity cancelled: '.$this->activity->title;
+        return __('Activity cancelled: :activity', ['activity' => $this->activity->title]);
     }
 
     /** @return array<string, mixed> */
@@ -31,7 +31,7 @@ class ActivityCancelled extends ActivityNotification
             ->icon('heroicon-o-x-circle')
             ->warning()
             ->actions([
-                Action::make('view')->label('View')->url($this->url())->markAsRead(),
+                Action::make('view')->label(__('View'))->url($this->url())->markAsRead(),
             ])
             ->getDatabaseMessage();
     }

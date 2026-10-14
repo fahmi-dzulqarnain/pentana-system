@@ -33,22 +33,25 @@ class LunchPublished extends Notification
 
     private function pushTitle(): string
     {
-        return 'Lunch published: '.($this->lunch->catererMeal?->name ?? 'Menu');
+        return __('Lunch published: :menu', ['menu' => $this->lunch->catererMeal?->name ?? __('Menu')]);
     }
 
     private function pushBody(): string
     {
-        return 'Order by '.$this->lunch->deadline->format('g:i A, D j M').'.';
+        return __('Order by :deadline.', ['deadline' => $this->lunch->deadline->translatedFormat('g:i A, D j M')]);
     }
 
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('Lunch menu for '.$this->lunch->date->format('D, j M'))
-            ->greeting('Lunch is on the menu')
-            ->line(($this->lunch->catererMeal?->name ?? 'A menu').' has been published for '.$this->lunch->date->format('l, j M').'.')
-            ->line('Order by '.$this->lunch->deadline->format('g:i A, D j M').'.')
-            ->action('Place your order', MyLunch::getUrl(panel: 'account'));
+            ->subject(__('Lunch menu for :date', ['date' => $this->lunch->date->translatedFormat('D, j M')]))
+            ->greeting(__('Lunch is on the menu'))
+            ->line(__(':menu has been published for :date.', [
+                'menu' => $this->lunch->catererMeal?->name ?? __('A menu'),
+                'date' => $this->lunch->date->translatedFormat('l, j M'),
+            ]))
+            ->line($this->pushBody())
+            ->action(__('Place your order'), MyLunch::getUrl(panel: 'account'));
     }
 
     /** @return array<string, mixed> */
@@ -60,7 +63,7 @@ class LunchPublished extends Notification
             ->icon('heroicon-o-ticket')
             ->success()
             ->actions([
-                Action::make('order')->label('Order now')->url(MyLunch::getUrl(panel: 'account'))->markAsRead(),
+                Action::make('order')->label(__('Order now'))->url(MyLunch::getUrl(panel: 'account'))->markAsRead(),
             ])
             ->getDatabaseMessage();
     }
