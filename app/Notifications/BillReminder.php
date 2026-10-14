@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Models\QueuedEmail;
 use App\Notifications\Concerns\PushesViaApn;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification as FilamentNotification;
@@ -9,6 +10,7 @@ use Filament\Pages\Dashboard;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use NotificationChannels\Apn\ApnMessage;
+use Symfony\Component\Mime\Email as SymfonyEmail;
 
 /**
  * Twice-monthly nudge for members with an outstanding balance. Delivered INLINE
@@ -51,7 +53,10 @@ class BillReminder extends Notification
             ->line('You have MYR '.number_format($this->outstanding, 2)
                 .' outstanding across '.$this->unpaidCount.' bill(s).')
             ->line('Once you have transferred, upload a payment proof and an admin will verify it.')
-            ->action('View my bills', $this->url());
+            ->action('View my bills', $this->url())
+            ->withSymfonyMessage(function (SymfonyEmail $message) {
+                $message->getHeaders()->addTextHeader(QueuedEmail::PRIORITY_HEADER, '80');
+            });
     }
 
     /** @return array<string, mixed> */

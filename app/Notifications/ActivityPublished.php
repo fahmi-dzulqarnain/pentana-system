@@ -2,9 +2,11 @@
 
 namespace App\Notifications;
 
+use App\Models\QueuedEmail;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification as FilamentNotification;
 use Illuminate\Notifications\Messages\MailMessage;
+use Symfony\Component\Mime\Email as SymfonyEmail;
 
 class ActivityPublished extends ActivityNotification
 {
@@ -19,7 +21,10 @@ class ActivityPublished extends ActivityNotification
             $mail->line('Where: '.$this->activity->location);
         }
 
-        return $mail->action('View activities', $this->url());
+        return $mail->action('View activities', $this->url())
+            ->withSymfonyMessage(function (SymfonyEmail $message) {
+                $message->getHeaders()->addTextHeader(QueuedEmail::PRIORITY_HEADER, '10');
+            });
     }
 
     protected function pushTitle(): string
