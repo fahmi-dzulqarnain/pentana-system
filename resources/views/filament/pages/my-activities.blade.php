@@ -59,7 +59,7 @@
                     <span class="ma-badge ma-badge--ok">Registered</span>
                     <button type="button" class="ma-btn" wire:click="cancelRegistration({{ $activity->id }})">Cancel</button>
                 @elseif($status === 'waitlisted')
-                    <span class="ma-badge ma-badge--wait">Waitlisted — #{{ $this->waitlistPositionFor($activity) }}</span>
+                    <span class="ma-badge ma-badge--wait">Waitlisted #{{ $this->waitlistPositionFor($activity) }}</span>
                     <button type="button" class="ma-btn" wire:click="cancelRegistration({{ $activity->id }})">Cancel</button>
                 @elseif($activity->isFull())
                     <span class="ma-meta">Full</span>
@@ -124,7 +124,7 @@
                             <textarea class="ma-input" rows="3" wire:model="answers.{{ $field['key'] }}"></textarea>
                         @elseif(($field['type'] ?? 'text') === 'select')
                             <select class="ma-input" wire:model="answers.{{ $field['key'] }}">
-                                <option value="">— choose —</option>
+                                <option value="">Choose an option</option>
                                 @foreach($field['options'] ?? [] as $option)
                                     <option value="{{ $option }}">{{ $option }}</option>
                                 @endforeach

@@ -43,7 +43,7 @@ class PushNotificationTest extends TestCase
         Sanctum::actingAs($second);
         $this->postJson('/api/v1/device-tokens', ['token' => 'shared-tok'])->assertCreated();
 
-        // Still one row — the device changed hands to whoever signed in.
+        // Still one row - the device changed hands to whoever signed in.
         $this->assertDatabaseCount('device_tokens', 1);
         $this->assertDatabaseHas('device_tokens', ['token' => 'shared-tok', 'user_id' => $second->id]);
     }

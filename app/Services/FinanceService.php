@@ -28,7 +28,7 @@ class FinanceService
 
     /**
      * Allocate every verified-but-unspent ringgit the member has to their
-     * outstanding bills — oldest bill first, drawing from the oldest proof
+     * outstanding bills - oldest bill first, drawing from the oldest proof
      * first. Whatever stays unallocated remains the member's credit, held
      * implicitly as the proof's remainder (see User::getCreditAttribute()).
      */

@@ -54,7 +54,7 @@ class LunchPublishNotificationTest extends TestCase
 
     public function test_the_notification_builds_and_persists_a_database_record_when_sent(): void
     {
-        // No Notification::fake() — exercise the real toDatabase()/toMail() build paths
+        // No Notification::fake() - exercise the real toDatabase()/toMail() build paths
         // (Filament getDatabaseMessage + the Action url, and MyLunch::getUrl in the mail).
         Mail::fake();
         $user = User::factory()->create();

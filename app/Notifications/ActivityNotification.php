@@ -31,10 +31,10 @@ abstract class ActivityNotification extends Notification
             ->body($this->pushBody());
     }
 
-    /** Push/bell title — implemented per notification. */
+    /** Push/bell title - implemented per notification. */
     abstract protected function pushTitle(): string;
 
-    /** Push/bell body — defaults to the when + where line. */
+    /** Push/bell body - defaults to the when + where line. */
     protected function pushBody(): string
     {
         return $this->whenLabel().$this->whereSuffix();

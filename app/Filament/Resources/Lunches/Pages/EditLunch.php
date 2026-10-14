@@ -45,7 +45,7 @@ class EditLunch extends EditRecord
                     Notification::send(User::all(), new LunchPublished($this->record->fresh()));
 
                     FilamentNotification::make()
-                        ->title('Published — members notified')
+                        ->title('Published: members notified')
                         ->success()
                         ->send();
                 }),

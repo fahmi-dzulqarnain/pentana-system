@@ -33,7 +33,7 @@ class ActivityRegistrationService
                 ->first();
 
             if ($existing && in_array($existing->status, ['registered', 'waitlisted'], true)) {
-                return $existing; // already in — idempotent
+                return $existing; // already in - idempotent
             }
 
             return ActivityRegistration::updateOrCreate(

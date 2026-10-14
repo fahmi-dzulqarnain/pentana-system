@@ -54,7 +54,7 @@
                 </x-filament::button>
             </div>
         @empty
-            <p class="pk-empty">No passkeys yet — add one above for password-free sign-in.</p>
+            <p class="pk-empty">No passkeys yet. Add one above for password-free sign-in.</p>
         @endforelse
     </div>
 </div>

@@ -17,7 +17,7 @@ class BirthdayWish extends Notification
 
     public function toMail(object $notifiable): MailMessage
     {
-        // $body is RichEditor HTML — render it unescaped via a custom mail view
+        // $body is RichEditor HTML - render it unescaped via a custom mail view
         // (MailMessage->line() would escape the tags).
         return (new MailMessage)
             ->subject($this->subject)

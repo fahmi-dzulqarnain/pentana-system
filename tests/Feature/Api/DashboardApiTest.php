@@ -77,7 +77,7 @@ class DashboardApiTest extends TestCase
         ]);
         LunchResponse::factory()->create(['lunch_id' => $responded->id, 'user_id' => $member->id]);
 
-        // Later lunch, still needs a vote — this is the actionable one.
+        // Later lunch, still needs a vote - this is the actionable one.
         $needsVote = Lunch::factory()->create([
             'status' => 'published', 'date' => today()->addDays(3), 'deadline' => now()->addDays(4),
         ]);

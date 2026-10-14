@@ -13,7 +13,7 @@ class WaitlistPromoted extends ActivityNotification
         return (new MailMessage)
             ->subject("You're in: ".$this->activity->title)
             ->greeting("You're in!")
-            ->line('A spot opened up — you are now registered for '.$this->activity->title.' on '.$this->whenLabel().'.')
+            ->line('A spot opened up, so you are now registered for '.$this->activity->title.' on '.$this->whenLabel().'.')
             ->action('View activities', $this->url());
     }
 
@@ -24,7 +24,7 @@ class WaitlistPromoted extends ActivityNotification
 
     protected function pushBody(): string
     {
-        return 'A spot opened up — '.$this->whenLabel().$this->whereSuffix();
+        return 'A spot opened up: '.$this->whenLabel().$this->whereSuffix();
     }
 
     /** @return array<string, mixed> */

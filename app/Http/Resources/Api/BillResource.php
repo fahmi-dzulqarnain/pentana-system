@@ -16,7 +16,7 @@ class BillResource extends JsonResource
         $paid = (float) ($this->allocations_sum_amount_allocated ?? 0);
         $outstanding = max(0, (float) $this->amount_due - $paid);
 
-        // Money as fixed-2dp strings — avoids float rounding across the API/client boundary.
+        // Money as fixed-2dp strings - avoids float rounding across the API/client boundary.
         return [
             'id' => $this->id,
             'month' => $this->month_date->format('Y-m'),

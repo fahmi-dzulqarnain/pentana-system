@@ -17,7 +17,7 @@
         /* Full-page wizard: the header group (title + subtitle + step indicators) sits
            at the top, the active step's field is centred in the space below, and the
            footer button is pinned bottom-right. We keep the single Filament Wizard
-           (its step logic stays intact) and lay its three regions out with a grid —
+           (its step logic stays intact) and lay its three regions out with a grid -
            header (auto) / active step (1fr) / footer (auto). Inactive steps are
            position:absolute (Filament), so they don't consume a grid row. */
         .claim-stage {
@@ -103,7 +103,7 @@
                 </h1>
 
                 <p style="margin:0;color:#6b7280;">
-                    Welcome, <strong style="color:#111827;">{{ $memberName }}</strong> — {{ $memberGrade }}.
+                    Welcome, <strong style="color:#111827;">{{ $memberName }}</strong>@if($memberGrade) ({{ $memberGrade }})@endif.
                     Just two quick steps to finish setting up.
                 </p>
             </header>

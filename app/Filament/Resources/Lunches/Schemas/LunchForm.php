@@ -49,7 +49,7 @@ class LunchForm
                     ->columnSpanFull()
                     ->content(function (?Lunch $record): string {
                         if (! $record) {
-                            return '—';
+                            return '-';
                         }
 
                         $record->loadMissing('responses', 'options.mealOption');

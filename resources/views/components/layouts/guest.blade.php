@@ -9,7 +9,7 @@
     @filamentStyles
     {{-- Filament's compiled component/theme CSS (forms, wizard, inputs, buttons). On a
          panel page @filamentStyles emits this, but this standalone guest route has no
-         panel context, so link the published file directly — otherwise the Wizard renders
+         panel context, so link the published file directly - otherwise the Wizard renders
          unstyled. We deliberately do NOT @vite the app's Tailwind CSS here: it would
          double-load Tailwind preflight on top of Filament's and break the layout.
          Livewire's JS is injected on its own, so no @vite app.js is needed either. --}}

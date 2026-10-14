@@ -24,7 +24,7 @@ class BirthdayEmailHtmlTest extends TestCase
     {
         $html = view('mail.auto-email', ['body' => '<p>Hi <strong>Aisyah</strong>!</p>'])->render();
 
-        // Rendered unescaped — escaping would produce &lt;p&gt; instead.
+        // Rendered unescaped - escaping would produce &lt;p&gt; instead.
         $this->assertStringContainsString('<p>Hi <strong>Aisyah</strong>!</p>', $html);
     }
 }

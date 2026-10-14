@@ -17,7 +17,7 @@ class AuthController extends Controller
         $user = User::where('email', $request->validated('email'))->first();
 
         // Reject unknown, unclaimed (no password / not activated), or wrong-password accounts
-        // with the same generic 401 — no user enumeration. getAuthPassword() returns '' for a
+        // with the same generic 401 - no user enumeration. getAuthPassword() returns '' for a
         // null password, so Hash::check cleanly fails for imported-but-unclaimed members.
         if (! $user || ! $user->isActivated()
             || ! Hash::check($request->validated('password'), $user->getAuthPassword())) {

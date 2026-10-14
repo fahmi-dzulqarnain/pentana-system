@@ -132,7 +132,7 @@ class MyActivities extends Page
             $this->validate($rules);
         }
 
-        // Never trust the public `answers` prop wholesale — keep only the defined question keys.
+        // Never trust the public `answers` prop wholesale - keep only the defined question keys.
         $answers = collect($this->answers)->only(array_column($fields, 'key'))->all();
 
         try {

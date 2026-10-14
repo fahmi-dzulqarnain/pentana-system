@@ -66,7 +66,7 @@ class ClaimAccountPageTest extends TestCase
             ->set('email', 'nobody@example.com')
             ->call('lookup')
             ->assertSet('stage', 'lookup')
-            ->assertSet('lookupMessage', "We couldn't find that email — please check with your admin.");
+            ->assertSet('lookupMessage', "We couldn't find that email. Please check with your admin.");
     }
 
     public function test_lookup_reports_an_already_active_account(): void
@@ -77,7 +77,7 @@ class ClaimAccountPageTest extends TestCase
             ->set('email', 'done@example.com')
             ->call('lookup')
             ->assertSet('stage', 'lookup')
-            ->assertSet('lookupMessage', 'This account is already active — please log in.');
+            ->assertSet('lookupMessage', 'This account is already active. Please log in.');
     }
 
     public function test_completing_the_claim_activates_the_account_and_logs_the_member_in(): void

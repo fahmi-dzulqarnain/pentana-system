@@ -45,7 +45,7 @@ class LoginGatingTest extends TestCase
     public function test_the_passkey_authentication_options_route_is_registered(): void
     {
         // Proves Route::passkeys() is wired (the package does not auto-register
-        // it). We only assert the route resolves — a registered route returns
+        // it). We only assert the route resolves - a registered route returns
         // anything but 404; the WebAuthn ceremony itself is smoke-tested later.
         $this->get(route('passkeys.authentication_options'))->assertStatus(200);
     }

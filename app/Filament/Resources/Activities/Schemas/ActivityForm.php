@@ -57,7 +57,7 @@ class ActivityForm
                 // Optional per-activity questions members answer when registering.
                 Repeater::make('registration_fields')
                     ->label('Registration questions')
-                    ->helperText('Optional — questions members answer when they register.')
+                    ->helperText('Optional. Questions members answer when they register.')
                     ->columnSpanFull()
                     ->addActionLabel('Add question')
                     ->reorderable()

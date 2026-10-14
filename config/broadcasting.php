@@ -4,7 +4,7 @@ return [
     'default' => env('BROADCAST_CONNECTION', 'null'),
 
     'connections' => [
-        // APNs (token-based) — used by laravel-notification-channels/apn for member push.
+        // APNs (token-based) - used by laravel-notification-channels/apn for member push.
         // The .p8 lives on the server (path via env); never committed.
         'apn' => [
             'key_id' => env('APN_KEY_ID'),

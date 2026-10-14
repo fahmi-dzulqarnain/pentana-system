@@ -12,12 +12,12 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
 
 /**
- * Demo content for Lunch + Activities — enough to populate the member app's screens
+ * Demo content for Lunch + Activities - enough to populate the member app's screens
  * (App Store review, manual testing). Idempotent: safe to run more than once.
  *
  *   php artisan db:seed --class=DemoContentSeeder
  *
- * Not wired into DatabaseSeeder on purpose — run it explicitly where you want the data.
+ * Not wired into DatabaseSeeder on purpose - run it explicitly where you want the data.
  */
 class DemoContentSeeder extends Seeder
 {
@@ -34,7 +34,7 @@ class DemoContentSeeder extends Seeder
 
     private function seedLunches(): void
     {
-        // 1) Open for voting — future deadline, published.
+        // 1) Open for voting - future deadline, published.
         $dapur = Caterer::firstOrCreate(
             ['name' => 'Dapur Selera'],
             ['contact_name' => 'Aminah', 'phone' => '+60 12-345 6789', 'email' => 'orders@dapurselera.my'],
@@ -59,7 +59,7 @@ class DemoContentSeeder extends Seeder
             );
         }
 
-        // 2) Closed — deadline already passed (shows the "ordering closed" summary).
+        // 2) Closed - deadline already passed (shows the "ordering closed" summary).
         $grind = Caterer::firstOrCreate(
             ['name' => 'The Daily Grind'],
             ['contact_name' => 'Ravi', 'phone' => '+60 12-987 6543', 'email' => 'hello@dailygrind.my'],

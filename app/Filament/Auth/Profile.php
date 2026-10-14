@@ -45,7 +45,7 @@ class Profile extends EditProfile
                     ->schema([
                         Text::make(
                             'Add a passkey for faster, password-free sign-in. Your device '
-                            .'(fingerprint, face, or PIN) unlocks the key — nothing leaves it.'
+                            .'(fingerprint, face, or PIN) unlocks the key, and nothing leaves it.'
                         ),
                         // Spatie's Livewire register component. Reads auth()->user(); no props.
                         Livewire::make('passkeys'),

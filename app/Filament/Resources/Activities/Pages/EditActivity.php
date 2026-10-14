@@ -37,7 +37,7 @@ class EditActivity extends EditRecord
                         new ActivityPublished($this->record->fresh()),
                     );
 
-                    FilamentNotification::make()->title('Published — members notified')->success()->send();
+                    FilamentNotification::make()->title('Published: members notified')->success()->send();
                 }),
             Action::make('cancelActivity')
                 ->label('Cancel activity')

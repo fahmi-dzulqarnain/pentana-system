@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Privacy Policy — PENTANA</title>
+    <title>Privacy Policy | PENTANA</title>
     <meta name="description" content="How PENTANA handles your personal information.">
     <link rel="icon" type="image/png" href="{{ asset('images/pentana-mark.png') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -53,17 +53,17 @@
         <h2>Information we collect</h2>
         <p>We only collect what’s needed to run your membership:</p>
         <ul>
-            <li><strong>Account details</strong> — your name, email address, membership category, date of birth,
+            <li><strong>Account details</strong>: your name, email address, membership category, date of birth,
             and welfare-credit balance. These are provided by your organisation and/or by you when you claim your account.</li>
-            <li><strong>Dues &amp; payments</strong> — your monthly dues, balances and payment history, and any
+            <li><strong>Dues &amp; payments</strong>: your monthly dues, balances and payment history, and any
             <strong>payment-proof images</strong>, amounts and notes you submit.</li>
-            <li><strong>Lunch responses</strong> — the meal option you choose, or that you are not attending.</li>
-            <li><strong>Activity registrations</strong> — your sign-ups and the answers you give to event questions.</li>
-            <li><strong>Notifications</strong> — an anonymous device token so we can send push notifications about
+            <li><strong>Lunch responses</strong>: the meal option you choose, or that you are not attending.</li>
+            <li><strong>Activity registrations</strong>: your sign-ups and the answers you give to event questions.</li>
+            <li><strong>Notifications</strong>: an anonymous device token so we can send push notifications about
             lunches, activities and updates. You can turn notifications off in your device settings at any time.</li>
-            <li><strong>Sign-in credentials</strong> — a securely hashed password and/or a passkey (a public key
+            <li><strong>Sign-in credentials</strong>: a securely hashed password and/or a passkey (a public key
             registered on your device; we never receive your biometric data).</li>
-            <li><strong>Technical data</strong> — basic server logs (such as IP address and request time) kept for
+            <li><strong>Technical data</strong>: basic server logs (such as IP address and request time) kept for
             security and troubleshooting.</li>
         </ul>
         <p>We do <strong>not</strong> use third-party advertising or analytics/tracking SDKs, and we do not track
@@ -78,7 +78,7 @@
         </ul>
 
         <h2>Legal basis</h2>
-        <p>We process your data to administer your membership of the welfare fund, and — for push notifications —
+        <p>We process your data to administer your membership of the welfare fund, and (for push notifications)
         on the basis of your consent.</p>
 
         <h2>How your information is shared</h2>

@@ -14,7 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         // Served behind a Cloudflare Tunnel: cloudflared reaches nginx over HTTP on
         // localhost and forwards X-Forwarded-Proto=https. Trust it so the app knows
-        // requests are HTTPS — required for passkeys (WebAuthn rejects non-HTTPS in
+        // requests are HTTPS - required for passkeys (WebAuthn rejects non-HTTPS in
         // production) and for correct https URL/asset generation. nginx listens on
         // 127.0.0.1 only, so the tunnel is the sole path in.
         $middleware->trustProxies(at: '*');

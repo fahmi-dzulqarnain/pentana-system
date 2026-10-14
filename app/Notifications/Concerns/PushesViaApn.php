@@ -5,7 +5,7 @@ namespace App\Notifications\Concerns;
 use NotificationChannels\Apn\ApnChannel;
 
 /**
- * Adds APNs delivery to a notification — but only when APNs is configured and the
+ * Adds APNs delivery to a notification - but only when APNs is configured and the
  * member actually has a device token. Dev/test environments without `APN_*` env
  * never gain the channel, so notifications keep working without touching APNs.
  */

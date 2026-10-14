@@ -7,7 +7,7 @@
                 @if(is_bool($value))
                     {{ $value ? 'Yes' : 'No' }}
                 @elseif($value === null || $value === '')
-                    <span style="color:#9ca3af;">—</span>
+                    <span style="color:#9ca3af;">-</span>
                 @else
                     {{ $value }}
                 @endif

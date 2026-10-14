@@ -11,7 +11,7 @@ Route::view('/privacy', 'privacy')->name('privacy');
 
 Route::get('/claim', ClaimAccount::class)->name('claim');
 
-// spatie/laravel-passkeys route macro. NOT auto-registered by the package —
+// spatie/laravel-passkeys route macro. NOT auto-registered by the package -
 // the host app must opt in. Registers:
 //   GET  /passkeys/authentication-options  [passkeys.authentication_options]
 //   POST /passkeys/authenticate            [passkeys.login]

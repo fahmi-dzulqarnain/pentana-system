@@ -78,7 +78,7 @@ class AuthTest extends TestCase
 
         $this->withHeader('Authorization', 'Bearer '.$token)->postJson('/api/v1/logout')->assertOk();
 
-        // The token row is gone — in production (fresh boot per request) it can no longer
+        // The token row is gone - in production (fresh boot per request) it can no longer
         // authenticate. We assert the revocation directly rather than re-requesting, because
         // the test app stays booted and the sanctum guard caches the already-resolved user.
         $this->assertDatabaseCount('personal_access_tokens', 0);

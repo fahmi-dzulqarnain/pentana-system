@@ -31,7 +31,7 @@ class AutoEmailsTable
                 TextColumn::make('send_at')
                     ->dateTime()
                     ->sortable()
-                    ->placeholder('—'),
+                    ->placeholder('-'),
             ])
             ->defaultSort('created_at', 'desc')
             ->recordActions([

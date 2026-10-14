@@ -18,7 +18,7 @@ class UserImporter extends Importer
         return [
             ImportColumn::make('email')->requiredMapping()->rules(['required', 'email']),
             ImportColumn::make('name')->requiredMapping()->rules(['required', 'string']),
-            // 'grade' is not a User attribute — validate it but don't let Filament write it to the model.
+            // 'grade' is not a User attribute - validate it but don't let Filament write it to the model.
             ImportColumn::make('grade')->requiredMapping()->rules(['required', 'string'])->fillRecordUsing(fn () => null),
         ];
     }
@@ -57,7 +57,7 @@ class UserImporter extends Importer
             .number_format($import->getFailedRowsCount()).' row(s) skipped or failed.';
     }
 
-    // No queue worker runs in this app — import inline.
+    // No queue worker runs in this app - import inline.
     public function getJobConnection(): ?string
     {
         return 'sync';

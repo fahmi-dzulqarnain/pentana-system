@@ -3,8 +3,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>PENTANA — Welfare &amp; membership</title>
-    <meta name="description" content="PENTANA is the member companion to your organisation's welfare fund — pay monthly dues, vote on lunch, and register for activities.">
+    <title>PENTANA | Welfare &amp; membership</title>
+    <meta name="description" content="PENTANA is the member companion to your organisation's welfare fund. Pay monthly dues, vote on lunch, and register for activities.">
 
     <link rel="icon" type="image/png" href="{{ asset('images/pentana-mark.png') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,7 +14,7 @@
     @verbatim
     <style>
     /* ============================================================
-       PENTANA landing page — from the Claude Design handoff.
+       PENTANA landing page - from the Claude Design handoff.
        Token system (light + auto dark) reproduced from the design's
        DS + landing tokens; brand orange #F7931E + deep indigo #1B1464.
        ============================================================ */
@@ -68,7 +68,7 @@
     .pl svg { stroke-linecap: round; stroke-linejoin: round; }
     :where(.pl) a { color: inherit; }
 
-    /* Dark theme — applied by JS via data-pl-theme (resolves the OS default on first
+    /* Dark theme - applied by JS via data-pl-theme (resolves the OS default on first
        load, then remembers an explicit toggle). Single block, no media query, so a
        manual choice always wins. */
     html[data-pl-theme="dark"] .pl {
@@ -288,8 +288,8 @@
         <div class="pl-wrap">
             <div>
                 <div class="pl-eyebrow">PENTANA · member companion</div>
-                <h1>Your dues, lunch and activities — in one place.</h1>
-                <p class="sub">PENTANA is the member companion to your organisation's welfare fund — pay monthly dues, vote on lunch, and register for activities.</p>
+                <h1>Your dues, lunch and activities, all in one place.</h1>
+                <p class="sub">PENTANA is the member companion to your organisation's welfare fund. Pay monthly dues, vote on lunch, and register for activities.</p>
                 <div class="cta">
                     <a href="{{ route('claim') }}" class="pl-btn pl-btn--primary">
                         Claim your account
@@ -349,7 +349,7 @@
                 </div>
                 <div class="pl-card activ">
                     <span class="chip"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/></svg></span>
-                    <div><div class="t">Activities</div><p>Register for events and outings — and see who else is going.</p></div>
+                    <div><div class="t">Activities</div><p>Register for events and outings, and see who else is going.</p></div>
                 </div>
                 <div class="pl-card proof">
                     <span class="chip"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></span>
@@ -366,9 +366,9 @@
             <div class="copy">
                 <div class="pl-eyebrow on-dark">Get the app</div>
                 <h2>Take PENTANA with you</h2>
-                <p class="sub">Dues, lunch votes and activity sign-ups — all in a native app for iOS and Android.</p>
+                <p class="sub">Dues, lunch votes and activity sign-ups, all in a native app for iOS and Android.</p>
                 <span class="pl-soon"><span class="dot"></span> Coming soon to iOS &amp; Android</span>
-                <div class="badges" aria-label="App Store and Google Play — not yet available">
+                <div class="badges" aria-label="App Store and Google Play, not yet available">
                     <span class="pl-storebadge" aria-hidden="true">
                         <svg width="22" height="22" viewBox="0 0 384 512" fill="currentColor" aria-hidden="true"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.7-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg>
                         <span class="two"><span class="s">Download on the</span><span class="b">App Store</span></span>
@@ -378,7 +378,7 @@
                         <span class="two"><span class="s">GET IT ON</span><span class="b">Google Play</span></span>
                     </span>
                 </div>
-                <p class="note">Store links aren't live yet. <a href="{{ route('claim') }}" style="color:#fff;font-weight:600;text-decoration:underline">Claim your account</a> now — we'll notify you the day they land.</p>
+                <p class="note">Store links aren't live yet. <a href="{{ route('claim') }}" style="color:#fff;font-weight:600;text-decoration:underline">Claim your account</a> now and we'll notify you the day they land.</p>
             </div>
             <div class="pl-phonecol">
                 <div class="pl-phone">
@@ -417,11 +417,11 @@
             </div>
             <div class="pl-step">
                 <span class="num">02</span>
-                <div><div class="t">Download the app</div><p>PENTANA for iOS and Android — arriving in the stores soon.</p></div>
+                <div><div class="t">Download the app</div><p>PENTANA for iOS and Android, arriving in the stores soon.</p></div>
             </div>
             <div class="pl-step">
                 <span class="num">03</span>
-                <div><div class="t">Sign in</div><p>Password or passkey — your dues, lunch and activities are ready.</p></div>
+                <div><div class="t">Sign in</div><p>Sign in with a password or passkey. Your dues, lunch and activities are ready.</p></div>
             </div>
         </div>
     </section>

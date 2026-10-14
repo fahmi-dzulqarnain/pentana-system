@@ -55,7 +55,7 @@ class ClaimAccount extends Component implements HasSchemas
         if ($user) {
             $this->userId = $user->id;
             $this->memberName = $user->name;
-            $this->memberGrade = $user->memberCategory?->name ?? '—';
+            $this->memberGrade = $user->memberCategory?->name ?? '';
             $this->stage = 'claim';
             $this->lookupMessage = null;
 
@@ -64,8 +64,8 @@ class ClaimAccount extends Component implements HasSchemas
 
         $existing = User::where('email', trim($this->email))->first();
         $this->lookupMessage = $existing
-            ? 'This account is already active — please log in.'
-            : "We couldn't find that email — please check with your admin.";
+            ? 'This account is already active. Please log in.'
+            : "We couldn't find that email. Please check with your admin.";
     }
 
     public function claimForm(Schema $schema): Schema

@@ -45,7 +45,7 @@ class LunchVotingServiceTest extends TestCase
         $service->respond($lunch, $user, $option->id);
         $this->assertDatabaseHas('lunch_responses', ['lunch_id' => $lunch->id, 'user_id' => $user->id, 'meal_option_id' => $option->id]);
 
-        // Change to not attending — still one row.
+        // Change to not attending - still one row.
         $service->respond($lunch, $user, null);
         $this->assertSame(1, LunchResponse::where(['lunch_id' => $lunch->id, 'user_id' => $user->id])->count());
         $this->assertNull(LunchResponse::where(['lunch_id' => $lunch->id, 'user_id' => $user->id])->first()->meal_option_id);
