@@ -24,7 +24,10 @@ Internal network ──HTTPS──> nginx ──FastCGI──> php-fpm ──> L
 
 **Stack facts that shape the steps below**
 
-- PHP **8.3** from the Ubuntu repos satisfies Laravel 12's `^8.2` — no PPA needed.
+- PHP **8.4** from the **ondrej/php PPA**, not the distro's 8.3. `composer.lock` resolves
+  `symfony/* 8.1` (`>=8.4.1`) and `laravel-notification-channels/apn v6.4` (`^8.4`), so the
+  lock cannot install on 8.3 even though `composer.json` declares `"php": "^8.2"`. That
+  mismatch is a repo-level issue worth fixing at the source.
 - **Do not `apt install nodejs`.** Ubuntu 24.04 ships Node 18.19; Vite 7 requires
   `^20.19 || >=22.12`, so the asset build fails. Use NodeSource Node 22.
 - **No queue worker** — notifications/emails are delivered inline.
@@ -53,7 +56,17 @@ It installs PHP 8.3 + extensions (`pgsql mbstring xml curl zip bcmath intl gd`),
 the payment-proof uploads; writes the nginx site; and creates `/var/www/pentana` owned by
 `fahmi:www-data`.
 
-## 2. TLS — decide before go-live
+## 2. TLS
+
+`setup-tls-selfsigned.sh` issues a self-signed certificate and switches nginx to HTTPS:
+
+```bash
+scp setup-tls-selfsigned.sh pentana:/tmp/
+ssh -t pentana 'sudo bash /tmp/setup-tls-selfsigned.sh pentana.silentmode.my'
+```
+
+It detects the running PHP-FPM socket, so it is safe to re-run after a PHP upgrade.
+**This is interim** — the options below remain the real decision.
 
 Passkey sign-in is the app's primary auth and needs a secure context. Three options:
 
@@ -74,6 +87,11 @@ set `APP_URL=https://<hostname>` in `.env`.
 
 ## 3. Deploy the application
 
+> **Build assets before running any artisan command.** A service provider resolves a Vite
+> asset at boot, so `composer install`'s `package:discover` hook fails with "Vite manifest
+> not found" on a host where `public/build/` doesn't exist yet. Order: `npm run build`
+> first, then `composer install`.
+
 ```bash
 ssh pentana
 cd /var/www/pentana
@@ -87,8 +105,8 @@ chmod 600 .env
 #      QUEUE_CONNECTION=sync, MAIL_MAILER=log
 php artisan key:generate
 
+npm ci && npm run build          # FIRST — manifest is gitignored, and artisan needs it
 composer install --no-dev --optimize-autoloader
-npm ci && npm run build          # build manifest is gitignored — must run on the host
 php artisan filament:assets
 php artisan storage:link
 
@@ -139,7 +157,7 @@ npm ci && npm run build
 php artisan filament:assets
 php artisan migrate --force
 php artisan optimize:clear && php artisan optimize
-sudo systemctl reload php8.3-fpm
+sudo systemctl reload php8.4-fpm
 php artisan up
 echo "Deployed $(git rev-parse --short HEAD)"
 ```
@@ -149,7 +167,7 @@ echo "Deployed $(git rev-parse --short HEAD)"
 **Logs**
 - App: `storage/logs/laravel.log` (also where "sent" mail lands while `MAIL_MAILER=log`)
 - nginx: `/var/log/nginx/{access,error}.log`
-- php-fpm: `journalctl -u php8.3-fpm`
+- php-fpm: `journalctl -u php8.4-fpm`
 
 **Health**
 ```bash

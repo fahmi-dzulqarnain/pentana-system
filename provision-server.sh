@@ -11,7 +11,7 @@ set -euo pipefail
 
 APP_USER="${APP_USER:-fahmi}"
 APP_DIR="${APP_DIR:-/var/www/pentana}"
-PHP_VER="8.3"
+PHP_VER="8.4"
 NODE_MAJOR="22"
 UPLOAD_MAX="20M"
 POST_MAX="21M"
@@ -24,10 +24,14 @@ fi
 echo "==> 1/7  System packages"
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -qq
-apt-get install -y -qq curl ca-certificates gnupg git unzip acl
+apt-get install -y -qq curl ca-certificates gnupg git unzip acl software-properties-common
 
 echo "==> 2/7  PHP ${PHP_VER} + extensions"
-# Ubuntu 24.04 ships PHP 8.3, which satisfies Laravel 12's ^8.2 — no PPA needed.
+# Ubuntu 24.04 only ships PHP 8.3, but composer.lock resolves symfony/* 8.1 and
+# laravel-notification-channels/apn v6.4, which require PHP >= 8.4. The lock will
+# not install on 8.3, so PHP comes from the ondrej PPA rather than the distro.
+add-apt-repository -y ppa:ondrej/php
+apt-get update -qq
 apt-get install -y -qq \
     "php${PHP_VER}-fpm" "php${PHP_VER}-cli" \
     "php${PHP_VER}-pgsql" "php${PHP_VER}-mbstring" "php${PHP_VER}-xml" \
