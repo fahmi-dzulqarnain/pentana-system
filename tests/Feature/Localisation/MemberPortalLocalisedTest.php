@@ -9,7 +9,6 @@ use App\Filament\Widgets\MyNextActivity;
 use App\Models\Lunch;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Lang;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -44,27 +43,23 @@ class MemberPortalLocalisedTest extends TestCase
         try {
             foreach (['ms', 'id'] as $locale) {
                 $missing = [];
-                Lang::handleMissingKeysUsing(function (string $key, array $replace, ?string $l) use (&$missing, $locale) {
-                    if (($l ?? app()->getLocale()) === $locale && self::isAppKey($key) && ! self::isVendorTranslatedValue($key, $locale)) {
-                        $missing[$key] = true;
-                    }
-
-                    return $key;
-                });
+                $translator = $this->guardMissingKeys($locale, $missing);
 
                 $member->forceFill(['locale' => $locale])->save();
                 foreach (['/account', '/account/my-lunch', '/account/my-activities', '/account/profile'] as $url) {
+                    $translator->reset();
                     $this->actingAs($member)->get($url)->assertOk();
                 }
                 app()->setLocale($locale);
                 foreach ([MyBillsStats::class, MyBillsTable::class, MyNextActivity::class] as $widget) {
+                    $translator->reset();
                     Livewire::test($widget)->assertOk();
                 }
 
                 $this->assertSame([], array_keys($missing), "Untranslated strings rendered in $locale");
             }
         } finally {
-            Lang::handleMissingKeysUsing(null);
+            $this->app['translator']->handleMissingKeysUsing(null);
         }
     }
 

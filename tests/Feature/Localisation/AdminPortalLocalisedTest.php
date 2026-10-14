@@ -12,7 +12,6 @@ use App\Models\CatererMeal;
 use App\Models\User;
 use Filament\Actions\Imports\Models\Import;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Lang;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -79,19 +78,15 @@ class AdminPortalLocalisedTest extends TestCase
         try {
             foreach (['ms', 'id'] as $locale) {
                 $missing = [];
-                Lang::handleMissingKeysUsing(function (string $key, array $replace, ?string $l) use (&$missing, $locale) {
-                    if (($l ?? app()->getLocale()) === $locale && self::isAppKey($key) && ! self::isVendorTranslatedValue($key, $locale)) {
-                        $missing[$key] = true;
-                    }
-
-                    return $key;
-                });
+                $translator = $this->guardMissingKeys($locale, $missing);
                 app()->setLocale($locale);
                 $this->actingAs($admin);
 
+                $translator->reset();
                 Livewire::test(RegistrationsRelationManager::class, ['ownerRecord' => $activity, 'pageClass' => EditActivity::class])
                     ->assertOk()
                     ->assertSee(__('Registered', [], $locale));
+                $translator->reset();
                 Livewire::test(CatererMealsRelationManager::class, ['ownerRecord' => $meal->caterer, 'pageClass' => EditCaterer::class])
                     ->assertOk()
                     ->assertSee($meal->name);
@@ -99,7 +94,7 @@ class AdminPortalLocalisedTest extends TestCase
                 $this->assertSame([], array_keys($missing), "Untranslated strings rendered in $locale");
             }
         } finally {
-            Lang::handleMissingKeysUsing(null);
+            $this->app['translator']->handleMissingKeysUsing(null);
         }
     }
 }

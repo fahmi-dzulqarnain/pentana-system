@@ -15,7 +15,6 @@ use App\Models\Payment\PaymentProof;
 use App\Models\User;
 use App\Services\ActivityRegistrationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Lang;
 use Tests\TestCase;
 
 /**
@@ -92,27 +91,23 @@ class RenderedPagesAreTranslatedTest extends TestCase
         try {
             foreach (['ms', 'id'] as $locale) {
                 $missing = [];
-                Lang::handleMissingKeysUsing(function (string $key, array $replace, ?string $l) use (&$missing, $locale) {
-                    if (($l ?? app()->getLocale()) === $locale && self::isAppKey($key) && ! self::isVendorTranslatedValue($key, $locale)) {
-                        $missing[$key] = true;
-                    }
-
-                    return $key;
-                });
+                $translator = $this->guardMissingKeys($locale, $missing);
 
                 foreach (self::guestPages() as $url) {
                     auth()->logout();
+                    $translator->reset();
                     $this->withUnencryptedCookie('locale', $locale)->get($url)->assertOk();
                 }
                 $admin->forceFill(['locale' => $locale])->save();
                 foreach ($urls as $url) {
+                    $translator->reset();
                     $this->actingAs($admin)->get($url)->assertOk();
                 }
 
                 $this->assertSame([], array_keys($missing), "Untranslated strings rendered in $locale");
             }
         } finally {
-            Lang::handleMissingKeysUsing(null);
+            $this->app['translator']->handleMissingKeysUsing(null);
         }
     }
 

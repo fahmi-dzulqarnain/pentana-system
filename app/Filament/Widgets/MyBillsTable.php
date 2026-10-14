@@ -3,6 +3,7 @@
 namespace App\Filament\Widgets;
 
 use App\Models\Payment\FeePeriod;
+use App\Support\StatusLabel;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget;
@@ -41,12 +42,7 @@ class MyBillsTable extends TableWidget
                     ->default(0),
                 TextColumn::make('status')
                     ->badge()
-                    ->formatStateUsing(fn (string $state, FeePeriod $record): string => $record->type === 'free' && $state === 'paid' ? __('Free') : match ($state) {
-                        'paid' => __('Paid'),
-                        'partial' => __('Partial'),
-                        'unpaid' => __('Unpaid'),
-                        default => ucfirst($state),
-                    })
+                    ->formatStateUsing(fn (string $state, FeePeriod $record): string => $record->type === 'free' && $state === 'paid' ? __('Free') : StatusLabel::for($state))
                     ->color(fn (string $state, FeePeriod $record): string => match (true) {
                         $record->type === 'free' => 'gray',
                         $state === 'paid' => 'success',
