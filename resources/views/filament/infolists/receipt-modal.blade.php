@@ -2,7 +2,7 @@
 <div style="display:flex;flex-direction:column;align-items:center;gap:0.75rem;">
     <img
         src="{{ $url }}"
-        alt="Receipt proof"
+        alt="{{ __('Receipt proof') }}"
         style="max-height:75vh;max-width:100%;height:auto;border-radius:0.5rem;"
     />
 
@@ -12,6 +12,6 @@
         rel="noopener"
         style="font-size:0.875rem;font-weight:500;text-decoration:underline;"
     >
-        Open original &#8599;
+        {{ __('Open original') }} &#8599;
     </a>
 </div>

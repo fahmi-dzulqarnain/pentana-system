@@ -24,7 +24,7 @@
                     id="passkey-name"
                     wire:model="name"
                     autocomplete="off"
-                    placeholder="e.g. My MacBook, iPhone"
+                    placeholder="{{ __('e.g. My MacBook, iPhone') }}"
                 />
             </x-filament::input.wrapper>
         </div>
@@ -54,7 +54,7 @@
                 </x-filament::button>
             </div>
         @empty
-            <p class="pk-empty">No passkeys yet. Add one above for password-free sign-in.</p>
+            <p class="pk-empty">{{ __('No passkeys yet. Add one above for password-free sign-in.') }}</p>
         @endforelse
     </div>
 </div>

@@ -12,9 +12,12 @@ class MyBillsStats extends StatsOverviewWidget
 {
     protected static ?int $sort = -4;
 
-    protected ?string $heading = 'My Bills';
-
     protected ?Collection $bills = null;
+
+    protected function getHeading(): ?string
+    {
+        return __('My Bills');
+    }
 
     public static function canView(): bool
     {
@@ -50,18 +53,20 @@ class MyBillsStats extends StatsOverviewWidget
         $billCount = $this->bills()->count();
 
         return [
-            Stat::make('Outstanding', 'MYR '.number_format($outstanding, 2))
-                ->description($outstanding > 0 ? "{$unpaidCount} bill(s) due" : "You're all settled")
+            Stat::make(__('Outstanding'), 'MYR '.number_format($outstanding, 2))
+                ->description($outstanding > 0
+                    ? trans_choice(':count bill due|:count bills due', $unpaidCount)
+                    : __("You're all settled"))
                 ->descriptionIcon($outstanding > 0 ? 'heroicon-m-exclamation-circle' : 'heroicon-m-check-circle')
                 ->color($outstanding > 0 ? 'danger' : 'success'),
 
-            Stat::make('Available credit', 'MYR '.number_format($this->getCredit(), 2))
-                ->description('Applied to your next bill')
+            Stat::make(__('Available credit'), 'MYR '.number_format($this->getCredit(), 2))
+                ->description(__('Applied to your next bill'))
                 ->descriptionIcon('heroicon-m-wallet')
                 ->color('gray'),
 
-            Stat::make('Paid to date', 'MYR '.number_format($this->getPaidToDate(), 2))
-                ->description("Across {$billCount} bill(s)")
+            Stat::make(__('Paid to date'), 'MYR '.number_format($this->getPaidToDate(), 2))
+                ->description(trans_choice('Across :count bill|Across :count bills', $billCount))
                 ->descriptionIcon('heroicon-m-banknotes')
                 ->color('success'),
         ];

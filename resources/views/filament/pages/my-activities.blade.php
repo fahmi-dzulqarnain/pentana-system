@@ -44,7 +44,7 @@
     @forelse($this->upcomingActivities() as $activity)
         @php($status = $this->statusFor($activity))
         <div class="ma-card">
-            <div class="ma-date">{{ $activity->starts_at->format('l, j M · g:i A') }}</div>
+            <div class="ma-date">{{ $activity->starts_at->translatedFormat('l, j M · g:i A') }}</div>
             <div class="ma-title">{{ $activity->title }}</div>
             @if($activity->location)
                 <div class="ma-meta">📍 {{ $activity->location }}</div>
@@ -56,21 +56,21 @@
 
             <div class="ma-foot">
                 @if($status === 'registered')
-                    <span class="ma-badge ma-badge--ok">Registered</span>
-                    <button type="button" class="ma-btn" wire:click="cancelRegistration({{ $activity->id }})">Cancel</button>
+                    <span class="ma-badge ma-badge--ok">{{ __('Registered') }}</span>
+                    <button type="button" class="ma-btn" wire:click="cancelRegistration({{ $activity->id }})">{{ __('Cancel') }}</button>
                 @elseif($status === 'waitlisted')
-                    <span class="ma-badge ma-badge--wait">Waitlisted #{{ $this->waitlistPositionFor($activity) }}</span>
-                    <button type="button" class="ma-btn" wire:click="cancelRegistration({{ $activity->id }})">Cancel</button>
+                    <span class="ma-badge ma-badge--wait">{{ __('Waitlisted #:position', ['position' => $this->waitlistPositionFor($activity)]) }}</span>
+                    <button type="button" class="ma-btn" wire:click="cancelRegistration({{ $activity->id }})">{{ __('Cancel') }}</button>
                 @elseif($activity->isFull())
-                    <span class="ma-meta">Full</span>
-                    <button type="button" class="ma-btn ma-btn--primary" wire:click="startRegistration({{ $activity->id }})">Join waitlist</button>
+                    <span class="ma-meta">{{ __('Full') }}</span>
+                    <button type="button" class="ma-btn ma-btn--primary" wire:click="startRegistration({{ $activity->id }})">{{ __('Join waitlist') }}</button>
                 @else
                     <span class="ma-meta">
                         {{ $activity->spotsLeft() === null
-                            ? 'Open'
-                            : $activity->spotsLeft().' spot'.($activity->spotsLeft() === 1 ? '' : 's').' left' }}
+                            ? __('Open')
+                            : trans_choice(':count spot left|:count spots left', $activity->spotsLeft()) }}
                     </span>
-                    <button type="button" class="ma-btn ma-btn--primary" wire:click="startRegistration({{ $activity->id }})">Register</button>
+                    <button type="button" class="ma-btn ma-btn--primary" wire:click="startRegistration({{ $activity->id }})">{{ __('Register') }}</button>
                 @endif
             </div>
 
@@ -81,7 +81,7 @@
                         @foreach($activity->registration_fields as $field)
                             @php($val = $mine->answers[$field['key']] ?? null)
                             @if($val !== null && $val !== '')
-                                <div><strong>{{ $field['label'] }}:</strong> {{ is_bool($val) ? ($val ? 'Yes' : 'No') : $val }}</div>
+                                <div><strong>{{ $field['label'] }}:</strong> {{ is_bool($val) ? ($val ? __('Yes') : __('No')) : $val }}</div>
                             @endif
                         @endforeach
                     </div>
@@ -89,21 +89,21 @@
             @endif
         </div>
     @empty
-        <div class="ma-empty">No upcoming activities right now.</div>
+        <div class="ma-empty">{{ __('No upcoming activities right now.') }}</div>
     @endforelse
 
     @if($this->pastActivities()->isNotEmpty())
-        <h3 class="ma-section">Past activities</h3>
+        <h3 class="ma-section">{{ __('Past activities') }}</h3>
         @foreach($this->pastActivities() as $activity)
             @php($mine = $activity->registrations->first())
             <div class="ma-card">
-                <div class="ma-date">{{ $activity->starts_at->format('l, j M') }}</div>
+                <div class="ma-date">{{ $activity->starts_at->translatedFormat('l, j M') }}</div>
                 <div class="ma-title">{{ $activity->title }}</div>
                 <div class="ma-foot">
                     @if($mine?->attended)
-                        <span class="ma-badge ma-badge--ok">Attended</span>
+                        <span class="ma-badge ma-badge--ok">{{ __('Attended') }}</span>
                     @else
-                        <span class="ma-badge">Registered</span>
+                        <span class="ma-badge">{{ __('Registered') }}</span>
                     @endif
                 </div>
             </div>
@@ -114,7 +114,7 @@
     @if($this->registeringActivityId)
         <div class="ma-modal-overlay" wire:key="register-modal">
             <div class="ma-modal">
-                <h3>A few quick questions</h3>
+                <h3>{{ __('A few quick questions') }}</h3>
                 @foreach($this->registeringFields() as $field)
                     <div class="ma-field">
                         <label>
@@ -124,14 +124,14 @@
                             <textarea class="ma-input" rows="3" wire:model="answers.{{ $field['key'] }}"></textarea>
                         @elseif(($field['type'] ?? 'text') === 'select')
                             <select class="ma-input" wire:model="answers.{{ $field['key'] }}">
-                                <option value="">Choose an option</option>
+                                <option value="">{{ __('Choose an option') }}</option>
                                 @foreach($field['options'] ?? [] as $option)
                                     <option value="{{ $option }}">{{ $option }}</option>
                                 @endforeach
                             </select>
                         @elseif(($field['type'] ?? 'text') === 'checkbox')
                             <label style="font-weight:500;display:inline-flex;align-items:center;gap:0.5rem;">
-                                <input type="checkbox" wire:model="answers.{{ $field['key'] }}"> Yes
+                                <input type="checkbox" wire:model="answers.{{ $field['key'] }}"> {{ __('Yes') }}
                             </label>
                         @else
                             <input type="text" class="ma-input" wire:model="answers.{{ $field['key'] }}">
@@ -142,8 +142,8 @@
                     </div>
                 @endforeach
                 <div class="ma-modal-actions">
-                    <button type="button" class="ma-btn" wire:click="closeRegistration">Cancel</button>
-                    <button type="button" class="ma-btn ma-btn--primary" wire:click="submitRegistration">Confirm registration</button>
+                    <button type="button" class="ma-btn" wire:click="closeRegistration">{{ __('Cancel') }}</button>
+                    <button type="button" class="ma-btn ma-btn--primary" wire:click="submitRegistration">{{ __('Confirm registration') }}</button>
                 </div>
             </div>
         </div>

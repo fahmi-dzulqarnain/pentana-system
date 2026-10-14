@@ -32,7 +32,7 @@ class Profile extends EditProfile
                     ->native(false)
                     ->disabled()
                     ->dehydrated(false)
-                    ->helperText('Contact an admin to update your birthday.'),
+                    ->helperText(__('Contact an admin to update your birthday.')),
                 $this->getPasswordFormComponent(),
                 $this->getPasswordConfirmationFormComponent(),
                 $this->getCurrentPasswordFormComponent(),
@@ -53,10 +53,7 @@ class Profile extends EditProfile
                 ...Arr::wrap($this->getMultiFactorAuthenticationContentComponent()),
                 Section::make(__('passkeys::passkeys.passkeys'))
                     ->schema([
-                        Text::make(
-                            'Add a passkey for faster, password-free sign-in. Your device '
-                            .'(fingerprint, face, or PIN) unlocks the key, and nothing leaves it.'
-                        ),
+                        Text::make(__('Add a passkey for faster, password-free sign-in. Your device (fingerprint, face, or PIN) unlocks the key, and nothing leaves it.')),
                         // Spatie's Livewire register component. Reads auth()->user(); no props.
                         Livewire::make('passkeys'),
                     ]),

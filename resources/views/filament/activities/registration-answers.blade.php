@@ -5,7 +5,7 @@
             <div style="font-size:0.75rem;font-weight:600;color:#6b7280;">{{ $field['label'] }}</div>
             <div>
                 @if(is_bool($value))
-                    {{ $value ? 'Yes' : 'No' }}
+                    {{ $value ? __('Yes') : __('No') }}
                 @elseif($value === null || $value === '')
                     <span style="color:#9ca3af;">-</span>
                 @else
@@ -14,6 +14,6 @@
             </div>
         </div>
     @empty
-        <div style="color:#9ca3af;">No questions for this activity.</div>
+        <div style="color:#9ca3af;">{{ __('No questions for this activity.') }}</div>
     @endforelse
 </div>

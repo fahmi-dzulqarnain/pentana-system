@@ -16,9 +16,10 @@ trait AppTranslationKey
 
     /**
      * True when $key is itself a value in Filament's / laravel-lang's PHP translations
-     * for $locale. Filament's translateLabel() (see AppServiceProvider) re-feeds labels
-     * it already translated (e.g. "Kata laluan") through __(), which then reports them
-     * as missing; they are not app strings, so the runtime guard must ignore them.
+     * or in our own lang/{$locale}.json. Filament's translateLabel() (see AppServiceProvider)
+     * re-feeds labels that are already translated - by the vendor (e.g. "Kata laluan") or
+     * by an explicit ->label(__('Language')) ("Bahasa") - through __(), which then reports
+     * them as missing; they are not untranslated strings, so the runtime guard ignores them.
      */
     protected static function isVendorTranslatedValue(string $key, string $locale): bool
     {
@@ -37,6 +38,10 @@ trait AppTranslationKey
                         }
                     });
                 }
+            }
+            $json = lang_path("$locale.json");
+            foreach (is_file($json) ? json_decode(file_get_contents($json), true, flags: JSON_THROW_ON_ERROR) : [] as $v) {
+                $values[$v] = true;
             }
             self::$vendorValues[$locale] = $values;
         }

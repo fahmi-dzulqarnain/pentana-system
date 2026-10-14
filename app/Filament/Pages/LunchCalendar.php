@@ -13,17 +13,10 @@ use Filament\Actions\Action;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Collection;
-use UnitEnum;
 
 class LunchCalendar extends Page
 {
-    protected static string|UnitEnum|null $navigationGroup = 'Welfare & Social';
-
-    protected static ?string $navigationLabel = 'Menu Calendar';
-
     protected static string|BackedEnum|null $navigationIcon = Heroicon::CalendarDays;
-
-    protected static ?string $title = 'Menu Calendar';
 
     protected string $view = 'filament.pages.lunch-calendar';
 
@@ -40,10 +33,25 @@ class LunchCalendar extends Page
         return (bool) auth()->user()?->is_admin;
     }
 
+    public static function getNavigationGroup(): ?string
+    {
+        return __('Welfare & Social');
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('Menu Calendar');
+    }
+
+    public function getTitle(): string
+    {
+        return __('Menu Calendar');
+    }
+
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('addMenu')->label('Add Menu')->icon('heroicon-o-plus')
+            Action::make('addMenu')->label(__('Add Menu'))->icon('heroicon-o-plus')
                 ->url(fn () => LunchResource::getUrl('create')),
         ];
     }
@@ -70,7 +78,7 @@ class LunchCalendar extends Page
 
     public function monthLabel(): string
     {
-        return $this->monthStart()->format('F Y');
+        return $this->monthStart()->translatedFormat('F Y');
     }
 
     public function daysPlanned(): int

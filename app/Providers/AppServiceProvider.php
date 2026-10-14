@@ -53,5 +53,10 @@ class AppServiceProvider extends ServiceProvider
         ] as $component) {
             $component::configureUsing(fn ($c) => $c->translateLabel());
         }
+
+        // Money always renders "MYR 70.00": without a pinned number locale Filament's
+        // ->money('MYR') follows the app locale and prints "RM 70.00" (ms) / "MYR 70,00" (id).
+        \Filament\Tables\Table::configureUsing(fn ($table) => $table->defaultNumberLocale('en'));
+        \Filament\Schemas\Schema::configureUsing(fn ($schema) => $schema->defaultNumberLocale('en'));
     }
 }

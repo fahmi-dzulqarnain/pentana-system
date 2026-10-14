@@ -11,17 +11,10 @@ use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Collection;
-use UnitEnum;
 
 class MyActivities extends Page
 {
-    protected static string|UnitEnum|null $navigationGroup = 'Welfare & Social';
-
-    protected static ?string $navigationLabel = 'My Activities';
-
     protected static string|BackedEnum|null $navigationIcon = Heroicon::Sparkles;
-
-    protected static ?string $title = 'My Activities';
 
     protected string $view = 'filament.pages.my-activities';
 
@@ -36,6 +29,21 @@ class MyActivities extends Page
     public static function canAccess(): bool
     {
         return auth()->check();
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('Welfare & Social');
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('My Activities');
+    }
+
+    public function getTitle(): string
+    {
+        return __('My Activities');
     }
 
     /** Published, not-yet-started activities, with all registrations loaded for counts. */
@@ -141,11 +149,12 @@ class MyActivities extends Page
             $this->cachedUpcoming = null;
 
             Notification::make()
-                ->title($registration->status === 'waitlisted' ? 'Added to the waitlist.' : "You're registered.")
+                ->title($registration->status === 'waitlisted' ? __('Added to the waitlist.') : __("You're registered."))
                 ->success()
                 ->send();
         } catch (RegistrationException $e) {
-            Notification::make()->title($e->getMessage())->danger()->send();
+            // Service messages stay English for the API; translate them for the portal.
+            Notification::make()->title(__($e->getMessage()))->danger()->send();
         }
     }
 
@@ -181,11 +190,12 @@ class MyActivities extends Page
             $this->cachedUpcoming = null;
 
             Notification::make()
-                ->title($registration->status === 'waitlisted' ? 'Added to the waitlist.' : "You're registered.")
+                ->title($registration->status === 'waitlisted' ? __('Added to the waitlist.') : __("You're registered."))
                 ->success()
                 ->send();
         } catch (RegistrationException $e) {
-            Notification::make()->title($e->getMessage())->danger()->send();
+            // Service messages stay English for the API; translate them for the portal.
+            Notification::make()->title(__($e->getMessage()))->danger()->send();
         }
     }
 
@@ -200,7 +210,7 @@ class MyActivities extends Page
         app(ActivityRegistrationService::class)->cancel($activity, auth()->user());
         $this->cachedUpcoming = null;
 
-        Notification::make()->title('Registration cancelled.')->success()->send();
+        Notification::make()->title(__('Registration cancelled.'))->success()->send();
     }
 
     private function resolveActivity(int $activityId): ?Activity
@@ -208,7 +218,7 @@ class MyActivities extends Page
         $activity = $this->upcomingActivities()->firstWhere('id', $activityId) ?? Activity::find($activityId);
 
         if (! $activity) {
-            Notification::make()->title('That activity is no longer available.')->danger()->send();
+            Notification::make()->title(__('That activity is no longer available.'))->danger()->send();
         }
 
         return $activity;

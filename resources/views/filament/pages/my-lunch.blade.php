@@ -35,9 +35,9 @@
                     <img class="ml-thumb" src="{{ asset('storage/'.$lunch->catererMeal->image) }}" alt="{{ $lunch->catererMeal?->name }}">
                 @endif
                 <div class="ml-body">
-                    <div class="ml-date">{{ $lunch->date->format('l, j M') }}</div>
-                    <div class="ml-menu">{{ $lunch->catererMeal?->name ?? 'Menu' }}</div>
-                    <div class="ml-meta">{{ $lunch->caterer?->name }} &middot; Order by {{ $lunch->deadline->format('g:i A, D j M') }}</div>
+                    <div class="ml-date">{{ $lunch->date->translatedFormat('l, j M') }}</div>
+                    <div class="ml-menu">{{ $lunch->catererMeal?->name ?? __('Menu') }}</div>
+                    <div class="ml-meta">{{ $lunch->caterer?->name }} &middot; {{ __('Order by :deadline', ['deadline' => $lunch->deadline->translatedFormat('g:i A, D j M')]) }}</div>
 
                     @if($lunch->isOpenForVoting())
                         <div class="ml-opts">
@@ -50,18 +50,18 @@
                             @endforeach
                             <button type="button" wire:click="notAttending({{ $lunch->id }})"
                                 @class(['ml-btn', 'ml-btn--active' => $mine && $mine->meal_option_id === null])>
-                                Not attending
+                                {{ __('Not attending') }}
                             </button>
                         </div>
                     @else
                         <div class="ml-locked">
-                            Ordering closed.
+                            {{ __('Ordering closed.') }}
                             @if($mine && $mine->meal_option_id)
-                                You ordered: <strong>{{ $mine->mealOption?->name }}</strong>.
+                                {{ __('You ordered:') }} <strong>{{ $mine->mealOption?->name }}</strong>.
                             @elseif($mine)
-                                You marked yourself not attending.
+                                {{ __('You marked yourself not attending.') }}
                             @else
-                                No order was placed.
+                                {{ __('No order was placed.') }}
                             @endif
                         </div>
                     @endif
@@ -69,6 +69,6 @@
             </div>
         </div>
     @empty
-        <div class="ml-empty">No upcoming lunches to order right now.</div>
+        <div class="ml-empty">{{ __('No upcoming lunches to order right now.') }}</div>
     @endforelse
 </x-filament-panels::page>

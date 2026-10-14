@@ -11,17 +11,10 @@ use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Collection;
 use RuntimeException;
-use UnitEnum;
 
 class MyLunch extends Page
 {
-    protected static string|UnitEnum|null $navigationGroup = 'Welfare & Social';
-
-    protected static ?string $navigationLabel = 'My Lunch';
-
     protected static string|BackedEnum|null $navigationIcon = Heroicon::Ticket;
-
-    protected static ?string $title = 'My Lunch';
 
     protected string $view = 'filament.pages.my-lunch';
 
@@ -30,6 +23,21 @@ class MyLunch extends Page
     public static function canAccess(): bool
     {
         return auth()->check();
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('Welfare & Social');
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('My Lunch');
+    }
+
+    public function getTitle(): string
+    {
+        return __('My Lunch');
     }
 
     public function upcomingLunches(): Collection
@@ -54,12 +62,12 @@ class MyLunch extends Page
 
     public function choose(int $lunchId, int $mealOptionId): void
     {
-        $this->record($lunchId, $mealOptionId, 'Choice saved.');
+        $this->record($lunchId, $mealOptionId, __('Choice saved.'));
     }
 
     public function notAttending(int $lunchId): void
     {
-        $this->record($lunchId, null, 'Marked not attending.');
+        $this->record($lunchId, null, __('Marked not attending.'));
     }
 
     protected function record(int $lunchId, ?int $mealOptionId, string $success): void
@@ -67,7 +75,7 @@ class MyLunch extends Page
         $lunch = $this->upcomingLunches()->firstWhere('id', $lunchId) ?? Lunch::find($lunchId);
 
         if (! $lunch) {
-            Notification::make()->title('That lunch is no longer available.')->danger()->send();
+            Notification::make()->title(__('That lunch is no longer available.'))->danger()->send();
 
             return;
         }
@@ -77,7 +85,8 @@ class MyLunch extends Page
             $this->cachedLunches = null; // re-query so the highlighted choice updates
             Notification::make()->title($success)->success()->send();
         } catch (RuntimeException $e) {
-            Notification::make()->title($e->getMessage())->danger()->send();
+            // Service messages stay English for the API; translate them for the portal.
+            Notification::make()->title(__($e->getMessage()))->danger()->send();
         }
     }
 }

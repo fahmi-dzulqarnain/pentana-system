@@ -50,7 +50,7 @@
         </button>
 
         <button wire:click="goToday" class="lc-nav-btn lc-nav-btn--text" style="margin-left:0.25rem;" type="button">
-            Today
+            {{ __('Today') }}
         </button>
     </div>
 
@@ -61,8 +61,8 @@
                 <div style="font-size:1.75rem;font-weight:700;color:var(--primary-600,#d97706);line-height:1.2;">
                     {{ $this->daysPlanned() }} / {{ $this->workingDays() }}
                 </div>
-                <div style="font-size:0.8125rem;color:var(--gray-500,#6b7280);margin-top:0.25rem;font-weight:500;">Days Planned</div>
-                <div style="font-size:0.75rem;color:var(--gray-400,#9ca3af);margin-top:0.125rem;">working days this month</div>
+                <div style="font-size:0.8125rem;color:var(--gray-500,#6b7280);margin-top:0.25rem;font-weight:500;">{{ __('Days Planned') }}</div>
+                <div style="font-size:0.75rem;color:var(--gray-400,#9ca3af);margin-top:0.125rem;">{{ __('working days this month') }}</div>
             </div>
         </x-filament::section>
 
@@ -71,8 +71,8 @@
                 <div style="font-size:1.75rem;font-weight:700;color:var(--primary-600,#d97706);line-height:1.2;">
                     {{ number_format($this->avgOrdersPerDay(), 0) }}
                 </div>
-                <div style="font-size:0.8125rem;color:var(--gray-500,#6b7280);margin-top:0.25rem;font-weight:500;">Avg. Orders/Day</div>
-                <div style="font-size:0.75rem;color:var(--gray-400,#9ca3af);margin-top:0.125rem;">published days this month</div>
+                <div style="font-size:0.8125rem;color:var(--gray-500,#6b7280);margin-top:0.25rem;font-weight:500;">{{ __('Avg. Orders/Day') }}</div>
+                <div style="font-size:0.75rem;color:var(--gray-400,#9ca3af);margin-top:0.125rem;">{{ __('published days this month') }}</div>
             </div>
         </x-filament::section>
 
@@ -81,8 +81,8 @@
                 <div style="font-size:1.75rem;font-weight:700;color:var(--primary-600,#d97706);line-height:1.2;">
                     MYR {{ number_format($this->estimatedCost(), 2) }}
                 </div>
-                <div style="font-size:0.8125rem;color:var(--gray-500,#6b7280);margin-top:0.25rem;font-weight:500;">Estimated Cost</div>
-                <div style="font-size:0.75rem;color:var(--gray-400,#9ca3af);margin-top:0.125rem;">this month</div>
+                <div style="font-size:0.8125rem;color:var(--gray-500,#6b7280);margin-top:0.25rem;font-weight:500;">{{ __('Estimated Cost') }}</div>
+                <div style="font-size:0.75rem;color:var(--gray-400,#9ca3af);margin-top:0.125rem;">{{ __('this month') }}</div>
             </div>
         </x-filament::section>
     </div>
@@ -91,8 +91,9 @@
     <x-filament::section>
         {{-- Weekday headers --}}
         <div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:1px;margin-bottom:0.5rem;">
-            @foreach(['Sun','Mon','Tue','Wed','Thu','Fri','Sat'] as $dayName)
-                <div class="lc-weekday">{{ $dayName }}</div>
+            {{-- Sun..Sat, from Carbon so the abbreviations follow the locale. --}}
+            @foreach(range(0, 6) as $offset)
+                <div class="lc-weekday">{{ \Carbon\Carbon::now()->startOfWeek(\Carbon\CarbonInterface::SUNDAY)->addDays($offset)->translatedFormat('D') }}</div>
             @endforeach
         </div>
 
@@ -119,7 +120,7 @@
                         @if($lunch)
                             {{-- Menu card --}}
                             <a href="{{ $this->editUrlFor($lunch) }}" class="lc-menucard">
-                                <div class="lc-menucard__title">{{ $lunch->catererMeal?->name ?? 'Menu' }}</div>
+                                <div class="lc-menucard__title">{{ $lunch->catererMeal?->name ?? __('Menu') }}</div>
                                 <div style="display:flex;flex-wrap:wrap;gap:0.25rem;">
                                     @foreach($lunch->options->where('enabled', true) as $option)
                                         @if($option->mealOption)
@@ -128,12 +129,12 @@
                                     @endforeach
                                 </div>
                                 @if(in_array($lunch->status, ['published', 'closed'], true))
-                                    <div style="font-size:0.6875rem;color:var(--gray-500,#6b7280);margin-top:0.25rem;font-weight:600;">{{ $lunch->attendingCount() }} ordered</div>
+                                    <div style="font-size:0.6875rem;color:var(--gray-500,#6b7280);margin-top:0.25rem;font-weight:600;">{{ __(':count ordered', ['count' => $lunch->attendingCount()]) }}</div>
                                 @endif
                             </a>
                         @elseif($inMonth && ! $isWeekend)
                             {{-- Empty weekday: set menu link --}}
-                            <a href="{{ $this->createUrlFor($day['date']) }}" class="lc-setmenu">+ Set menu</a>
+                            <a href="{{ $this->createUrlFor($day['date']) }}" class="lc-setmenu">+ {{ __('Set menu') }}</a>
                         @endif
                     </div>
                 @endforeach

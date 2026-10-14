@@ -9,7 +9,7 @@ class TranslationCompletenessTest extends TestCase
 {
     use AppTranslationKey;
 
-    /** Directories whose __()/trans()/@lang() literals must be translated. */
+    /** Directories whose __()/trans()/trans_choice()/@lang() literals must be translated. */
     public const SCAN_PATHS = ['app', 'resources/views'];
 
     /** @return array<string, list<string>> key => locations */
@@ -21,7 +21,7 @@ class TranslationCompletenessTest extends TestCase
 
         foreach ($files as $file) {
             $src = $file->getContents();
-            $found = preg_match_all('/(?<![\w>:$])(?:__|trans|@lang)\(\s*([\'"])((?:\\\\.|(?!\1).)*)\1/s', $src, $m, PREG_OFFSET_CAPTURE);
+            $found = preg_match_all('/(?<![\w>:$])(?:__|trans_choice|trans|@lang)\(\s*([\'"])((?:\\\\.|(?!\1).)*)\1/s', $src, $m, PREG_OFFSET_CAPTURE);
             $this->assertNotFalse($found, 'Regex failed on '.$file->getRelativePathname());
             foreach ($m[2] as [$raw, $offset]) {
                 $key = stripcslashes($raw);
@@ -63,7 +63,8 @@ class TranslationCompletenessTest extends TestCase
                 }
                 preg_match_all('/:[a-zA-Z_]+/', $key, $k);
                 preg_match_all('/:[a-zA-Z_]+/', $json[$key], $v);
-                $this->assertEqualsCanonicalizing($k[0], $v[0], "lang/$locale.json placeholders differ for: $key");
+                // Unique sets: a trans_choice key repeats :count per plural form; ms/id have one form.
+                $this->assertEqualsCanonicalizing(array_unique($k[0]), array_unique($v[0]), "lang/$locale.json placeholders differ for: $key");
             }
         }
     }
