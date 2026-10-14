@@ -18,6 +18,10 @@ return Application::configure(basePath: dirname(__DIR__))
         // production) and for correct https URL/asset generation. nginx listens on
         // 127.0.0.1 only, so the tunnel is the sole path in.
         $middleware->trustProxies(at: '*');
+
+        // The locale cookie is read by the client-side sync script, so it must stay plain.
+        $middleware->encryptCookies(except: [\App\Http\Middleware\SetLocale::COOKIE]);
+        $middleware->web(append: [\App\Http\Middleware\SetLocale::class]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

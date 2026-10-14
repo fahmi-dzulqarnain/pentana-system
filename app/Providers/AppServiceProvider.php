@@ -37,5 +37,9 @@ class AppServiceProvider extends ServiceProvider
         FilamentAsset::register([
             Js::make('passkeys-webauthn', Vite::asset('resources/js/passkeys.js'))->module(),
         ]);
+
+        // Livewire update requests re-run only "persistent" middleware; without this a
+        // component re-render falls back to English mid-form.
+        \Livewire\Livewire::addPersistentMiddleware([\App\Http\Middleware\SetLocale::class]);
     }
 }
