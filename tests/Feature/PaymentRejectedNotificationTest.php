@@ -6,6 +6,7 @@ use App\Filament\Resources\FeePayments\Pages\ViewFeePayment;
 use App\Models\Payment\PaymentProof;
 use App\Models\User;
 use App\Notifications\PaymentRejected;
+use App\Notifications\PaymentVerified;
 use Filament\Facades\Filament;
 use Illuminate\Contracts\Notifications\Dispatcher;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -58,14 +59,15 @@ class PaymentRejectedNotificationTest extends TestCase
         Notification::assertCount(1);
     }
 
-    public function test_verifying_sends_no_rejection_notice(): void
+    public function test_verifying_sends_the_verified_notice_not_a_rejection(): void
     {
         Notification::fake();
 
         Livewire::test(ViewFeePayment::class, ['record' => $this->proof->getKey()])
             ->callAction('verifyPayment', data: ['actual_amount' => 30]);
 
-        Notification::assertNothingSent();
+        Notification::assertNotSentTo($this->member, PaymentRejected::class);
+        Notification::assertSentTo($this->member, PaymentVerified::class);
     }
 
     public function test_the_email_carries_the_amount_date_reason_and_a_link_to_the_payment(): void

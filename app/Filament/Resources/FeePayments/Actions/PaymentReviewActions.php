@@ -4,11 +4,13 @@ namespace App\Filament\Resources\FeePayments\Actions;
 
 use App\Models\Payment\PaymentProof;
 use App\Notifications\PaymentRejected;
+use App\Notifications\PaymentVerified;
 use App\Services\FinanceService;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
+use Illuminate\Notifications\Notification as BaseNotification;
 
 /**
  * Verify and Reject, shared by the payments list and the payment's own page so the
@@ -24,7 +26,7 @@ class PaymentReviewActions
             ->icon('heroicon-o-check-badge')
             ->modalHeading(__('Verify payment'))
             ->modalSubmitActionLabel(__('Verify payment'))
-            ->modalDescription(fn (PaymentProof $record) => __('Enter the amount that actually reached the account. The member claimed MYR :amount.', [
+            ->modalDescription(fn (PaymentProof $record) => __('Enter the amount that actually reached the account. The member claimed MYR :amount and will be notified.', [
                 'amount' => number_format((float) $record->amount_claimed, 2),
             ]))
             ->schema([
@@ -39,7 +41,7 @@ class PaymentReviewActions
             ->action(function (PaymentProof $record, array $data, FinanceService $service) {
                 $service->verifyAndAllocate($record, (float) $data['actual_amount']);
 
-                Notification::make()->success()->title(__('Payment verified'))->send();
+                self::reportOutcome(__('Payment verified'), self::notifyMember($record, new PaymentVerified($record->fresh())));
             })
             ->visible(fn (PaymentProof $record) => self::reviewable($record));
     }
@@ -65,23 +67,33 @@ class PaymentReviewActions
                     'admin_note' => $data['admin_note'],
                 ]);
 
-                // The rejection is already saved; a delivery failure must not undo it or
-                // hide it from the admin, so it is reported and surfaced instead.
-                $notified = rescue(function () use ($record) {
-                    $record->user->notify(new PaymentRejected($record));
-
-                    return true;
-                }, false);
-
-                Notification::make()->success()->title(__('Payment rejected'))
-                    ->body($notified ? __('The member has been notified.') : null)
-                    ->send();
-
-                if (! $notified) {
-                    Notification::make()->warning()->title(__('The member could not be notified.'))->send();
-                }
+                self::reportOutcome(__('Payment rejected'), self::notifyMember($record, new PaymentRejected($record)));
             })
             ->visible(fn (PaymentProof $record) => self::reviewable($record));
+    }
+
+    /**
+     * The decision is already saved; a delivery failure must not undo it or hide it from
+     * the admin, so it is reported and surfaced instead.
+     */
+    private static function notifyMember(PaymentProof $record, BaseNotification $notification): bool
+    {
+        return rescue(function () use ($record, $notification) {
+            $record->user->notify($notification);
+
+            return true;
+        }, false);
+    }
+
+    private static function reportOutcome(string $title, bool $notified): void
+    {
+        Notification::make()->success()->title($title)
+            ->body($notified ? __('The member has been notified.') : null)
+            ->send();
+
+        if (! $notified) {
+            Notification::make()->warning()->title(__('The member could not be notified.'))->send();
+        }
     }
 
     private static function reviewable(PaymentProof $record): bool
