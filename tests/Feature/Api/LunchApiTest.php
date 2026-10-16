@@ -159,7 +159,7 @@ class LunchApiTest extends TestCase
         $this->getJson('/api/v1/lunches')
             ->assertOk()
             ->assertJsonPath('data.0.options', [])
-            ->assertJsonPath('data.0.menu', 'Several menus today — update the app to order')
+            ->assertJsonPath('data.0.menu', 'Several menus today. Update the app to order.')
             ->assertJsonPath('data.0.caterer', $menuA->caterer->name.' · '.$menuB->caterer->name)
             ->assertJsonCount(2, 'data.0.menus')
             ->assertJsonCount(1, 'data.0.menus.0.options')
@@ -178,8 +178,8 @@ class LunchApiTest extends TestCase
 
         $this->getJson('/api/v1/lunches')
             ->assertOk()
-            ->assertJsonPath('data.0.menu', __('Several menus today — update the app to order', [], 'ms'));
-        $this->assertNotSame('Several menus today — update the app to order', __('Several menus today — update the app to order', [], 'ms'));
+            ->assertJsonPath('data.0.menu', __('Several menus today. Update the app to order.', [], 'ms'));
+        $this->assertNotSame('Several menus today. Update the app to order.', __('Several menus today. Update the app to order.', [], 'ms'));
     }
 
     public function test_caterer_names_are_distinct_on_a_several_menu_day(): void

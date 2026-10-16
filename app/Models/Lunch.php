@@ -88,7 +88,7 @@ class Lunch extends Model
     public function legacyMenuText(?string $locale = null): ?string
     {
         return $this->hasSeveralMenus()
-            ? __('Several menus today — update the app to order', [], $locale)
+            ? __('Several menus today. Update the app to order.', [], $locale)
             : $this->menus->first()?->catererMeal?->name;
     }
 

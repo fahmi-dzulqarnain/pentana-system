@@ -37,7 +37,7 @@ class LunchMenu extends Model
 
     public function label(): string
     {
-        return $this->caterer?->name.' — '.$this->catererMeal?->name;
+        return $this->caterer?->name.' · '.$this->catererMeal?->name;
     }
 
     /** Planned cost: each enabled option's default_count × its effective price on this menu. */

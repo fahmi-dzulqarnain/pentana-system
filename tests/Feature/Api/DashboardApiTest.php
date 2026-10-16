@@ -128,7 +128,7 @@ class DashboardApiTest extends TestCase
         LunchMenu::create(['lunch_id' => $lunch->id, 'caterer_id' => $mealB->caterer_id, 'caterer_meal_id' => $mealB->id, 'sort' => 1]);
 
         $this->getJsonAs($member)
-            ->assertJsonPath('data.next_lunch.menu', 'Several menus today — update the app to order')
+            ->assertJsonPath('data.next_lunch.menu', 'Several menus today. Update the app to order.')
             ->assertJsonPath('data.next_lunch.caterer', $mealA->caterer->name.' · '.$mealB->caterer->name)
             ->assertJsonCount(2, 'data.next_lunch.menus')
             ->assertJsonPath('data.next_lunch.menus.1.caterer', $mealB->caterer->name)
