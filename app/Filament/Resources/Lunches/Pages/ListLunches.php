@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Lunches\Pages;
 
+use App\Filament\Concerns\HidesListBreadcrumb;
 use App\Filament\Pages\LunchCalendar;
 use App\Filament\Resources\Lunches\LunchResource;
 use Filament\Actions\Action;
@@ -10,6 +11,8 @@ use Filament\Resources\Pages\ListRecords;
 
 class ListLunches extends ListRecords
 {
+    use HidesListBreadcrumb;
+
     protected static string $resource = LunchResource::class;
 
     protected function getHeaderActions(): array
