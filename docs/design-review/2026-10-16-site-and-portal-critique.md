@@ -45,7 +45,8 @@ All five items below were addressed (shared Verify/Reject actions on the payment
 | The week starts on **Sunday**, and Saturday and Sunday take 2/7 of the width with nothing in them. | 🟢 | Start on Monday. Consider showing Monday–Friday only, with weekends as a thin strip. |
 | "+ Atur menu" has **2.5:1 contrast** at 12px, and the stat sublabels ("hari kerja bulan ini", working days this month) 2.6:1. WCAG AA needs 4.5:1. | 🟡 | Use a darker grey (zinc-600 or darker), or show the prompt only on hover/focus, with a single "Atur" button per empty day. |
 
-### Activities
+### Activities — ✅ fixed 2026-10-16
+
 | Finding | Severity | Recommendation |
 |---|---|---|
 | The create form asks for **"Pendaftaran ditutup" (registration closes) before "Dimulai pada" (starts at)**, but its help text refers to the start time. | 🟡 | Order the fields Start → End → Registration closes, and place the date fields side by side. |

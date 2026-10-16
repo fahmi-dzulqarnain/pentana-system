@@ -51,7 +51,7 @@
             @endif
             @if($activity->description)
                 {{-- Admin-authored RichEditor HTML (trusted), rendered like the email body. --}}
-                <div class="ma-desc">{!! $activity->description !!}</div>
+                <div class="ma-desc">{!! str($activity->description)->sanitizeHtml() !!}</div>
             @endif
 
             <div class="ma-foot">
