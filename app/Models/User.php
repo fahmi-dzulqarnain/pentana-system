@@ -9,10 +9,12 @@ use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Contracts\Translation\HasLocalePreference;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Carbon;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\LaravelPasskeys\Models\Concerns\HasPasskeys;
 use Spatie\LaravelPasskeys\Models\Concerns\InteractsWithPasskeys;
@@ -82,6 +84,7 @@ class User extends Authenticatable implements FilamentUser, HasLocalePreference,
             'birthday' => 'date',
             'birthday_email_sent_at' => 'datetime',
             'activated_at' => 'datetime',
+            'invited_at' => 'datetime',
         ];
     }
 
@@ -99,6 +102,41 @@ class User extends Authenticatable implements FilamentUser, HasLocalePreference,
     public function isActivated(): bool
     {
         return $this->activated_at !== null;
+    }
+
+    /** How long an invitation stays open before the unclaimed account is disabled. */
+    public const INVITATION_VALID_DAYS = 30;
+
+    public function invitationExpiresAt(): ?Carbon
+    {
+        return $this->invited_at?->copy()->addDays(self::INVITATION_VALID_DAYS);
+    }
+
+    /**
+     * Invited, never claimed, and the invitation has run out. Derived rather than stored, so
+     * no job has to flip it, and resending the invitation (a fresh invited_at) re-enables
+     * the account. Members who were never invited are never disabled.
+     */
+    public function isDisabled(): bool
+    {
+        return $this->activated_at === null
+            && $this->invited_at !== null
+            && $this->invitationExpiresAt()->isPast();
+    }
+
+    /** Same rule as isDisabled(), as a query. */
+    public function scopeDisabled(Builder $query): void
+    {
+        $query->whereNull('activated_at')
+            ->where('invited_at', '<=', now()->subDays(self::INVITATION_VALID_DAYS));
+    }
+
+    /** Everyone isDisabled() is false for: who gets bills, notifications and appears in pickers. */
+    public function scopeEnabled(Builder $query): void
+    {
+        $query->where(fn (Builder $q) => $q->whereNotNull('activated_at')
+            ->orWhereNull('invited_at')
+            ->orWhere('invited_at', '>', now()->subDays(self::INVITATION_VALID_DAYS)));
     }
 
     public function memberCategory()

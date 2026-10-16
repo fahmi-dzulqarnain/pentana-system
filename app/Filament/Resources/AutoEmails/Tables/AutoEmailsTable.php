@@ -22,7 +22,8 @@ class AutoEmailsTable
                     ->color(fn (string $state): string => $state === 'birthday' ? 'info' : 'gray'),
                 TextColumn::make('subject')
                     ->searchable()
-                    ->limit(50),
+                    ->limit(50)
+                    ->placeholder(__('Built-in message')),
                 TextColumn::make('status')
                     ->badge()
                     ->formatStateUsing(fn (string $state): string => StatusLabel::for($state))

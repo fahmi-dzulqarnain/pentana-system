@@ -173,7 +173,7 @@ class EditLunch extends EditRecord
                     // Keep the form state in sync so a later Save doesn't write the stale 'draft' back.
                     $this->refreshFormData(['status']);
 
-                    app(MemberNotifier::class)->sendAfterResponse(User::all(), new LunchPublished($this->record->fresh()));
+                    app(MemberNotifier::class)->sendAfterResponse(User::enabled()->get(), new LunchPublished($this->record->fresh()));
 
                     FilamentNotification::make()
                         ->title(__('Published: members notified'))

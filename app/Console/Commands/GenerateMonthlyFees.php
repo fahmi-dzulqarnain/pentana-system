@@ -30,7 +30,8 @@ class GenerateMonthlyFees extends Command
     {
         $currentMonth = now()->startOfMonth();
 
-        foreach (User::all() as $user) {
+        // Disabled members (invitation expired, never claimed) never joined, so they are not billed.
+        foreach (User::enabled()->get() as $user) {
             // active_fee honours a per-member custom_fee override, then the
             // category default, then 0 (a free month).
             FeePeriod::firstOrCreate(

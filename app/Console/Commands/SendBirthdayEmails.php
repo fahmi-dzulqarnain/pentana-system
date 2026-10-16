@@ -23,12 +23,14 @@ class SendBirthdayEmails extends Command
             return self::SUCCESS;
         }
 
-        $sent = User::whereNotNull('birthday')->get()
+        $sent = User::enabled()->whereNotNull('birthday')->get()
             ->filter(fn (User $user) => $user->birthday->isBirthday())
             ->reject(fn (User $user) => $user->birthday_email_sent_at?->year === now()->year)
             ->each(function (User $user) use ($template) {
-                $body = str_replace('{name}', $user->name, $template->body);
-                $user->notify(new BirthdayWish($template->subject, $body));
+                // Blank subject/body fall back to the built-in, translated birthday message.
+                $subject = filled($template->subject) ? str_replace('{name}', $user->name, $template->subject) : null;
+                $body = filled(strip_tags((string) $template->body)) ? str_replace('{name}', e($user->name), $template->body) : null;
+                $user->notify(new BirthdayWish($subject, $body));
                 $user->forceFill(['birthday_email_sent_at' => now()])->save();
             })
             ->count();

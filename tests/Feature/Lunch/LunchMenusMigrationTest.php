@@ -31,7 +31,7 @@ class LunchMenusMigrationTest extends TestCase
     {
         parent::setUp();
 
-        $this->artisan('migrate:rollback', ['--step' => 2])->assertExitCode(0);
+        $this->rollBackToBeforeTheMenuMove();
 
         $this->catererId = Caterer::factory()->create()->id;
         $this->mealId = CatererMeal::factory()->create(['caterer_id' => $this->catererId])->id;
@@ -89,9 +89,20 @@ class LunchMenusMigrationTest extends TestCase
         $this->assertSame(2, Lunch::with('responses')->find($this->lunchId)->attendingCount());
     }
 
+    /** Rolls back the menu move and every migration after it, however many have landed since. */
+    private function rollBackToBeforeTheMenuMove(): void
+    {
+        $since = collect(glob(database_path('migrations/*.php')))
+            ->map(fn (string $path): string => basename($path))
+            ->filter(fn (string $name): bool => $name >= '2026_10_16_000002_move_lunch_caterer_menu_to_lunch_menus.php')
+            ->count();
+
+        $this->artisan('migrate:rollback', ['--step' => $since])->assertExitCode(0);
+    }
+
     public function test_rolling_back_restores_the_single_menu_shape(): void
     {
-        $this->artisan('migrate:rollback', ['--step' => 2])->assertExitCode(0);
+        $this->rollBackToBeforeTheMenuMove();
 
         $lunch = DB::table('lunches')->find($this->lunchId);
         $this->assertSame($this->catererId, (int) $lunch->caterer_id);

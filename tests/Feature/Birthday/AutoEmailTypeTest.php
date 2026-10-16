@@ -36,4 +36,28 @@ class AutoEmailTypeTest extends TestCase
             ->assertFormFieldExists('send_at')
             ->assertFormFieldIsHidden('is_active');
     }
+
+    public function test_a_birthday_template_can_leave_subject_and_body_blank(): void
+    {
+        $this->actingAs(User::factory()->admin()->create());
+        Filament::setCurrentPanel(Filament::getPanel('account'));
+
+        Livewire::test(CreateAutoEmail::class)
+            ->fillForm(['type' => 'birthday', 'subject' => null, 'body' => null, 'is_active' => true])
+            ->call('create')
+            ->assertHasNoFormErrors();
+
+        $this->assertDatabaseHas('auto_emails', ['type' => 'birthday', 'subject' => null]);
+    }
+
+    public function test_a_one_off_email_still_needs_a_subject_and_body(): void
+    {
+        $this->actingAs(User::factory()->admin()->create());
+        Filament::setCurrentPanel(Filament::getPanel('account'));
+
+        Livewire::test(CreateAutoEmail::class)
+            ->fillForm(['type' => 'one_off', 'subject' => null, 'body' => null])
+            ->call('create')
+            ->assertHasFormErrors(['subject' => 'required', 'body']);
+    }
 }

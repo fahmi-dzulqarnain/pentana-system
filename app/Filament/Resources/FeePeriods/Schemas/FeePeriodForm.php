@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\FeePeriods\Schemas;
 
+use App\Models\Payment\FeePeriod;
 use App\Models\User;
 use App\Support\StatusLabel;
 use Filament\Forms\Components\DatePicker;
@@ -10,6 +11,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
+use Illuminate\Database\Eloquent\Builder;
 
 class FeePeriodForm
 {
@@ -18,7 +20,9 @@ class FeePeriodForm
         return $schema
             ->components([
                 Select::make('user_id')
-                    ->relationship('user', 'name')
+                    // Disabled members are hidden, except the one an existing bill already belongs to.
+                    ->relationship('user', 'name', fn (Builder $query, ?FeePeriod $record) => $query
+                        ->where(fn (Builder $q) => $q->enabled()->when($record, fn (Builder $q) => $q->orWhere('id', $record->user_id))))
                     ->searchable()
                     ->required()
                     ->live()

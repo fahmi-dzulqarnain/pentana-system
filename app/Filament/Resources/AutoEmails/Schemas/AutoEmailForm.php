@@ -22,12 +22,19 @@ class AutoEmailForm
                     ->default('one_off')
                     ->required()
                     ->live(),
-                TextInput::make('subject')->required()->maxLength(255),
+                // Birthday templates may leave these blank to send the built-in message,
+                // which is translated into each member's language.
+                TextInput::make('subject')
+                    ->required(fn (Get $get): bool => $get('type') !== 'birthday')
+                    ->maxLength(255)
+                    ->helperText(fn (Get $get): ?string => $get('type') === 'birthday'
+                        ? __('Leave blank to use the built-in subject.')
+                        : null),
                 RichEditor::make('body')
-                    ->required()
+                    ->required(fn (Get $get): bool => $get('type') !== 'birthday')
                     ->columnSpanFull()
                     ->helperText(fn (Get $get): ?string => $get('type') === 'birthday'
-                        ? __('Use {name} where the member\'s name should appear.')
+                        ? __('Use {name} where the member\'s name should appear. Leave blank to send the built-in birthday message, translated into each member\'s language.')
                         : null),
                 DateTimePicker::make('send_at')
                     ->label(__('Send at'))

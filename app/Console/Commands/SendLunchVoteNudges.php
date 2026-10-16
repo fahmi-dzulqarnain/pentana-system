@@ -22,7 +22,7 @@ class SendLunchVoteNudges extends Command
             ->get();
 
         foreach ($lunches as $lunch) {
-            $nonResponders = User::whereNotIn('id', $lunch->responses()->pluck('user_id'))->get();
+            $nonResponders = User::enabled()->whereNotIn('id', $lunch->responses()->pluck('user_id'))->get();
 
             foreach ($nonResponders as $user) {
                 try {
