@@ -154,10 +154,14 @@ class MyLunchPageTest extends TestCase
         ]);
         $lunch->update(['deadline' => now()->subHour(), 'date' => today()->toDateString()]);
 
-        Livewire::test(MyLunch::class)
-            ->assertSee('Ordering closed.')
-            ->assertSee('Regular')
-            ->assertSee('Mee Goreng Mamak');
+        [$menuA, $menuB] = $lunch->menus()->with(['caterer', 'catererMeal'])->get()->all();
+
+        $html = Livewire::test(MyLunch::class)->assertSee('Ordering closed.')->html();
+
+        $this->assertSame(1, preg_match('/<div class="ml-locked">(.*?)<\/div>/s', $html, $m));
+        $locked = preg_replace('/\s+/', ' ', strip_tags($m[1]));
+        $this->assertStringContainsString('You ordered: Regular ('.$menuB->label().')', html_entity_decode($locked));
+        $this->assertStringNotContainsString($menuA->label(), html_entity_decode($locked));
     }
 
     public function test_my_lunch_choosing_on_menu_b_after_a_keeps_one_response(): void

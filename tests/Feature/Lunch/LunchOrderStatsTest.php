@@ -82,7 +82,7 @@ class LunchOrderStatsTest extends TestCase
     {
         $regular = MealOption::factory()->create(['name' => 'Regular']);
         $large = MealOption::factory()->create(['name' => 'Large']);
-        $mealA = CatererMeal::factory()->create(['name' => 'Nasi Lemak']);
+        $mealA = CatererMeal::factory()->create(['name' => '<b>x</b>']);
         $mealB = CatererMeal::factory()->create(['name' => 'Mee Goreng']);
 
         $lunch = Lunch::factory()->withMenu($mealA, [$regular])->withMenu($mealB, [$regular, $large])
@@ -106,6 +106,12 @@ class LunchOrderStatsTest extends TestCase
 
         $this->actingAs(User::factory()->admin()->create());
         Filament::setCurrentPanel(Filament::getPanel('account'));
+
+        $html = Livewire::test(EditLunch::class, ['record' => $lunch->getRouteKey()])->html();
+        $this->assertStringContainsString('&lt;b&gt;x&lt;/b&gt;', $html);
+        $this->assertStringNotContainsString('<b>x</b>', $html);
+        $this->assertStringNotContainsString('&lt;br&gt;', $html);
+        $this->assertStringContainsString('<br>', $html);
 
         Livewire::test(EditLunch::class, ['record' => $lunch->getRouteKey()])
             ->assertSee($menuA->fresh(['caterer', 'catererMeal'])->label().': Regular: 1')
