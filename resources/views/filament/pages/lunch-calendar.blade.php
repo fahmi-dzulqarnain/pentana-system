@@ -31,6 +31,10 @@
         .lc-menucard__title { font-size:0.75rem; font-weight:600; color:var(--primary-700,#b45309); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:0.25rem; }
         .dark .lc-menucard { background:rgb(245 158 11 / 0.12); border-color:rgb(245 158 11 / 0.3); }
         .dark .lc-menucard__title { color:#fcd34d; }
+        .lc-menucard__menu + .lc-menucard__menu { margin-top:0.375rem; padding-top:0.375rem; border-top:1px solid var(--primary-200,#fde68a); }
+        .dark .lc-menucard__menu + .lc-menucard__menu { border-color:rgb(245 158 11 / 0.3); }
+        .lc-menucard__caterer { font-size:0.6875rem; color:#6b7280; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin:-0.125rem 0 0.25rem; }
+        .dark .lc-menucard__caterer { color:#9ca3af; }
 
         .lc-setmenu { display:block; text-decoration:none; margin-top:0.25rem; padding:0.25rem 0; font-size:0.75rem; color:#6b7280; text-align:center; }
         .lc-setmenu:hover { color:#374151; }
@@ -161,17 +165,24 @@
                         @if($lunch)
                             {{-- Menu card --}}
                             <a href="{{ $this->editUrlFor($lunch) }}" class="lc-menucard">
-                                <div class="lc-menucard__title">{{ $lunch->catererMeal?->name ?? __('Menu') }}</div>
-                                <div style="display:flex;flex-wrap:wrap;gap:0.25rem;">
-                                    @foreach($lunch->options->where('enabled', true) as $option)
-                                        @if($option->mealOption)
-                                            <x-filament::badge color="primary" size="sm">{{ $option->mealOption->name }}</x-filament::badge>
-                                        @endif
-                                    @endforeach
+                            @foreach($lunch->menus as $menu)
+                                <div class="lc-menucard__menu">
+                                    <div class="lc-menucard__title">{{ $menu->catererMeal?->name ?? __('Menu') }}</div>
+                                    @if($menu->caterer)
+                                        <div class="lc-menucard__caterer">{{ $menu->caterer->name }}</div>
+                                    @endif
+                                    <div style="display:flex;flex-wrap:wrap;gap:0.25rem;">
+                                        @foreach($menu->options->where('enabled', true) as $option)
+                                            @if($option->mealOption)
+                                                <x-filament::badge color="primary" size="sm">{{ $option->mealOption->name }}</x-filament::badge>
+                                            @endif
+                                        @endforeach
+                                    </div>
                                 </div>
-                                @if(in_array($lunch->status, ['published', 'closed'], true))
-                                    <div style="font-size:0.6875rem;color:var(--gray-500,#6b7280);margin-top:0.25rem;font-weight:600;">{{ __(':count ordered', ['count' => $lunch->attendingCount()]) }}</div>
-                                @endif
+                            @endforeach
+                            @if(in_array($lunch->status, ['published', 'closed'], true))
+                                <div style="font-size:0.6875rem;color:var(--gray-500,#6b7280);margin-top:0.25rem;font-weight:600;">{{ __(':count ordered', ['count' => $lunch->attendingCount()]) }}</div>
+                            @endif
                             </a>
                         @elseif($inMonth && ! $isWeekend)
                             {{-- Empty weekday: set menu link --}}
@@ -195,17 +206,24 @@
                 <div class="lc-agenda__body">
                     @if($lunch)
                         <a href="{{ $this->editUrlFor($lunch) }}" class="lc-menucard">
-                            <div class="lc-menucard__title">{{ $lunch->catererMeal?->name ?? __('Menu') }}</div>
-                            <div style="display:flex;flex-wrap:wrap;gap:0.25rem;">
-                                @foreach($lunch->options->where('enabled', true) as $option)
-                                    @if($option->mealOption)
-                                        <x-filament::badge color="primary" size="sm">{{ $option->mealOption->name }}</x-filament::badge>
-                                    @endif
-                                @endforeach
+                        @foreach($lunch->menus as $menu)
+                            <div class="lc-menucard__menu">
+                                <div class="lc-menucard__title">{{ $menu->catererMeal?->name ?? __('Menu') }}</div>
+                                @if($menu->caterer)
+                                    <div class="lc-menucard__caterer">{{ $menu->caterer->name }}</div>
+                                @endif
+                                <div style="display:flex;flex-wrap:wrap;gap:0.25rem;">
+                                    @foreach($menu->options->where('enabled', true) as $option)
+                                        @if($option->mealOption)
+                                            <x-filament::badge color="primary" size="sm">{{ $option->mealOption->name }}</x-filament::badge>
+                                        @endif
+                                    @endforeach
+                                </div>
                             </div>
-                            @if(in_array($lunch->status, ['published', 'closed'], true))
-                                <div style="font-size:0.75rem;color:var(--gray-500,#6b7280);margin-top:0.25rem;font-weight:600;">{{ __(':count ordered', ['count' => $lunch->attendingCount()]) }}</div>
-                            @endif
+                        @endforeach
+                        @if(in_array($lunch->status, ['published', 'closed'], true))
+                            <div style="font-size:0.75rem;color:var(--gray-500,#6b7280);margin-top:0.25rem;font-weight:600;">{{ __(':count ordered', ['count' => $lunch->attendingCount()]) }}</div>
+                        @endif
                         </a>
                     @else
                         <a href="{{ $this->createUrlFor($day['date']) }}" class="lc-agenda__set">+ {{ __('Set menu') }}</a>

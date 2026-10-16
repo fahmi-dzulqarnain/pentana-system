@@ -17,6 +17,7 @@ use Filament\Resources\Pages\EditRecord;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
+use Illuminate\Support\HtmlString;
 
 class LunchForm
 {
@@ -85,22 +86,29 @@ class LunchForm
                     ->label(__('Current orders'))
                     ->visibleOn('edit')
                     ->columnSpanFull()
-                    ->content(function (?Lunch $record): string {
+                    ->content(function (?Lunch $record): string|HtmlString {
                         if (! $record) {
                             return '-';
                         }
 
-                        $record->loadMissing('responses', 'options.mealOption');
-                        $counts = $record->optionCounts();
-                        $perOption = $record->options
-                            ->map(fn ($o) => ($o->mealOption?->name ?? __('Option')).': '.($counts[$o->meal_option_id] ?? 0))
-                            ->implode('   ·   ');
+                        $record->loadMissing('responses', 'menus.caterer', 'menus.catererMeal', 'menus.options.mealOption');
+                        $counts = $record->optionCountsByLunchOption();
+                        $lines = $record->menus
+                            ->map(function ($menu) use ($counts) {
+                                $perOption = $menu->options
+                                    ->map(fn ($o) => ($o->mealOption?->name ?? __('Option')).': '.($counts[$o->id] ?? 0))
+                                    ->implode(' · ');
 
-                        $summary = trim($perOption);
+                                return trim($menu->label().': '.$perOption);
+                            })
+                            ->push(
+                                __('Not attending: :count', ['count' => $record->notAttendingCount()])
+                                .' · '.__('Total ordering: :count', ['count' => $record->attendingCount()])
+                            )
+                            ->map(fn (string $line) => e($line))
+                            ->implode('<br>');
 
-                        return ($summary === '' ? '' : $summary.'   ·   ')
-                            .__('Not attending: :count', ['count' => $record->notAttendingCount()])
-                            .'   ·   '.__('Total ordering: :count', ['count' => $record->attendingCount()]);
+                        return new HtmlString($lines);
                     }),
             ]);
     }

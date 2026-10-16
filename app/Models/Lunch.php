@@ -59,6 +59,20 @@ class Lunch extends Model
             ->all();
     }
 
+    /**
+     * Unlike optionCounts(), this keeps the same meal option on two menus apart.
+     *
+     * @return array<int, int> lunch_option_id => count
+     */
+    public function optionCountsByLunchOption(): array
+    {
+        return $this->responses
+            ->whereNotNull('lunch_option_id')
+            ->countBy('lunch_option_id')
+            ->map(fn ($count) => (int) $count)
+            ->all();
+    }
+
     public function hasSeveralMenus(): bool
     {
         return $this->menus->count() > 1;

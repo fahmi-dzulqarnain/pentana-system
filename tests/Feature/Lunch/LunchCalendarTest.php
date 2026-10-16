@@ -71,4 +71,32 @@ class LunchCalendarTest extends TestCase
         // 3 × 14.00 = 42.00
         $this->assertSame(42.0, $component->instance()->estimatedCost());
     }
+
+    public function test_calendar_cell_lists_every_menu_of_the_day(): void
+    {
+        $regular = MealOption::factory()->create(['name' => 'Regular']);
+        $mealA = CatererMeal::factory()->create(['name' => 'Nasi Lemak Royale']);
+        $mealB = CatererMeal::factory()->create(['name' => 'Mee Goreng Mamak']);
+        $date = now()->startOfMonth()->addDays(2);
+
+        $lunch = Lunch::factory()->withMenu($mealA, [$regular])->withMenu($mealB, [$regular])->create([
+            'date' => $date->toDateString(), 'status' => 'published', 'deadline' => now()->addDay(),
+        ]);
+        $option = LunchOption::where('lunch_id', $lunch->id)->first();
+        \App\Models\LunchResponse::create([
+            'lunch_id' => $lunch->id, 'user_id' => User::factory()->create()->id,
+            'lunch_option_id' => $option->id, 'meal_option_id' => $regular->id,
+        ]);
+
+        $this->actingAs(User::factory()->admin()->create());
+        Filament::setCurrentPanel(Filament::getPanel('account'));
+
+        $html = Livewire::test(LunchCalendar::class)->assertSuccessful()->html();
+
+        // Rendered in both the desktop grid and the phone agenda.
+        $this->assertSame(2, substr_count($html, 'Nasi Lemak Royale'));
+        $this->assertSame(2, substr_count($html, 'Mee Goreng Mamak'));
+        // The day's count appears once per layout, not once per menu.
+        $this->assertSame(2, substr_count($html, '1 ordered'));
+    }
 }
