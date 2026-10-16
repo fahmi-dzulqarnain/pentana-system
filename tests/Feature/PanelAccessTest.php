@@ -101,7 +101,7 @@ class PanelAccessTest extends TestCase
         Filament::setCurrentPanel(Filament::getPanel('account'));
 
         Livewire::test(ListFeePayments::class)
-            ->assertTableActionHidden('Verify Payment', $proof);
+            ->assertTableActionHidden('verifyPayment', $proof);
     }
 
     public function test_admins_can_verify_pending_payments(): void
@@ -113,7 +113,7 @@ class PanelAccessTest extends TestCase
         Filament::setCurrentPanel(Filament::getPanel('account'));
 
         Livewire::test(ListFeePayments::class)
-            ->assertTableActionVisible('Verify Payment', $proof);
+            ->assertTableActionVisible('verifyPayment', $proof);
     }
 
     public function test_admin_users_pages_render_with_derived_credit(): void
@@ -145,7 +145,7 @@ class PanelAccessTest extends TestCase
         Filament::setCurrentPanel(Filament::getPanel('account'));
 
         Livewire::test(ListFeePayments::class)
-            ->assertTableActionHidden('Reject Payment', $proof);
+            ->assertTableActionHidden('rejectPayment', $proof);
     }
 
     public function test_admins_can_reject_pending_payments(): void
@@ -157,7 +157,7 @@ class PanelAccessTest extends TestCase
         Filament::setCurrentPanel(Filament::getPanel('account'));
 
         Livewire::test(ListFeePayments::class)
-            ->assertTableActionVisible('Reject Payment', $proof);
+            ->assertTableActionVisible('rejectPayment', $proof);
     }
 
     public function test_rejecting_a_payment_records_the_reason_and_grants_no_credit(): void
@@ -181,7 +181,7 @@ class PanelAccessTest extends TestCase
         Filament::setCurrentPanel(Filament::getPanel('account'));
 
         Livewire::test(ListFeePayments::class)
-            ->callTableAction('Reject Payment', $proof, ['admin_note' => 'Receipt does not match'])
+            ->callTableAction('rejectPayment', $proof, ['admin_note' => 'Receipt does not match'])
             ->assertHasNoTableActionErrors();
 
         $proof->refresh();
@@ -201,7 +201,7 @@ class PanelAccessTest extends TestCase
         Filament::setCurrentPanel(Filament::getPanel('account'));
 
         Livewire::test(ListFeePayments::class)
-            ->callTableAction('Reject Payment', $proof, ['admin_note' => ''])
+            ->callTableAction('rejectPayment', $proof, ['admin_note' => ''])
             ->assertHasTableActionErrors(['admin_note']);
 
         $this->assertSame('pending', $proof->fresh()->status);

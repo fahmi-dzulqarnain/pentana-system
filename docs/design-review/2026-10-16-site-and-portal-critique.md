@@ -24,10 +24,13 @@ Severity: 🔴 broken or blocks a core task · 🟡 slows or confuses users · �
 
 ## 2. Core admin tasks
 
-### Verifying a payment (Fee payments)
+### Verifying a payment (Fee payments) — ✅ fixed 2026-10-16
+
+All five items below were addressed (shared Verify/Reject actions on the payment page, whole receipt shown, member note and rejection reason displayed, text status badges, a Submitted column, a pending-first queue, and a stacked layout on phones). Correction: the old page did open the full image on click; the problem was the cropped preview.
+
 | Finding | Severity | Recommendation |
 |---|---|---|
-| The view page **crops the payment proof** to a wide banner (it reuses the disabled upload field's preview), so the amount and reference on a receipt can be cut off. Verifying the proof is the whole point of the page. | 🔴 | Show the proof uncropped in an infolist `ImageEntry` with a natural height, plus click to open full size. |
+| The view page **crops the payment proof** to a wide banner (it reuses the disabled upload field's preview), so the amount and reference on a receipt can be cut off. Verifying the proof is the whole point of the page. | 🔴 | Show the proof uncropped in an infolist `ImageEntry` with a natural height, keeping the existing click-to-enlarge. |
 | The **Verify and Reject buttons aren't on the view page**, only "Ubah" (Edit). The admin looks at the proof, then has to go back to the list to decide. | 🔴 | Put Verify (primary) and Reject (danger, with confirmation and reason) in the view page header. |
 | Status in the list is **an icon with no text and no accessible label** (a clock). A screen reader announces nothing, and sighted users have to guess. | 🟡 | Use the text badge from the view page ("Menunggu verifikasi", awaiting verification) in the list too. |
 | Edit, **Verify and Reject sit side by side** in every row, with View as well, so a misclick on Reject is easy. On a phone they're scrolled off-screen, so the main action is invisible. | 🟡 | Keep one inline primary action (Review), and move Reject into the view page or a ⋯ menu. On phone, use a card layout (`->stackedOnMobile()` or a split layout). |

@@ -2,78 +2,70 @@
 
 namespace App\Filament\Resources\FeePayments\Tables;
 
-use App\Models\Payment\PaymentProof;
-use App\Services\FinanceService;
-use Filament\Actions\Action;
+use App\Filament\Resources\FeePayments\Actions\PaymentReviewActions;
+use App\Filament\Resources\FeePayments\FeePaymentResource;
+use App\Support\StatusLabel;
+use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\TextInput;
-use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 class FeePaymentsTable
 {
     public static function configure(Table $table): Table
     {
+        $isAdmin = fn (): bool => (bool) auth()->user()?->is_admin;
+
         return $table
             ->columns([
                 TextColumn::make('user.name')->searchable(),
                 TextColumn::make('amount_claimed')->money('MYR'),
-                IconColumn::make('status')
-                    ->icon(fn (string $state) => match ($state) {
-                        'pending' => 'heroicon-o-clock',
-                        'verified' => 'heroicon-o-check-badge',
-                        'rejected' => 'heroicon-o-x-circle',
-                        default => 'heroicon-o-question-mark-circle',
-                    }),
+                TextColumn::make('status')
+                    ->badge()
+                    ->color(fn (string $state): string => self::statusColor($state))
+                    ->formatStateUsing(fn (string $state): string => StatusLabel::for($state)),
+                TextColumn::make('created_at')
+                    ->label(__('Submitted'))
+                    ->dateTime('j M Y, H:i')
+                    ->sortable(),
             ])
+            // Admins work the queue oldest first; members see their latest submission first.
+            ->defaultSort('created_at', fn () => $isAdmin() ? 'asc' : 'desc')
             ->filters([
-                //
+                SelectFilter::make('status')
+                    ->options(StatusLabel::options(['pending', 'verified', 'rejected']))
+                    ->default(fn () => $isAdmin() ? 'pending' : null),
             ])
+            // Opening a payment means reviewing its proof, so a row leads to the view page, not the edit form.
+            ->recordUrl(fn ($record) => FeePaymentResource::getUrl('view', ['record' => $record]))
             ->recordActions([
-                EditAction::make(),
-                Action::make('Verify Payment')
-                    ->label(__('Verify Payment'))
-                    ->action(function (PaymentProof $record, array $data, FinanceService $service) {
-                        $service->verifyAndAllocate($record, $data['actual_amount']);
-                    })
-                    ->schema([
-                        TextInput::make('actual_amount')
-                            ->label(__('Actual amount'))
-                            ->numeric()
-                            ->default(fn ($record) => $record->amount_claimed)
-                            ->required(),
-                    ])
-                    ->visible(fn ($record) => $record->status === 'pending' && auth()->user()?->is_admin)
-                    ->color('success')
-                    ->icon('heroicon-o-banknotes'),
-                Action::make('Reject Payment')
-                    ->label(__('Reject Payment'))
-                    ->action(function (PaymentProof $record, array $data) {
-                        // A rejected proof is never allocated, so no credit is granted.
-                        $record->update([
-                            'status' => 'rejected',
-                            'admin_note' => $data['admin_note'],
-                        ]);
-                    })
-                    ->schema([
-                        Textarea::make('admin_note')
-                            ->label(__('Reason for rejection'))
-                            ->required(),
-                    ])
-                    ->visible(fn ($record) => $record->status === 'pending' && auth()->user()?->is_admin)
-                    ->color('danger')
-                    ->icon('heroicon-o-x-circle'),
                 ViewAction::make(),
+                // Verify and Reject sit behind a menu so a decision is never one stray click away.
+                ActionGroup::make([
+                    PaymentReviewActions::verify(),
+                    PaymentReviewActions::reject(),
+                    EditAction::make(),
+                ]),
             ])
+            ->stackedOnMobile()
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                 ]),
             ]);
+    }
+
+    public static function statusColor(string $state): string
+    {
+        return match ($state) {
+            'pending' => 'warning',
+            'verified' => 'success',
+            'rejected' => 'danger',
+            default => 'gray',
+        };
     }
 }
