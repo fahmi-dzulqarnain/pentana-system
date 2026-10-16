@@ -11,6 +11,7 @@ use App\Models\ActivityRegistration;
 use App\Models\Lunch;
 use App\Models\Payment\FeePeriod;
 use App\Models\Payment\PaymentProof;
+use App\Support\TimeFormat;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Support\Carbon;
@@ -81,7 +82,7 @@ class NeedsAttention extends StatsOverviewWidget
         }
 
         return Stat::make(__('Next lunch'), __(':count ordered', ['count' => self::count($lunch->orders_count)]))
-            ->description(__('Order by :deadline', ['deadline' => $lunch->deadline->translatedFormat('D j M, g:i A')]))
+            ->description(__('Order by :deadline', ['deadline' => $lunch->deadline->translatedFormat('D j M, '.TimeFormat::time())]))
             ->descriptionIcon('heroicon-m-clock')
             ->color('gray')
             ->url(LunchResource::getUrl('edit', ['record' => $lunch]));

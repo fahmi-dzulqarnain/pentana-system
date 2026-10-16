@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use App\Http\Middleware\SetLocale;
 use App\Mail\BudgetedTransport;
+use App\Models\User;
+use App\Support\TimeFormat;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Field;
@@ -15,6 +17,10 @@ use Filament\Support\Facades\FilamentAsset;
 use Filament\Tables\Columns\Column;
 use Filament\Tables\Filters\BaseFilter;
 use Filament\Tables\Table;
+use Illuminate\Notifications\Events\NotificationFailed;
+use Illuminate\Notifications\Events\NotificationSending;
+use Illuminate\Notifications\Events\NotificationSent;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
@@ -87,10 +93,16 @@ class AppServiceProvider extends ServiceProvider
         foreach ([Table::class, Schema::class] as $container) {
             $container::configureUsing(fn ($c) => $c
                 ->defaultDateDisplayFormat(self::DATE_FORMAT)
-                ->defaultDateTimeDisplayFormat(self::DATE_TIME_FORMAT));
+                ->defaultDateTimeDisplayFormat(fn (): string => self::dateTimeFormat()));
         }
         DatePicker::configureUsing(fn (DatePicker $picker) => $picker->displayFormat(self::DATE_FORMAT));
-        DateTimePicker::configureUsing(fn (DateTimePicker $picker) => $picker->displayFormat(self::DATE_TIME_FORMAT));
+        DateTimePicker::configureUsing(fn (DateTimePicker $picker) => $picker->displayFormat(fn (): string => self::dateTimeFormat()));
+
+        // Each notification is rendered once per recipient (inside their language); render its
+        // times in their clock too, then fall back to the signed-in user.
+        Event::listen(NotificationSending::class, fn (NotificationSending $e) => TimeFormat::useRecipient($e->notifiable instanceof User ? $e->notifiable : null));
+        Event::listen(NotificationSent::class, fn () => TimeFormat::useRecipient(null));
+        Event::listen(NotificationFailed::class, fn () => TimeFormat::useRecipient(null));
 
         // FilePond has no Malay locale, so its English idle prompt leaked into the ms UI.
         // Resolved per render (closure) so it follows the viewer's language.
@@ -107,5 +119,9 @@ class AppServiceProvider extends ServiceProvider
 
     public const DATE_FORMAT = 'j M Y';
 
-    public const DATE_TIME_FORMAT = 'j M Y, H:i';
+    /** "16 Okt 2026, 2:30 PM" or "16 Okt 2026, 14:30", following the viewer's clock. */
+    public static function dateTimeFormat(): string
+    {
+        return self::DATE_FORMAT.', '.TimeFormat::time();
+    }
 }

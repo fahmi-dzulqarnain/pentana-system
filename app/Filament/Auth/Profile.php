@@ -5,6 +5,7 @@ namespace App\Filament\Auth;
 use App\Providers\AppServiceProvider;
 use App\Support\LocaleCookie;
 use App\Support\Locales;
+use App\Support\TimeFormat;
 use Filament\Auth\Pages\EditProfile;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -31,6 +32,18 @@ class Profile extends EditProfile
                         ->mapWithKeys(fn ($c) => [$c => Locales::nativeName($c)])->all())
                     ->visible(fn (): bool => Locales::multipleEnabled())
                     ->in(fn (): array => Locales::enabled())
+                    ->required()
+                    ->selectablePlaceholder(false)
+                    ->native(false),
+                // 'auto' is stored as null, so the clock keeps following the language if it changes.
+                Select::make('time_format')
+                    ->label(__('Time format'))
+                    ->options([
+                        'auto' => __('Automatic (follows language)'),
+                        TimeFormat::TWELVE => __('12-hour (2:30 PM)'),
+                        TimeFormat::TWENTY_FOUR => __('24-hour (14:30)'),
+                    ])
+                    ->in(['auto', ...TimeFormat::choices()])
                     ->required()
                     ->selectablePlaceholder(false)
                     ->native(false),
@@ -76,6 +89,7 @@ class Profile extends EditProfile
         // An account that never chose starts on the language it is browsing in, so the
         // now-required field does not block saving the rest of the profile.
         $data['locale'] = Locales::isEnabled($data['locale'] ?? null) ? $data['locale'] : app()->getLocale();
+        $data['time_format'] = in_array($data['time_format'] ?? null, TimeFormat::choices(), true) ? $data['time_format'] : 'auto';
 
         return $data;
     }
@@ -86,6 +100,11 @@ class Profile extends EditProfile
         if (array_key_exists('locale', $data)) {
             $record->forceFill(['locale' => $data['locale']]);
             unset($data['locale']);
+        }
+
+        if (array_key_exists('time_format', $data)) {
+            $record->forceFill(['time_format' => $data['time_format'] === 'auto' ? null : $data['time_format']]);
+            unset($data['time_format']);
         }
 
         return parent::handleRecordUpdate($record, $data);

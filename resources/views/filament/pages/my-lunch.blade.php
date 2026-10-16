@@ -35,7 +35,7 @@
                 <div class="ml-body">
                     <div class="ml-date">{{ $lunch->date->translatedFormat('l, j M') }}</div>
                     <div class="ml-menu">{{ $lunch->catererMeal?->name ?? __('Menu') }}</div>
-                    <div class="ml-meta">{{ $lunch->caterer?->name }} &middot; {{ __('Order by :deadline', ['deadline' => $lunch->deadline->translatedFormat('g:i A, D j M')]) }}</div>
+                    <div class="ml-meta">{{ $lunch->caterer?->name }} &middot; {{ __('Order by :deadline', ['deadline' => $lunch->deadline->translatedFormat(\App\Support\TimeFormat::time().', D j M')]) }}</div>
 
                     @if($lunch->isOpenForVoting())
                         <div class="ml-opts">

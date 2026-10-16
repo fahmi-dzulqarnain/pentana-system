@@ -42,7 +42,7 @@
     @forelse($this->upcomingActivities() as $activity)
         @php($status = $this->statusFor($activity))
         <div class="ma-card">
-            <div class="ma-date">{{ $activity->starts_at->translatedFormat('l, j M · g:i A') }}</div>
+            <div class="ma-date">{{ $activity->starts_at->translatedFormat('l, j M · '.\App\Support\TimeFormat::time()) }}</div>
             <div class="ma-title">{{ $activity->title }}</div>
             @if($activity->location)
                 <div class="ma-meta">📍 {{ $activity->location }}</div>

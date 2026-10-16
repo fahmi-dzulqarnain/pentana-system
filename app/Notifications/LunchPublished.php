@@ -6,6 +6,7 @@ use App\Filament\Pages\MyLunch;
 use App\Models\Lunch;
 use App\Models\QueuedEmail;
 use App\Notifications\Concerns\PushesViaApn;
+use App\Support\TimeFormat;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification as FilamentNotification;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -40,7 +41,7 @@ class LunchPublished extends Notification
 
     private function pushBody(): string
     {
-        return __('Order by :deadline.', ['deadline' => $this->lunch->deadline->translatedFormat('g:i A, D j M')]);
+        return __('Order by :deadline.', ['deadline' => $this->lunch->deadline->translatedFormat(TimeFormat::time().', D j M')]);
     }
 
     public function toMail(object $notifiable): MailMessage

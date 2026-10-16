@@ -45,7 +45,8 @@ class NotificationsLocalisedTest extends TestCase
         $this->assertStringContainsString('"title":"Menu makan tengah hari diterbitkan: ', $text($ms));
         $this->assertStringContainsString('"body":"Pesan sebelum 12:00 PM, Jum 6 Nov."', $text($ms));
         $this->assertStringContainsString('"title":"Menu makan siang diterbitkan: ', $text($id));
-        $this->assertStringContainsString('"body":"Pesan sebelum 12:00 PM, Jum 6 Nov."', $text($id));
+        // Indonesian defaults to the 24-hour clock, in the same send as the 12-hour recipients.
+        $this->assertStringContainsString('"body":"Pesan sebelum 12:00, Jum 6 Nov."', $text($id));
         $this->assertStringContainsString('"body":"Order by 12:00 PM, Fri 6 Nov."', $text($en));
     }
 

@@ -5,6 +5,7 @@ namespace App\Notifications;
 use App\Filament\Pages\MyActivities;
 use App\Models\Activity;
 use App\Notifications\Concerns\PushesViaApn;
+use App\Support\TimeFormat;
 use Illuminate\Notifications\Notification;
 use NotificationChannels\Apn\ApnMessage;
 
@@ -42,7 +43,7 @@ abstract class ActivityNotification extends Notification
 
     protected function whenLabel(): string
     {
-        return $this->activity->starts_at->translatedFormat('l, j M · g:i A');
+        return $this->activity->starts_at->translatedFormat('l, j M · '.TimeFormat::time());
     }
 
     protected function whereSuffix(): string
