@@ -32,9 +32,34 @@
         .dark .lc-menucard { background:rgb(245 158 11 / 0.12); border-color:rgb(245 158 11 / 0.3); }
         .dark .lc-menucard__title { color:#fcd34d; }
 
-        .lc-setmenu { display:block; text-decoration:none; margin-top:0.25rem; padding:0.25rem 0; font-size:0.75rem; color:#9ca3af; text-align:center; }
-        .lc-setmenu:hover { color:#6b7280; }
-        .dark .lc-setmenu:hover { color:#9ca3af; }
+        .lc-setmenu { display:block; text-decoration:none; margin-top:0.25rem; padding:0.25rem 0; font-size:0.75rem; color:#6b7280; text-align:center; }
+        .lc-setmenu:hover { color:#374151; }
+        .dark .lc-setmenu { color:#9ca3af; }
+        .dark .lc-setmenu:hover { color:#d1d5db; }
+
+        .lc-stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:1rem; margin-bottom:1.5rem; }
+
+        /* Phones: seven columns can't fit, so the month becomes a list of days. */
+        .lc-agenda { display:none; }
+        .lc-agenda__day { display:flex; gap:0.75rem; align-items:flex-start; padding:0.75rem 0; border-top:1px solid #e5e7eb; }
+        .lc-agenda__day:first-child { border-top:0; }
+        .dark .lc-agenda__day { border-color:rgb(255 255 255 / 0.1); }
+        .lc-agenda__date { flex:0 0 3.25rem; text-align:center; color:#374151; }
+        .dark .lc-agenda__date { color:#d1d5db; }
+        .lc-agenda__dow { font-size:0.75rem; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; color:#6b7280; }
+        .dark .lc-agenda__dow { color:#9ca3af; }
+        .lc-agenda__num { font-size:1.25rem; font-weight:600; line-height:1.4; }
+        .lc-agenda__day--today .lc-agenda__num { color:var(--primary-600,#d97706); }
+        .lc-agenda__body { flex:1; min-width:0; }
+        .lc-agenda__body .lc-menucard { margin-top:0; }
+        .lc-agenda__set { display:flex; align-items:center; min-height:2.75rem; padding:0 0.875rem; border:1px dashed #d1d5db; border-radius:0.5rem; color:#4b5563; font-size:0.875rem; text-decoration:none; }
+        .dark .lc-agenda__set { border-color:rgb(255 255 255 / 0.2); color:#d1d5db; }
+
+        @media (max-width: 639px) {
+            .lc-stats { grid-template-columns:1fr; gap:0.75rem; }
+            .lc-grid { display:none; }
+            .lc-agenda { display:block; }
+        }
     </style>
 
     {{-- Navigation header: prev / month label / next / Today --}}
@@ -55,7 +80,7 @@
     </div>
 
     {{-- Stat cards --}}
-    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem;margin-bottom:1.5rem;">
+    <div class="lc-stats">
         <x-filament::section>
             <div style="text-align:center;padding:0.5rem 0;">
                 <div style="font-size:1.75rem;font-weight:700;color:var(--primary-600,#d97706);line-height:1.2;">
@@ -87,8 +112,8 @@
         </x-filament::section>
     </div>
 
-    {{-- Calendar grid --}}
-    <x-filament::section>
+    {{-- Calendar grid (tablet and up) --}}
+    <x-filament::section class="lc-grid">
         {{-- Weekday headers --}}
         <div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:1px;margin-bottom:0.5rem;">
             {{-- Sun..Sat, from Carbon so the abbreviations follow the locale. --}}
@@ -140,5 +165,37 @@
                 @endforeach
             @endforeach
         </div>
+    </x-filament::section>
+
+    {{-- Agenda (phones): the same days, one per row. Weekends appear only when they have a lunch. --}}
+    <x-filament::section class="lc-agenda">
+        @foreach(collect($this->calendarWeeks())->flatten(1)->filter(fn ($day) => $day['inMonth'] && ($day['lunch'] || ! $day['date']->isWeekend())) as $day)
+            @php $lunch = $day['lunch']; @endphp
+            <div @class(['lc-agenda__day', 'lc-agenda__day--today' => $day['date']->isToday()])>
+                <div class="lc-agenda__date">
+                    <div class="lc-agenda__dow">{{ $day['date']->translatedFormat('D') }}</div>
+                    <div class="lc-agenda__num">{{ $day['date']->day }}</div>
+                </div>
+                <div class="lc-agenda__body">
+                    @if($lunch)
+                        <a href="{{ $this->editUrlFor($lunch) }}" class="lc-menucard">
+                            <div class="lc-menucard__title">{{ $lunch->catererMeal?->name ?? __('Menu') }}</div>
+                            <div style="display:flex;flex-wrap:wrap;gap:0.25rem;">
+                                @foreach($lunch->options->where('enabled', true) as $option)
+                                    @if($option->mealOption)
+                                        <x-filament::badge color="primary" size="sm">{{ $option->mealOption->name }}</x-filament::badge>
+                                    @endif
+                                @endforeach
+                            </div>
+                            @if(in_array($lunch->status, ['published', 'closed'], true))
+                                <div style="font-size:0.75rem;color:var(--gray-500,#6b7280);margin-top:0.25rem;font-weight:600;">{{ __(':count ordered', ['count' => $lunch->attendingCount()]) }}</div>
+                            @endif
+                        </a>
+                    @else
+                        <a href="{{ $this->createUrlFor($day['date']) }}" class="lc-agenda__set">+ {{ __('Set menu') }}</a>
+                    @endif
+                </div>
+            </div>
+        @endforeach
     </x-filament::section>
 </x-filament-panels::page>

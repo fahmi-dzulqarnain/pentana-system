@@ -76,6 +76,8 @@ class AppServiceProvider extends ServiceProvider
         // Money always renders "MYR 70.00": without a pinned number locale Filament's
         // ->money('MYR') follows the app locale and prints "RM 70.00" (ms) / "MYR 70,00" (id).
         Table::configureUsing(fn ($table) => $table->defaultNumberLocale('en'));
+        // Phones get each row as a labelled card instead of a table that scrolls sideways.
+        Table::configureUsing(fn ($table) => $table->stackedOnMobile());
         Schema::configureUsing(fn ($schema) => $schema->defaultNumberLocale('en'));
     }
 }

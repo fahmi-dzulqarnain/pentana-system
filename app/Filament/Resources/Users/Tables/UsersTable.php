@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Users\Tables;
 
 use App\Filament\Imports\UserImporter;
+use App\Models\User;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -18,13 +19,40 @@ class UsersTable
         return $table
             ->columns([
                 TextColumn::make('name')
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable(),
                 TextColumn::make('email')
                     ->label(__('Email address'))
                     ->searchable(),
+                TextColumn::make('memberCategory.name')
+                    ->label(__('Member category')),
+                // Whether the member has activated the account an admin created for them.
+                TextColumn::make('account_status')
+                    ->label(__('Account status'))
+                    ->state(fn (User $record): string => match (true) {
+                        $record->is_admin => 'admin',
+                        $record->activated_at !== null => 'claimed',
+                        default => 'unclaimed',
+                    })
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'admin' => 'primary',
+                        'claimed' => 'success',
+                        default => 'gray',
+                    })
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'admin' => __('Admin'),
+                        'claimed' => __('Claimed'),
+                        default => __('Not claimed yet'),
+                    }),
+                // Derived from unallocated payment proofs, so not a sortable DB column.
+                TextColumn::make('credit')
+                    ->label(__('Credit'))
+                    ->money('MYR'),
                 TextColumn::make('email_verified_at')
                     ->dateTime()
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -33,11 +61,9 @@ class UsersTable
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                // Derived from unallocated payment proofs, so not a sortable DB column.
-                TextColumn::make('credit')
-                    ->label(__('Credit'))
-                    ->money('MYR'),
             ])
+            ->defaultSort('name')
+            ->modifyQueryUsing(fn ($query) => $query->with('memberCategory'))
             ->filters([
                 //
             ])

@@ -123,5 +123,5 @@ Admins open on a "Needs attention" row (payments to verify, next lunch's orders,
 1. **Fix the three bugs in §1.** The timezone bug quietly breaks deadlines on every lunch and activity, global search errors on every page, and the contact address bounces.
 2. **Make payment verification work from one page:** uncropped proof, Verify/Reject in the header, a pending filter, a text status.
 3. **Restructure the navigation and dashboard together:** personal vs admin groups, a single lunch planner, and a "Needs attention" dashboard.
-4. **Make the admin lists work on a phone:** card layout for Fee payments and Users, agenda view for the calendar.
+4. ✅ (2026-10-16) **Make the admin lists work on a phone:** card layout for Fee payments and Users, agenda view for the calendar.
 5. **Run a consistency pass:** dates, casing, money, empty states, contrast. It's mostly configuration in `AppServiceProvider` and `lang/*.json`.

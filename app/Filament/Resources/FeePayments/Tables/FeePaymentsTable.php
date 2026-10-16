@@ -51,7 +51,6 @@ class FeePaymentsTable
                     EditAction::make(),
                 ]),
             ])
-            ->stackedOnMobile()
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
