@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Users\Tables;
 
 use App\Filament\Imports\UserImporter;
+use App\Filament\Resources\Users\UserResource;
 use App\Models\User;
 use App\Services\MemberInviter;
 use Filament\Actions\Action;
@@ -11,7 +12,6 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ImportAction;
-use Filament\Actions\ViewAction;
 use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -103,11 +103,14 @@ class UsersTable
                     ->label(__('Member category'))
                     ->relationship('memberCategory', 'name'),
             ])
+            // No View button: clicking the row opens the member's details. Set explicitly,
+            // because without a ViewAction Filament would send row clicks to Edit instead.
+            ->recordUrl(fn (User $record): string => UserResource::getUrl('view', ['record' => $record]))
             ->recordActions([
-                ViewAction::make(),
                 EditAction::make(),
                 Action::make('invite')
-                    ->label(fn (User $record): string => $record->invited_at ? __('Resend invitation') : __('Send invitation'))
+                    // Short on the row; the confirmation modal spells it out.
+                    ->label(__('Invite'))
                     ->icon('heroicon-o-envelope')
                     ->color('gray')
                     ->visible(fn (User $record): bool => app(MemberInviter::class)->canInvite($record))

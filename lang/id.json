@@ -575,5 +575,6 @@
     "Email :email a link to claim their :app account? They have :days days to claim it.": "Kirim email ke :email berisi tautan untuk mengklaim akun :app mereka? Mereka punya waktu :days hari untuk mengklaimnya.",
     "Members who have not claimed their account yet get an email with a link to claim it, and :days days to do so. Disabled members are re-enabled. Admins and claimed members are skipped.": "Anggota yang belum mengklaim akunnya akan menerima email berisi tautan untuk mengklaimnya, dengan waktu :days hari. Anggota nonaktif akan diaktifkan kembali. Admin dan anggota yang sudah mengklaim akun dilewati.",
     "Offer valid until :date": "Penawaran berlaku hingga :date",
-    "If you do not claim your account by :date, it will be disabled. Your admin can always send you a new invitation.": "Jika Anda tidak mengklaim akun sebelum :date, akun akan dinonaktifkan. Admin Anda selalu bisa mengirim undangan baru."
+    "If you do not claim your account by :date, it will be disabled. Your admin can always send you a new invitation.": "Jika Anda tidak mengklaim akun sebelum :date, akun akan dinonaktifkan. Admin Anda selalu bisa mengirim undangan baru.",
+    "Invite": "Undang"
 }
