@@ -10,7 +10,9 @@ use Filament\Actions\EditAction;
 use Filament\Actions\ImportAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class UsersTable
 {
@@ -65,7 +67,23 @@ class UsersTable
             ->defaultSort('name')
             ->modifyQueryUsing(fn ($query) => $query->with('memberCategory'))
             ->filters([
-                //
+                SelectFilter::make('account_status')
+                    ->label(__('Account status'))
+                    ->options([
+                        'admin' => __('Admin'),
+                        'claimed' => __('Claimed'),
+                        'unclaimed' => __('Not claimed yet'),
+                    ])
+                    // Same rules as the column: admin first, then whether the account was activated.
+                    ->query(fn (Builder $query, array $data) => match ($data['value'] ?? null) {
+                        'admin' => $query->where('is_admin', true),
+                        'claimed' => $query->where('is_admin', false)->whereNotNull('activated_at'),
+                        'unclaimed' => $query->where('is_admin', false)->whereNull('activated_at'),
+                        default => $query,
+                    }),
+                SelectFilter::make('member_category_id')
+                    ->label(__('Member category'))
+                    ->relationship('memberCategory', 'name'),
             ])
             ->recordActions([
                 ViewAction::make(),

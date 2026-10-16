@@ -69,7 +69,7 @@ Sidebar is now Personal (My lunch, My activities, My payments for members) → L
 | The admin's **personal pages and admin tools are mixed** in one group. *Kesejahteraan & Sosial* (Welfare & Social) holds Menu calendar (admin-only), My activities and My lunch, next to Caterers and Meals. Meanwhile "Kegiatan Saya" (My activities) is separate from the *Kegiatan* (Activities) group, and both use the same sparkle icon. | 🟡 | Make a personal group (Dashboard, My lunch, My activities, Profile), then admin groups for Lunch, Activities, Finance and Members. Use distinct icons for "mine" and "manage". |
 | **Sidebar labels don't match page titles:** "Perencana Makan Siang" opens "Makan Siang", "Manajemen Kegiatan" opens "Kegiatan", "Pengirim Email Otomatis" opens "Email Otomatis". | 🟡 | Use the same label for the sidebar and the page title. |
 | ✅ (fixed 2026-10-16) Every breadcrumb ends "› Daftar" (› List), which adds nothing. | 🟢 | Turn off the list breadcrumb (`$breadcrumb = null` on List pages). |
-| Search and filters are inconsistent: Lunches has no search, while Activities has search and filters. | 🟢 | Every list gets search, plus a status filter where there's a status. |
+| ✅ (fixed 2026-10-16) Search and filters are inconsistent: Lunches has no search, while Activities has search and filters. | 🟢 | Every list gets search, plus a status filter where there's a status. |
 
 ## 4. Dashboard — ✅ fixed 2026-10-16
 

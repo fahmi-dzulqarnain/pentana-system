@@ -14,7 +14,7 @@ class MemberCategoriesTable
     {
         return $table
             ->columns([
-                TextColumn::make('name'),
+                TextColumn::make('name')->searchable(),
                 TextColumn::make('default_fee')->money('MYR'),
             ])
             ->filters([
