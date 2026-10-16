@@ -57,7 +57,8 @@ class MyLunchPageTest extends TestCase
             ->call('choose', $lunch->id, $option->id);
 
         $this->assertDatabaseHas('lunch_responses', [
-            'lunch_id' => $lunch->id, 'user_id' => $user->id, 'meal_option_id' => $option->id,
+            'lunch_id' => $lunch->id, 'user_id' => $user->id,
+            'lunch_option_id' => $option->id, 'meal_option_id' => $option->meal_option_id,
         ]);
     }
 
