@@ -17,7 +17,7 @@
 
     <form wire:submit="validatePasskeyProperties" style="display:flex;align-items:flex-end;gap:0.75rem;flex-wrap:wrap;">
         <div style="flex:1;min-width:14rem;">
-            <label for="passkey-name" class="pk-label">{{ __('passkeys::passkeys.name') }}</label>
+            <label for="passkey-name" class="pk-label">{{ __('Device name') }}</label>
             <x-filament::input.wrapper>
                 <x-filament::input
                     type="text"
@@ -30,7 +30,7 @@
         </div>
 
         <x-filament::button type="submit" icon="heroicon-m-key">
-            {{ __('passkeys::passkeys.create') }}
+            {{ __('Add passkey') }}
         </x-filament::button>
     </form>
 
@@ -47,10 +47,17 @@
             <div class="pk-row">
                 <div>
                     <div class="pk-name">{{ $passkey->name }}</div>
-                    <div class="pk-meta">{{ __('passkeys::passkeys.last_used') }}: {{ $passkey->last_used_at?->diffForHumans() ?? __('passkeys::passkeys.not_used_yet') }}</div>
+                    <div class="pk-meta">{{ $passkey->last_used_at ? __('Last used :time', ['time' => $passkey->last_used_at->diffForHumans()]) : __('Never used') }}</div>
                 </div>
-                <x-filament::button color="danger" size="sm" wire:click="deletePasskey({{ $passkey->id }})">
-                    {{ __('passkeys::passkeys.delete') }}
+                {{-- Outlined, not solid red: removing a passkey is rare, so it shouldn't be the loudest thing on the page. --}}
+                <x-filament::button
+                    color="danger"
+                    outlined
+                    size="sm"
+                    wire:click="deletePasskey({{ $passkey->id }})"
+                    wire:confirm="{{ __('Remove the passkey “:name”? You will no longer be able to sign in with it.', ['name' => $passkey->name]) }}"
+                >
+                    {{ __('Remove passkey') }}
                 </x-filament::button>
             </div>
         @empty

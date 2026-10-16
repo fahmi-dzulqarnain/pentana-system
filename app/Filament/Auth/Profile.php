@@ -2,11 +2,12 @@
 
 namespace App\Filament\Auth;
 
+use App\Providers\AppServiceProvider;
 use App\Support\LocaleCookie;
 use App\Support\Locales;
 use Filament\Auth\Pages\EditProfile;
-use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Livewire;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Text;
@@ -21,7 +22,8 @@ class Profile extends EditProfile
     {
         return $schema
             ->components([
-                $this->getNameFormComponent(),
+                // No autofocus: on a phone it pops the keyboard over the page on every visit.
+                $this->getNameFormComponent()->autofocus(false),
                 $this->getEmailFormComponent(),
                 Select::make('locale')
                     ->label(__('Language'))
@@ -32,8 +34,13 @@ class Profile extends EditProfile
                     ->required()
                     ->selectablePlaceholder(false)
                     ->native(false),
-                DatePicker::make('birthday')
-                    ->native(false)
+                // Read-only, so plain text rendered on the server: the JS date picker showed an
+                // empty box until its script formatted the value.
+                TextInput::make('birthday')
+                    // From the model, not $state: the serialised state is a UTC instant, which for a
+                    // date-only value in Malaysia time falls on the previous day.
+                    ->formatStateUsing(fn ($record): ?string => $record?->birthday?->translatedFormat(AppServiceProvider::DATE_FORMAT))
+                    ->placeholder(__('Not set'))
                     ->disabled()
                     ->dehydrated(false)
                     ->helperText(__('Contact an admin to update your birthday.')),

@@ -79,7 +79,8 @@ Admins open on a "Needs attention" row (payments to verify, next lunch's orders,
 - 🟡 Covered under navigation above: personal and admin items are mixed.
 - 🟢 The welcome card repeats the user menu and emphasises "Selamat Datang" over the name. The stats widget loads as a blank box on phone. Counts use "3,000" instead of the Indonesian "3.000".
 
-## 5. Member pages
+## 5. Member pages — Profile items ✅ fixed 2026-10-16 (the My lunch / My activities empty states are still open)
+
 | Finding | Severity | Recommendation |
 |---|---|---|
 | The My lunch and My activities empty states are **one grey sentence in a blank page**. Nothing says when menus get published or what to do meanwhile. | 🟡 | Add an icon, one line of explanation ("Menu biasanya diterbitkan setiap Jumat", menus are usually published on Fridays) and a link (notification settings, or the calendar for admins). |
