@@ -16,6 +16,12 @@ class Login extends \Filament\Auth\Pages\Login
         if ($email) {
             $user = User::where('email', $email)->first();
 
+            if ($user?->isDisabled()) {
+                throw ValidationException::withMessages([
+                    'data.email' => __('Your invitation has expired, so this account is disabled. Ask your admin to send you a new one.'),
+                ]);
+            }
+
             if ($user && ! $user->isActivated()) {
                 Notification::make()
                     ->title(__('Account not yet activated'))

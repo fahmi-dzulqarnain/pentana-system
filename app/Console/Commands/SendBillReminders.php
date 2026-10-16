@@ -20,7 +20,7 @@ class SendBillReminders extends Command
         $userIds = FeePeriod::where('status', '!=', 'paid')->distinct()->pluck('user_id');
 
         $sent = 0;
-        foreach (User::whereIn('id', $userIds)->get() as $user) {
+        foreach (User::enabled()->whereIn('id', $userIds)->get() as $user) {
             $bills = FeePeriod::forMember($user->id)->get();
             $outstanding = FinanceService::outstanding($bills);
 

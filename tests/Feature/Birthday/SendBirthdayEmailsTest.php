@@ -72,4 +72,27 @@ class SendBirthdayEmailsTest extends TestCase
 
         Notification::assertNotSentTo($user, BirthdayWish::class);
     }
+
+    public function test_a_blank_template_sends_the_built_in_message(): void
+    {
+        Notification::fake();
+        AutoEmail::create(['type' => 'birthday', 'is_active' => true, 'subject' => null, 'body' => '<p></p>']);
+        $user = User::factory()->create(['birthday' => now()->subYears(30)->toDateString()]);
+
+        $this->artisan('app:send-birthday-emails')->assertSuccessful();
+
+        Notification::assertSentTo($user, BirthdayWish::class, fn (BirthdayWish $n) => $n->subject === null && $n->body === null);
+    }
+
+    public function test_names_are_personalised_in_the_subject_and_escaped_in_the_body(): void
+    {
+        Notification::fake();
+        AutoEmail::create(['type' => 'birthday', 'is_active' => true, 'subject' => 'Happy birthday {name}', 'body' => '<p>Hi {name}</p>']);
+        $user = User::factory()->create(['name' => 'Tom & Jerry', 'birthday' => now()->subYears(30)->toDateString()]);
+
+        $this->artisan('app:send-birthday-emails')->assertSuccessful();
+
+        Notification::assertSentTo($user, BirthdayWish::class, fn (BirthdayWish $n) => $n->subject === 'Happy birthday Tom & Jerry'
+            && $n->body === '<p>Hi Tom &amp; Jerry</p>');
+    }
 }

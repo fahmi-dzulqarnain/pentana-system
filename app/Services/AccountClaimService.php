@@ -7,10 +7,10 @@ use RuntimeException;
 
 class AccountClaimService
 {
-    /** The unclaimed user for this email, or null if unknown / already activated. */
+    /** The unclaimed user for this email, or null if unknown, already activated or disabled. */
     public function claimable(string $email): ?User
     {
-        return User::where('email', trim($email))->whereNull('activated_at')->first();
+        return User::where('email', trim($email))->whereNull('activated_at')->enabled()->first();
     }
 
     /** @throws RuntimeException if already activated. */
