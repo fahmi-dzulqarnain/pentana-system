@@ -3,7 +3,9 @@
 namespace Tests\Feature\Lunch;
 
 use App\Filament\Resources\Lunches\Pages\EditLunch;
+use App\Models\CatererMeal;
 use App\Models\Lunch;
+use App\Models\LunchOption;
 use App\Models\LunchResponse;
 use App\Models\MealOption;
 use App\Models\User;
@@ -19,20 +21,23 @@ class LunchOrderStatsTest extends TestCase
 
     public function test_lunch_count_helpers(): void
     {
-        $lunch = Lunch::factory()->create(['status' => 'published', 'deadline' => now()->addDay()]);
-        $beef = MealOption::factory()->create();
-        $chicken = MealOption::factory()->create();
+        $beefOption = MealOption::factory()->create();
+        $chickenOption = MealOption::factory()->create();
+        $lunch = Lunch::factory()->withMenu(null, [$beefOption, $chickenOption])
+            ->create(['status' => 'published', 'deadline' => now()->addDay()]);
+        $beef = $lunch->options()->where('meal_option_id', $beefOption->id)->sole();
+        $chicken = $lunch->options()->where('meal_option_id', $chickenOption->id)->sole();
 
-        LunchResponse::create(['lunch_id' => $lunch->id, 'user_id' => User::factory()->create()->id, 'meal_option_id' => $beef->id]);
-        LunchResponse::create(['lunch_id' => $lunch->id, 'user_id' => User::factory()->create()->id, 'meal_option_id' => $beef->id]);
-        LunchResponse::create(['lunch_id' => $lunch->id, 'user_id' => User::factory()->create()->id, 'meal_option_id' => $chicken->id]);
+        foreach ([$beef, $beef, $chicken] as $pick) {
+            LunchResponse::create(['lunch_id' => $lunch->id, 'user_id' => User::factory()->create()->id, 'meal_option_id' => $pick->meal_option_id, 'lunch_option_id' => $pick->id]);
+        }
         LunchResponse::create(['lunch_id' => $lunch->id, 'user_id' => User::factory()->create()->id, 'meal_option_id' => null]);
 
         $lunch->refresh()->load('responses');
 
         $this->assertSame(3, $lunch->attendingCount());
         $this->assertSame(1, $lunch->notAttendingCount());
-        $this->assertSame([$beef->id => 2, $chicken->id => 1], $lunch->optionCounts());
+        $this->assertSame([$beef->id => 2, $chicken->id => 1], $lunch->optionCountsByLunchOption());
     }
 
     public function test_avg_orders_per_day_over_published_or_closed_lunches(): void
@@ -74,5 +79,48 @@ class LunchOrderStatsTest extends TestCase
             ->assertSee('Current orders')
             ->assertSee('Not attending: 1')
             ->assertSee('Total ordering: 0');
+    }
+
+    public function test_orders_summary_groups_counts_per_menu(): void
+    {
+        $regular = MealOption::factory()->create(['name' => 'Regular']);
+        $large = MealOption::factory()->create(['name' => 'Large']);
+        $mealA = CatererMeal::factory()->create(['name' => '<b>x</b>']);
+        $mealB = CatererMeal::factory()->create(['name' => 'Mee Goreng']);
+
+        $lunch = Lunch::factory()->withMenu($mealA, [$regular])->withMenu($mealB, [$regular, $large])
+            ->create(['status' => 'published', 'deadline' => now()->addDay()]);
+        [$menuA, $menuB] = $lunch->menus()->get()->all();
+        $optA = LunchOption::where('lunch_menu_id', $menuA->id)->where('meal_option_id', $regular->id)->first();
+        $optBRegular = LunchOption::where('lunch_menu_id', $menuB->id)->where('meal_option_id', $regular->id)->first();
+        $optBLarge = LunchOption::where('lunch_menu_id', $menuB->id)->where('meal_option_id', $large->id)->first();
+
+        $pick = fn (LunchOption $o) => LunchResponse::create([
+            'lunch_id' => $lunch->id, 'user_id' => User::factory()->create()->id,
+            'lunch_option_id' => $o->id, 'meal_option_id' => $o->meal_option_id,
+        ]);
+        $pick($optA);
+        $pick($optBRegular);
+        $pick($optBRegular);
+        $pick($optBLarge);
+        LunchResponse::create(['lunch_id' => $lunch->id, 'user_id' => User::factory()->create()->id, 'meal_option_id' => null]);
+
+        $this->assertSame([$optA->id => 1, $optBRegular->id => 2, $optBLarge->id => 1], $lunch->fresh('responses')->optionCountsByLunchOption());
+
+        $this->actingAs(User::factory()->admin()->create());
+        Filament::setCurrentPanel(Filament::getPanel('account'));
+
+        $html = Livewire::test(EditLunch::class, ['record' => $lunch->getRouteKey()])->html();
+        $this->assertStringContainsString('&lt;b&gt;x&lt;/b&gt;', $html);
+        $this->assertStringNotContainsString('<b>x</b>', $html);
+        $this->assertStringNotContainsString('&lt;br&gt;', $html);
+        $this->assertStringContainsString('<br>', $html);
+
+        Livewire::test(EditLunch::class, ['record' => $lunch->getRouteKey()])
+            ->assertSee($menuA->fresh(['caterer', 'catererMeal'])->label().': Regular: 1')
+            ->assertSee($menuB->fresh(['caterer', 'catererMeal'])->label().': Regular: 2')
+            ->assertSee('Large: 1')
+            ->assertSee('Not attending: 1')
+            ->assertSee('Total ordering: 4');
     }
 }

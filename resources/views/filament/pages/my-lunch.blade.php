@@ -12,6 +12,8 @@
         .dark .ml-menu { color:#f9fafb; }
         .ml-meta { font-size:0.8125rem; color:#6b7280; margin-top:0.125rem; }
         .dark .ml-meta { color:#9ca3af; }
+        .ml-menusection { margin-top:1rem; padding-top:0.875rem; border-top:1px solid #e5e7eb; }
+        .dark .ml-menusection { border-color:rgb(255 255 255 / 0.1); }
         .ml-opts { display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:0.875rem; }
         .ml-btn { display:inline-flex; align-items:center; padding:0.5rem 0.875rem; border-radius:0.5rem; border:1px solid rgb(0 0 0 / 0.1); background:#fff; color:#374151; cursor:pointer; font-size:0.875rem; font-weight:500; }
         .ml-btn:hover { background:#f9fafb; }
@@ -27,44 +29,56 @@
 
     @forelse($this->upcomingLunches() as $lunch)
         @php($mine = $responses->get($lunch->id))
+        @php($open = $lunch->isOpenForVoting())
         <div class="ml-card">
-            <div class="ml-cardrow">
-                @if($lunch->catererMeal?->image)
-                    <img class="ml-thumb" src="{{ asset('storage/'.$lunch->catererMeal->image) }}" alt="{{ $lunch->catererMeal?->name }}">
-                @endif
-                <div class="ml-body">
-                    <div class="ml-date">{{ $lunch->date->translatedFormat('l, j M') }}</div>
-                    <div class="ml-menu">{{ $lunch->catererMeal?->name ?? __('Menu') }}</div>
-                    <div class="ml-meta">{{ $lunch->caterer?->name }} &middot; {{ __('Order by :deadline', ['deadline' => $lunch->deadline->translatedFormat(\App\Support\TimeFormat::time().', D j M')]) }}</div>
+            <div class="ml-date">{{ $lunch->date->translatedFormat('l, j M') }}</div>
+            <div class="ml-meta">{{ __('Order by :deadline', ['deadline' => $lunch->deadline->translatedFormat(\App\Support\TimeFormat::time().', D j M')]) }}</div>
 
-                    @if($lunch->isOpenForVoting())
-                        <div class="ml-opts">
-                            @foreach($lunch->options->where('enabled', true) as $option)
-                                @continue(! $option->mealOption)
-                                <button type="button" wire:click="choose({{ $lunch->id }}, {{ $option->meal_option_id }})"
-                                    @class(['ml-btn', 'ml-btn--active' => $mine && $mine->meal_option_id === $option->meal_option_id])>
-                                    {{ $option->mealOption->name }}
-                                </button>
-                            @endforeach
-                            <button type="button" wire:click="notAttending({{ $lunch->id }})"
-                                @class(['ml-btn', 'ml-btn--active' => $mine && $mine->meal_option_id === null])>
-                                {{ __('Not attending') }}
-                            </button>
-                        </div>
-                    @else
-                        <div class="ml-locked">
-                            {{ __('Ordering closed.') }}
-                            @if($mine && $mine->meal_option_id)
-                                {{ __('You ordered:') }} <strong>{{ $mine->mealOption?->name }}</strong>.
-                            @elseif($mine)
-                                {{ __('You marked yourself not attending.') }}
-                            @else
-                                {{ __('No order was placed.') }}
+            @foreach($lunch->menus as $menu)
+                <div class="ml-menusection">
+                    <div class="ml-cardrow">
+                        @if($menu->catererMeal?->image)
+                            <img class="ml-thumb" src="{{ asset('storage/'.$menu->catererMeal->image) }}" alt="{{ $menu->catererMeal?->name }}">
+                        @endif
+                        <div class="ml-body">
+                            <div class="ml-menu">{{ $menu->label() }}</div>
+
+                            @if($open)
+                                <div class="ml-opts">
+                                    @foreach($menu->options->where('enabled', true) as $option)
+                                        @continue(! $option->mealOption)
+                                        <button type="button" wire:click="choose({{ $lunch->id }}, {{ $option->id }})"
+                                            @class(['ml-btn', 'ml-btn--active' => $mine && $mine->lunch_option_id === $option->id])>
+                                            {{ $option->mealOption->name }}
+                                        </button>
+                                    @endforeach
+                                </div>
                             @endif
                         </div>
+                    </div>
+                </div>
+            @endforeach
+
+            @if($open)
+                <div class="ml-opts">
+                    <button type="button" wire:click="notAttending({{ $lunch->id }})"
+                        @class(['ml-btn', 'ml-btn--active' => $mine && $mine->meal_option_id === null])>
+                        {{ __('Not attending') }}
+                    </button>
+                </div>
+            @else
+                <div class="ml-locked">
+                    {{ __('Ordering closed.') }}
+                    @if($mine && $mine->meal_option_id)
+                        @php($chosenMenu = $lunch->menus->first(fn ($m) => $m->options->contains('id', $mine->lunch_option_id)))
+                        {{ __('You ordered:') }} <strong>{{ $mine->mealOption?->name }}</strong>@if($chosenMenu) ({{ $chosenMenu->label() }})@endif.
+                    @elseif($mine)
+                        {{ __('You marked yourself not attending.') }}
+                    @else
+                        {{ __('No order was placed.') }}
                     @endif
                 </div>
-            </div>
+            @endif
         </div>
     @empty
         <x-empty-state

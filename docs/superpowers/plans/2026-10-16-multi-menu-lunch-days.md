@@ -19,7 +19,7 @@
 - No queue worker: notifications go out inline / via `MemberNotifier::sendAfterResponse()`, never `ShouldQueue`.
 - The day is the unit: one deadline, one status, one "Lunch published", and one vote nudge per lunch day, whatever the menu count.
 - Not attending is `lunch_responses.meal_option_id = null`. Count methods keep reading `meal_option_id`.
-- Several-menus legacy copy (exact English key): `Several menus today — update the app to order`.
+- Several-menus legacy copy (exact English key): `Several menus today. Update the app to order.`.
 - Backend test command: `php artisan test`. Mobile: `./gradlew :shared:allTests`, `./gradlew :androidApp:assembleDebug`, `xcodebuild` per `pentana-mobile/README.md`.
 
 ## Review Focus
@@ -51,7 +51,7 @@
   - `lunch_options.lunch_menu_id` → `lunch_menus` cascade, NOT NULL after backfill. Unique changes from `(lunch_id, meal_option_id)` to `(lunch_menu_id, meal_option_id)`; `lunch_id` stays.
   - `lunch_responses.lunch_option_id` nullable → `lunch_options`, `cascadeOnDelete`. This is a backstop: if an option disappears outside `LunchMenuChanges`, the pick becomes "not responded". With `nullOnDelete` it would be left as an orphan that still counts as attending.
   - `lunches.caterer_id` and `lunches.caterer_meal_id` dropped.
-  - `LunchMenu`: fillable `lunch_id, caterer_id, caterer_meal_id, sort`. Relations `lunch(): BelongsTo`, `caterer(): BelongsTo`, `catererMeal(): BelongsTo`, `options(): HasMany<LunchOption>`. Method `label(): string` returns `"{caterer} — {menu}"`, and `estimatedCost(): float` is today's `Lunch::estimatedCost` logic, scoped to this menu's options and prices.
+  - `LunchMenu`: fillable `lunch_id, caterer_id, caterer_meal_id, sort`. Relations `lunch(): BelongsTo`, `caterer(): BelongsTo`, `catererMeal(): BelongsTo`, `options(): HasMany<LunchOption>`. Method `label(): string` returns `"{caterer} · {menu}"`, and `estimatedCost(): float` is today's `Lunch::estimatedCost` logic, scoped to this menu's options and prices.
   - `Lunch::menus(): HasMany` ordered by `sort, id`. `Lunch::estimatedCost()` sums `menus->estimatedCost()`. `Lunch::caterer()` and `Lunch::catererMeal()` are removed.
   - `Lunch::hasSeveralMenus(): bool`, `Lunch::isLocked(): bool` (`status === 'closed' || (deadline && now()->gt(deadline))`).
   - `LunchOption`: add `lunch_menu_id` (fillable + integer cast) and `lunchMenu(): BelongsTo`.
@@ -207,7 +207,7 @@
   - `menus: [{id, caterer, menu, options: [{lunch_option_id, meal_option_id, name}]}]`
   - `my_lunch_option_id: int|null`
   - **One-menu day:** legacy `caterer`, `menu`, `options[{meal_option_id,name}]` and `my_meal_option_id` are unchanged from today.
-  - **Several menus:** `options: []`, `menu: __('Several menus today — update the app to order')`, `caterer`: the caterer names, distinct, joined with ` · `, `my_meal_option_id` as stored.
+  - **Several menus:** `options: []`, `menu: __('Several menus today. Update the app to order.')`, `caterer`: the caterer names, distinct, joined with ` · `, `my_meal_option_id` as stored.
   - **Respond body:** `lunch_option_id` (nullable int) or legacy `meal_option_id`. If both are absent or null, the member is not attending. If legacy is present, resolve it through `resolveLegacyMealOption`. A `RuntimeException` gives a 422 with `{message}`.
   - **Dashboard `next_lunch`:** `caterer`/`menu` follow the same one-menu/several rule, plus `menus: [{caterer, menu}]`.
   - Eager loads: `menus.caterer`, `menus.catererMeal`, `menus.options.mealOption`, and `responses` filtered to the caller.
@@ -279,7 +279,7 @@
 **Interfaces:**
 - Consumes: Task 8 DTOs and `LunchStore.choose(lunchId, lunchOptionId)`.
 - Behaviour:
-  - **Day card:** a section per `menus` entry (heading "Caterer — Menu"), each with its option chips. The chosen chip is `lunch.responded && lunch.myLunchOptionId == option.lunchOptionId`. One "Not attending" per day.
+  - **Day card:** a section per `menus` entry (heading "Caterer · Menu"), each with its option chips. The chosen chip is `lunch.responded && lunch.myLunchOptionId == option.lunchOptionId`. One "Not attending" per day.
   - **Fallback:** when `menus` is empty (an older server), render the legacy `options` as today.
   - **Home card:** shows the menus joined with ` · `.
 

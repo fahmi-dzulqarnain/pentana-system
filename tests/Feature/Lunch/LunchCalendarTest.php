@@ -47,16 +47,14 @@ class LunchCalendarTest extends TestCase
 
         // Create a lunch in the current month
         $lunchDate = now()->startOfMonth()->addDays(2);
-        $lunch = Lunch::create([
+        $lunch = Lunch::factory()->withMenu($meal)->create([
             'date' => $lunchDate->toDateString(),
-            'caterer_id' => $caterer->id,
-            'caterer_meal_id' => $meal->id,
             'deadline' => $lunchDate->copy()->subDay()->setTime(12, 0)->toDateTimeString(),
             'status' => 'draft',
         ]);
 
         // Sync options and set a default_count so cost > 0
-        app(LunchPlanningService::class)->syncOptionsFromMenu($lunch);
+        app(LunchPlanningService::class)->syncOptionsFromMenu($lunch->menus()->first());
         LunchOption::where('lunch_id', $lunch->id)->update(['default_count' => 3]);
 
         $admin = User::factory()->admin()->create();
@@ -72,5 +70,33 @@ class LunchCalendarTest extends TestCase
         $this->assertSame(1, $component->instance()->daysPlanned());
         // 3 × 14.00 = 42.00
         $this->assertSame(42.0, $component->instance()->estimatedCost());
+    }
+
+    public function test_calendar_cell_lists_every_menu_of_the_day(): void
+    {
+        $regular = MealOption::factory()->create(['name' => 'Regular']);
+        $mealA = CatererMeal::factory()->create(['name' => 'Nasi Lemak Royale']);
+        $mealB = CatererMeal::factory()->create(['name' => 'Mee Goreng Mamak']);
+        $date = now()->startOfMonth()->addDays(2);
+
+        $lunch = Lunch::factory()->withMenu($mealA, [$regular])->withMenu($mealB, [$regular])->create([
+            'date' => $date->toDateString(), 'status' => 'published', 'deadline' => now()->addDay(),
+        ]);
+        $option = LunchOption::where('lunch_id', $lunch->id)->first();
+        \App\Models\LunchResponse::create([
+            'lunch_id' => $lunch->id, 'user_id' => User::factory()->create()->id,
+            'lunch_option_id' => $option->id, 'meal_option_id' => $regular->id,
+        ]);
+
+        $this->actingAs(User::factory()->admin()->create());
+        Filament::setCurrentPanel(Filament::getPanel('account'));
+
+        $html = Livewire::test(LunchCalendar::class)->assertSuccessful()->html();
+
+        // Rendered in both the desktop grid and the phone agenda.
+        $this->assertSame(2, substr_count($html, 'Nasi Lemak Royale'));
+        $this->assertSame(2, substr_count($html, 'Mee Goreng Mamak'));
+        // The day's count appears once per layout, not once per menu.
+        $this->assertSame(2, substr_count($html, '1 ordered'));
     }
 }

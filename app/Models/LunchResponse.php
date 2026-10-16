@@ -10,9 +10,9 @@ class LunchResponse extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['lunch_id', 'user_id', 'meal_option_id'];
+    protected $fillable = ['lunch_id', 'user_id', 'meal_option_id', 'lunch_option_id'];
 
-    protected $casts = ['meal_option_id' => 'integer'];
+    protected $casts = ['meal_option_id' => 'integer', 'lunch_option_id' => 'integer'];
 
     public function lunch(): BelongsTo
     {
@@ -22,6 +22,11 @@ class LunchResponse extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function lunchOption(): BelongsTo
+    {
+        return $this->belongsTo(LunchOption::class);
     }
 
     public function mealOption(): BelongsTo

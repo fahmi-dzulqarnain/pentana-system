@@ -47,13 +47,28 @@ class ListSearchAndFiltersTest extends TestCase
     public function test_lunches_can_be_searched_by_menu_and_filtered_by_status(): void
     {
         $caterer = Caterer::factory()->create(['name' => 'Dapur Selera']);
-        $nasi = Lunch::factory()->create(['caterer_id' => $caterer->id, 'caterer_meal_id' => CatererMeal::create(['caterer_id' => $caterer->id, 'name' => 'Nasi Lemak', 'price' => 10])->id, 'date' => '2026-10-20', 'status' => 'published']);
-        $pasta = Lunch::factory()->create(['caterer_id' => $caterer->id, 'caterer_meal_id' => CatererMeal::create(['caterer_id' => $caterer->id, 'name' => 'Spaghetti', 'price' => 10])->id, 'date' => '2026-10-21', 'status' => 'draft']);
+        $nasiMeal = CatererMeal::create(['caterer_id' => $caterer->id, 'name' => 'Nasi Lemak', 'price' => 10]);
+        $pastaMeal = CatererMeal::create(['caterer_id' => Caterer::factory()->create(['name' => 'Bella Cucina'])->id, 'name' => 'Spaghetti', 'price' => 10]);
+        $nasi = Lunch::factory()->withMenu($nasiMeal)->create(['date' => '2026-10-20', 'status' => 'published']);
+        $pasta = Lunch::factory()->withMenu($pastaMeal)->create(['date' => '2026-10-21', 'status' => 'draft']);
 
         Livewire::test(ListLunches::class)
             ->searchTable('Nasi')
             ->assertCanSeeTableRecords([$nasi])
             ->assertCanNotSeeTableRecords([$pasta]);
+
+        // Caterer name, case-insensitively.
+        Livewire::test(ListLunches::class)
+            ->searchTable('dapur selera')
+            ->assertCanSeeTableRecords([$nasi])
+            ->assertCanNotSeeTableRecords([$pasta]);
+
+        // A day with several menus is found by its second menu too.
+        $both = Lunch::factory()->withMenu($nasiMeal)->withMenu($pastaMeal)->create(['date' => '2026-10-22']);
+        Livewire::test(ListLunches::class)
+            ->searchTable('SPAGHETTI')
+            ->assertCanSeeTableRecords([$pasta, $both])
+            ->assertCanNotSeeTableRecords([$nasi]);
 
         Livewire::test(ListLunches::class)
             ->filterTable('status', 'draft')

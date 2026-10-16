@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Caterers\Tables;
 
+use App\Filament\Support\GuardsLunchDayDeletes;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -28,7 +29,7 @@ class CaterersTable
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+                    GuardsLunchDayDeletes::bulk(DeleteBulkAction::make()),
                 ]),
             ]);
     }
