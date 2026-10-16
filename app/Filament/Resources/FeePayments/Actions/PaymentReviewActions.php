@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\FeePayments\Actions;
 
 use App\Models\Payment\PaymentProof;
+use App\Notifications\PaymentRejected;
 use App\Services\FinanceService;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Textarea;
@@ -51,7 +52,7 @@ class PaymentReviewActions
             ->icon('heroicon-o-x-circle')
             ->modalHeading(__('Reject payment'))
             ->modalSubmitActionLabel(__('Reject payment'))
-            ->modalDescription(__('The member sees this reason on their payment and can submit a new proof.'))
+            ->modalDescription(__('The member is notified with this reason and can submit a new proof.'))
             ->schema([
                 Textarea::make('admin_note')
                     ->label(__('Reason for rejection'))
@@ -64,7 +65,21 @@ class PaymentReviewActions
                     'admin_note' => $data['admin_note'],
                 ]);
 
-                Notification::make()->success()->title(__('Payment rejected'))->send();
+                // The rejection is already saved; a delivery failure must not undo it or
+                // hide it from the admin, so it is reported and surfaced instead.
+                $notified = rescue(function () use ($record) {
+                    $record->user->notify(new PaymentRejected($record));
+
+                    return true;
+                }, false);
+
+                Notification::make()->success()->title(__('Payment rejected'))
+                    ->body($notified ? __('The member has been notified.') : null)
+                    ->send();
+
+                if (! $notified) {
+                    Notification::make()->warning()->title(__('The member could not be notified.'))->send();
+                }
             })
             ->visible(fn (PaymentProof $record) => self::reviewable($record));
     }
