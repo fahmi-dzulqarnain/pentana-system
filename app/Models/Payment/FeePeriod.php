@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class FeePeriod extends Model
 {
-    protected $fillable = ['user_id', 'month_date', 'amount_due', 'status'];
+    protected $fillable = ['user_id', 'month_date', 'amount_due', 'status', 'type', 'remarks'];
 
     protected $casts = [
         'month_date' => 'date',

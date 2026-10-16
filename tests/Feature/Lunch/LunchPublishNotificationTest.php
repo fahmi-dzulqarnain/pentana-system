@@ -20,6 +20,7 @@ class LunchPublishNotificationTest extends TestCase
     public function test_publishing_notifies_every_user_on_both_channels(): void
     {
         Notification::fake();
+        $this->withoutDefer(); // delivery runs after the response; run it inline here
 
         $admin = User::factory()->admin()->create();
         User::factory()->count(3)->create();
@@ -38,6 +39,24 @@ class LunchPublishNotificationTest extends TestCase
         Notification::assertSentTo($admin, LunchPublished::class, function (LunchPublished $n, array $channels) {
             return in_array('database', $channels, true) && in_array('mail', $channels, true);
         });
+    }
+
+    public function test_publishing_hands_delivery_off_instead_of_sending_inside_the_request(): void
+    {
+        Notification::fake();
+
+        $admin = User::factory()->admin()->create();
+        $lunch = Lunch::factory()->create(['status' => 'draft', 'deadline' => now()->addDay()]);
+
+        $this->actingAs($admin);
+        Filament::setCurrentPanel(Filament::getPanel('account'));
+
+        Livewire::test(EditLunch::class, ['record' => $lunch->getRouteKey()])
+            ->callAction('publish')
+            ->assertNotified();
+
+        $this->assertSame('published', $lunch->fresh()->status);
+        Notification::assertNothingSent();
     }
 
     public function test_publish_action_is_hidden_once_published(): void

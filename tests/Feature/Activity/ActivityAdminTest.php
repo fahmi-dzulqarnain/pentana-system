@@ -105,6 +105,7 @@ class ActivityAdminTest extends TestCase
     public function test_publish_sets_status_and_notifies_only_activated_members(): void
     {
         Notification::fake();
+        $this->withoutDefer();
         $activated = User::factory()->count(2)->create(['activated_at' => now()]);
         $unactivated = User::factory()->create(['activated_at' => null]);
         $activity = Activity::factory()->create(['status' => 'draft', 'starts_at' => now()->addWeek()]);
@@ -133,6 +134,7 @@ class ActivityAdminTest extends TestCase
     public function test_cancel_sets_status_and_notifies_active_registrants(): void
     {
         Notification::fake();
+        $this->withoutDefer();
         $activity = Activity::factory()->create(['status' => 'published', 'starts_at' => now()->addWeek(), 'capacity' => 5]);
         $registered = $this->registration($activity, 'registered');
         $waitlisted = $this->registration($activity, 'waitlisted');

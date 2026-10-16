@@ -2,11 +2,13 @@
 
 namespace App\Filament\Resources\FeePeriods\Schemas;
 
+use App\Models\User;
 use App\Support\StatusLabel;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 
 class FeePeriodForm
@@ -18,7 +20,14 @@ class FeePeriodForm
                 Select::make('user_id')
                     ->relationship('user', 'name')
                     ->searchable()
-                    ->required(),
+                    ->required()
+                    ->live()
+                    // Pre-fill with what this member actually owes (custom fee, else category rate).
+                    ->afterStateUpdated(function (?string $state, Set $set): void {
+                        if ($member = User::find($state)) {
+                            $set('amount_due', $member->active_fee);
+                        }
+                    }),
                 DatePicker::make('month_date')
                     ->label(__('Billing month'))
                     ->format('Y-m-01') // Force start of month

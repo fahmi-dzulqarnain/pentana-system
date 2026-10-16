@@ -6,11 +6,11 @@ use App\Filament\Resources\Lunches\LunchResource;
 use App\Models\User;
 use App\Notifications\LunchPublished;
 use App\Services\LunchPlanningService;
+use App\Services\MemberNotifier;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Notifications\Notification as FilamentNotification;
 use Filament\Resources\Pages\EditRecord;
-use Illuminate\Support\Facades\Notification;
 
 class EditLunch extends EditRecord
 {
@@ -43,7 +43,7 @@ class EditLunch extends EditRecord
                     // Keep the form state in sync so a later Save doesn't write the stale 'draft' back.
                     $this->refreshFormData(['status']);
 
-                    Notification::send(User::all(), new LunchPublished($this->record->fresh()));
+                    app(MemberNotifier::class)->sendAfterResponse(User::all(), new LunchPublished($this->record->fresh()));
 
                     FilamentNotification::make()
                         ->title(__('Published: members notified'))

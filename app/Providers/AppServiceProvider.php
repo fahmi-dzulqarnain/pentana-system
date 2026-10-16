@@ -7,6 +7,7 @@ use App\Mail\BudgetedTransport;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Field;
+use Filament\Forms\Components\FileUpload;
 use Filament\Infolists\Components\Entry;
 use Filament\Schemas\Schema;
 use Filament\Support\Assets\Js;
@@ -90,6 +91,12 @@ class AppServiceProvider extends ServiceProvider
         }
         DatePicker::configureUsing(fn (DatePicker $picker) => $picker->displayFormat(self::DATE_FORMAT));
         DateTimePicker::configureUsing(fn (DateTimePicker $picker) => $picker->displayFormat(self::DATE_TIME_FORMAT));
+
+        // FilePond has no Malay locale, so its English idle prompt leaked into the ms UI.
+        // Resolved per render (closure) so it follows the viewer's language.
+        FileUpload::configureUsing(fn (FileUpload $upload) => $upload->placeholder(fn (): string => __('Drag & drop your file or :browse', [
+            'browse' => '<span class="filepond--label-action">'.__('Browse').'</span>',
+        ])));
 
         // An empty list is a normal starting state, not an error: a neutral icon and "No … yet"
         // instead of Filament's grey ✕ and "No records found".

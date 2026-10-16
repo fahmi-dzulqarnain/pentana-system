@@ -492,5 +492,8 @@
     "Your payment has been verified": "Bayaran anda telah disahkan",
     "Your rights": "Hak anda",
     "your sign-ups and the answers you give to event questions.": "pendaftaran anda dan jawapan yang anda berikan kepada soalan acara.",
-    "{1} for :count activity|[2,*] across :count activities": "{1} untuk :count aktiviti|[2,*] dalam :count aktiviti"
+    "{1} for :count activity|[2,*] across :count activities": "{1} untuk :count aktiviti|[2,*] dalam :count aktiviti",
+    "This question": "Soalan ini",
+    "Drag & drop your file or :browse": "Seret & lepas fail anda atau :browse",
+    "Browse": "Semak imbas"
 }

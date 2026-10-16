@@ -135,13 +135,16 @@ class MyActivities extends Page
         $fields = $activity->registration_fields ?? [];
 
         $rules = [];
+        $attributes = [];
         foreach ($fields as $field) {
             if (! empty($field['required'])) {
                 $rules["answers.{$field['key']}"] = ($field['type'] ?? 'text') === 'checkbox' ? 'accepted' : 'required';
+                // Name the question in the error, not its internal uuid key.
+                $attributes["answers.{$field['key']}"] = $field['label'] ?? __('This question');
             }
         }
         if ($rules !== []) {
-            $this->validate($rules);
+            $this->validate($rules, [], $attributes);
         }
 
         // Never trust the public `answers` prop wholesale - keep only the defined question keys.

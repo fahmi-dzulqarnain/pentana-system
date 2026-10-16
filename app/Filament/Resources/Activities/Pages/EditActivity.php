@@ -6,11 +6,11 @@ use App\Filament\Resources\Activities\ActivityResource;
 use App\Models\User;
 use App\Notifications\ActivityCancelled;
 use App\Notifications\ActivityPublished;
+use App\Services\MemberNotifier;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Notifications\Notification as FilamentNotification;
 use Filament\Resources\Pages\EditRecord;
-use Illuminate\Support\Facades\Notification;
 
 class EditActivity extends EditRecord
 {
@@ -33,7 +33,7 @@ class EditActivity extends EditRecord
 
                     $this->record->update(['status' => 'published']);
 
-                    Notification::send(
+                    app(MemberNotifier::class)->sendAfterResponse(
                         User::whereNotNull('activated_at')->get(),
                         new ActivityPublished($this->record->fresh()),
                     );
@@ -57,7 +57,7 @@ class EditActivity extends EditRecord
                             $this->record->registrations()->whereIn('status', ['registered', 'waitlisted'])->pluck('user_id'),
                         )->get();
 
-                        Notification::send($recipients, new ActivityCancelled($this->record->fresh()));
+                        app(MemberNotifier::class)->sendAfterResponse($recipients, new ActivityCancelled($this->record->fresh()));
                     }
 
                     FilamentNotification::make()->title(__('Activity cancelled'))->warning()->send();

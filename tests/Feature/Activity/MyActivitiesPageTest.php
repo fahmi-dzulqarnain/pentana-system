@@ -176,6 +176,26 @@ class MyActivitiesPageTest extends TestCase
         ]);
     }
 
+    public function test_the_error_names_the_question_not_its_internal_key(): void
+    {
+        $activity = $this->published([
+            'capacity' => 5,
+            'registration_fields' => [
+                ['key' => 'a1b2-uuid', 'label' => 'Jersey size', 'type' => 'select', 'required' => true, 'options' => ['M']],
+            ],
+        ]);
+        $this->actAsPanelUser();
+
+        $errors = Livewire::test(MyActivities::class)
+            ->call('startRegistration', $activity->id)
+            ->call('submitRegistration')
+            ->errors();
+
+        $message = $errors->first('answers.a1b2-uuid');
+        $this->assertStringContainsString('Jersey size', $message);
+        $this->assertStringNotContainsString('a1b2-uuid', $message);
+    }
+
     public function test_only_defined_question_keys_are_stored(): void
     {
         $activity = $this->published([
