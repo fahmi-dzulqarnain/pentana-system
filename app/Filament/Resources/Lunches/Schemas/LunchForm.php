@@ -36,9 +36,11 @@ class LunchForm
                 DatePicker::make('date')->required()->unique(ignoreRecord: true)->default(fn () => request('date'))->native(false),
                 DateTimePicker::make('deadline')->required()->native(false)->seconds(false),
                 // Status is system-managed: draft -> published via the Publish action; 'closed' is set by Phase 3 (deadline close).
+                // Display only: never dehydrated, because Livewire state is tamperable and the status gates the
+                // menus lock and the member notice. CreateLunch sets 'draft'; EditLunch never writes it.
                 Select::make('status')
                     ->options(StatusLabel::options(['draft', 'published', 'closed']))
-                    ->default('draft')->disabled()->dehydrated(),
+                    ->default('draft')->disabled()->dehydrated(false),
                 // One or more menus per day. Options are auto-generated per menu on create (see CreateLunch);
                 // the nested repeater lets admins tune them on edit.
                 Repeater::make('menus')

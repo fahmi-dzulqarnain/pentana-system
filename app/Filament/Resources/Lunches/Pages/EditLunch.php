@@ -25,6 +25,53 @@ class EditLunch extends EditRecord
     /** @var array{0: string, 1: int}|null per-request memo of the confirmation count: [state hash, count] */
     private ?array $pendingDroppedMemo = null;
 
+    /** Set only while the confirmed Save action runs; private, so a Livewire request can't set it. */
+    private bool $dropsConfirmed = false;
+
+    /**
+     * Every save path (button, Enter / implicit form submit, a direct Livewire `save` call) lands
+     * here. If the save would drop members' picks and the admin hasn't confirmed, open the Save
+     * action's confirmation instead of saving.
+     */
+    public function save(bool $shouldRedirect = true, bool $shouldSendSavedNotification = true): void
+    {
+        // Before asking to confirm: a save that can't succeed shouldn't ask about dropped picks.
+        $this->ensureNoMealCollision();
+
+        if (! $this->dropsConfirmed && $this->pendingDroppedCount() > 0) {
+            $this->mountAction('save', context: ['schemaComponent' => 'content.form-actions']);
+
+            return;
+        }
+
+        parent::save($shouldRedirect, $shouldSendSavedNotification);
+    }
+
+    /**
+     * The repeater writes rows one by one, so swapping two rows' meals (A,B to B,A) would hit the
+     * (lunch_id, caterer_meal_id) unique index mid-save and 500. Say so on the field instead.
+     */
+    private function ensureNoMealCollision(): void
+    {
+        if ($this->record->menusAreLocked()) {
+            return;
+        }
+
+        if (($key = app(LunchMenuChanges::class)->firstMealCollision($this->record, $this->menusState())) !== null) {
+            throw ValidationException::withMessages([
+                "data.menus.{$key}.caterer_meal_id" => __('This menu is still on another row while saving. To swap two menus, drag the rows into the new order instead.'),
+            ]);
+        }
+    }
+
+    /** Status changes only through Publish and the close command, never from form state. */
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        unset($data['status']);
+
+        return $data;
+    }
+
     protected function beforeSave(): void
     {
         $this->droppedResponses = null;
@@ -35,16 +82,7 @@ class EditLunch extends EditRecord
             return;
         }
 
-        $changes = app(LunchMenuChanges::class);
-        $menusState = $this->menusState();
-
-        if (($key = $changes->firstMealCollision($this->record, $menusState)) !== null) {
-            throw ValidationException::withMessages([
-                "data.menus.{$key}.caterer_meal_id" => __('This menu is still on another row while saving. To swap two menus, drag the rows into the new order instead.'),
-            ]);
-        }
-
-        $this->droppedResponses = $changes->droppedResponses($this->record, $menusState);
+        $this->droppedResponses = app(LunchMenuChanges::class)->droppedResponses($this->record, $this->menusState());
     }
 
     protected function afterSave(): void
@@ -75,7 +113,16 @@ class EditLunch extends EditRecord
         // A plain action (not a form submit) so it can open a confirmation modal first.
         return parent::getSaveFormAction()
             ->submit(null)
-            ->action(fn () => $this->save())
+            ->action(function (): void {
+                // Reaching here means the modal was confirmed, or no picks would drop.
+                $this->dropsConfirmed = true;
+
+                try {
+                    $this->save();
+                } finally {
+                    $this->dropsConfirmed = false;
+                }
+            })
             // A modal description alone would always open the modal; only ask when picks would go.
             ->modal(fn (): bool => $this->pendingDroppedCount() > 0)
             ->requiresConfirmation(fn (): bool => $this->pendingDroppedCount() > 0)

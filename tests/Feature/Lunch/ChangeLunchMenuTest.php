@@ -171,6 +171,8 @@ class ChangeLunchMenuTest extends TestCase
         $this->edit($lunch)
             ->set("data.menus.record-{$menu->id}.caterer_meal_id", $meeGoreng->id)
             ->call('save')
+            ->assertActionMounted($this->saveAction()) // dropping picks asks first
+            ->callMountedAction()
             ->assertHasNoFormErrors();
 
         $this->assertModelExists($kept);
@@ -197,6 +199,8 @@ class ChangeLunchMenuTest extends TestCase
         $this->edit($lunch)
             ->set("data.menus.record-{$menu->id}.caterer_meal_id", $spaghetti->id)
             ->call('save')
+            ->assertActionMounted($this->saveAction()) // dropping picks asks first
+            ->callMountedAction()
             ->assertHasNoFormErrors();
 
         $data = $member->notifications()->sole()->data;
@@ -220,6 +224,8 @@ class ChangeLunchMenuTest extends TestCase
 
         $this->withoutMenu($this->edit($lunch), $first)
             ->call('save')
+            ->assertActionMounted($this->saveAction()) // dropping picks asks first
+            ->callMountedAction()
             ->assertHasNoFormErrors();
 
         $this->assertSame([$second->id], $lunch->menus()->pluck('id')->all());
@@ -262,6 +268,8 @@ class ChangeLunchMenuTest extends TestCase
         $this->edit($lunch)
             ->set("data.menus.record-{$menu->id}.caterer_meal_id", $spaghetti->id)
             ->call('save')
+            ->assertActionMounted($this->saveAction()) // dropping picks asks first
+            ->callMountedAction()
             ->assertHasNoFormErrors();
 
         $this->assertModelMissing($response);
@@ -307,7 +315,9 @@ class ChangeLunchMenuTest extends TestCase
         $this->edit($lunch)
             ->assertFormFieldIsDisabled('menus')
             ->set("data.menus.record-{$menu->id}.caterer_meal_id", $spaghetti->id)
-            ->call('save');
+            ->call('save')
+            ->assertHasNoFormErrors()
+            ->assertActionNotMounted($this->saveAction());
 
         $this->assertSame($nasiLemak->id, $menu->fresh()->caterer_meal_id);
         $this->assertSame(2, $menu->options()->count());
@@ -343,6 +353,8 @@ class ChangeLunchMenuTest extends TestCase
             ->set("data.menus.record-{$menu->id}.caterer_meal_id", $spaghetti->id)
             ->set('data.deadline', now()->subHour()->format('Y-m-d H:i'))
             ->call('save')
+            ->assertActionMounted($this->saveAction()) // dropping picks asks first
+            ->callMountedAction()
             ->assertHasNoFormErrors();
 
         $this->assertSame([$this->vegan->id], $menu->options()->pluck('meal_option_id')->all());
@@ -384,14 +396,70 @@ class ChangeLunchMenuTest extends TestCase
     {
         $nasiLemak = $this->menu('Nasi Lemak', [$this->chicken]);
         $lunch = $this->lunch([$nasiLemak]);
-        $this->pick($lunch, $lunch->menus->first(), $this->chicken);
+        $menu = $lunch->menus->first();
+        $chickenOption = $menu->options()->first();
+        $this->pick($lunch, $menu, $this->chicken);
 
         $this->edit($lunch)
+            ->set("data.menus.record-{$menu->id}.options.record-{$chickenOption->id}.default_count", 7)
             ->mountAction($this->saveAction())
             ->assertActionNotMounted($this->saveAction())
             ->assertHasNoFormErrors();
 
+        $this->assertSame(7, $chickenOption->fresh()->default_count);
         $this->assertSame(1, $lunch->responses()->count());
+    }
+
+    public function test_a_direct_save_that_would_drop_picks_asks_first_and_drops_nothing(): void
+    {
+        Notification::fake();
+        $nasiLemak = $this->menu('Nasi Lemak', [$this->chicken, $this->beef]);
+        $spaghetti = $this->menu('Spaghetti', [$this->vegan]);
+        $lunch = $this->lunch([$nasiLemak]);
+        $menu = $lunch->menus->first();
+        $response = $this->pick($lunch, $menu, $this->beef);
+
+        // `save` is what the form's wire:submit (Enter) calls; a client can also call it directly.
+        $page = $this->edit($lunch)
+            ->set("data.menus.record-{$menu->id}.caterer_meal_id", $spaghetti->id)
+            ->call('save')
+            ->assertActionMounted($this->saveAction())
+            ->assertMountedActionModalSee("1 members' picks will be removed and they will be asked to choose again.");
+
+        $this->assertSame($nasiLemak->id, $menu->fresh()->caterer_meal_id);
+        $this->assertModelExists($response);
+        Notification::assertNothingSent();
+
+        // Cancelling and calling save again still doesn't save.
+        $page->call('unmountAction')->call('save')->assertActionMounted($this->saveAction());
+        $this->assertModelExists($response);
+        $this->assertSame($nasiLemak->id, $menu->fresh()->caterer_meal_id);
+    }
+
+    public function test_a_tampered_status_is_never_saved(): void
+    {
+        $nasiLemak = $this->menu('Nasi Lemak', [$this->chicken, $this->beef]);
+        $spaghetti = $this->menu('Spaghetti', [$this->vegan]);
+        $lunch = $this->lunch([$nasiLemak], ['status' => 'closed', 'deadline' => now()->addDay()]);
+        $menu = $lunch->menus->first();
+        $response = $this->pick($lunch, $menu, $this->beef);
+
+        $page = $this->edit($lunch)
+            ->set('data.status', 'draft')
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        $this->assertSame('closed', $lunch->fresh()->status);
+
+        // The menus are still locked on the next save.
+        $page->set('data.status', 'draft')
+            ->set("data.menus.record-{$menu->id}.caterer_meal_id", $spaghetti->id)
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        $this->assertSame('closed', $lunch->fresh()->status);
+        $this->assertSame($nasiLemak->id, $menu->fresh()->caterer_meal_id);
+        $this->assertModelExists($response);
     }
 
     public function test_a_menu_from_another_caterer_is_rejected(): void

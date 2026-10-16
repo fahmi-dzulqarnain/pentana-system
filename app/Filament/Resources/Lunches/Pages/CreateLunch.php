@@ -10,6 +10,14 @@ class CreateLunch extends CreateRecord
 {
     protected static string $resource = LunchResource::class;
 
+    /** A new lunch always starts as a draft; the status field is display-only. */
+    protected function mutateFormDataBeforeCreate(array $data): array
+    {
+        $data['status'] = 'draft';
+
+        return $data;
+    }
+
     protected function afterCreate(): void
     {
         $service = app(LunchPlanningService::class);
