@@ -31,10 +31,12 @@ class FinanceService
      * outstanding bills - oldest bill first, drawing from the oldest proof
      * first. Whatever stays unallocated remains the member's credit, held
      * implicitly as the proof's remainder (see User::getCreditAttribute()).
+     *
+     * $exceptProofId leaves out a payment that is about to be deleted.
      */
-    public function applyAvailableFunds(User $user): void
+    public function applyAvailableFunds(User $user, ?int $exceptProofId = null): void
     {
-        DB::transaction(function () use ($user) {
+        DB::transaction(function () use ($user, $exceptProofId) {
             $periods = FeePeriod::where('user_id', $user->id)
                 ->where('status', '!=', 'paid')
                 ->orderBy('month_date')
@@ -42,6 +44,7 @@ class FinanceService
 
             $proofs = PaymentProof::where('user_id', $user->id)
                 ->where('status', 'verified')
+                ->when($exceptProofId, fn ($query) => $query->whereKeyNot($exceptProofId))
                 ->orderBy('created_at')
                 ->orderBy('id')
                 ->get();
@@ -77,13 +80,37 @@ class FinanceService
                     $needed -= $take;
                 }
 
-                $paid = $this->toCents($period->allocations()->sum('amount_allocated'));
-                $due = $this->toCents($period->amount_due);
-                $period->update([
-                    'status' => $paid >= $due ? 'paid' : ($paid > 0 ? 'partial' : 'unpaid'),
-                ]);
+                $this->refreshStatus($period);
             }
         });
+    }
+
+    /**
+     * Undo a payment before it is deleted: drop its allocations, re-derive the status of
+     * every bill it had paid, then let the member's other verified payments cover them.
+     * Without this the bills kept saying "paid" with nothing behind them.
+     */
+    public function releasePayment(PaymentProof $payment): void
+    {
+        DB::transaction(function () use ($payment) {
+            $periodIds = $payment->allocations()->pluck('fee_period_id');
+            $payment->allocations()->delete();
+
+            FeePeriod::whereKey($periodIds)->get()->each(fn (FeePeriod $period) => $this->refreshStatus($period));
+
+            if ($payment->user) {
+                $this->applyAvailableFunds($payment->user, exceptProofId: $payment->id);
+            }
+        });
+    }
+
+    private function refreshStatus(FeePeriod $period): void
+    {
+        $paid = $this->toCents($period->allocations()->sum('amount_allocated'));
+        $due = $this->toCents($period->amount_due);
+        $period->update([
+            'status' => $paid >= $due ? 'paid' : ($paid > 0 ? 'partial' : 'unpaid'),
+        ]);
     }
 
     /**
