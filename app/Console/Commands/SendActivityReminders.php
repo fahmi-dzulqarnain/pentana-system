@@ -27,6 +27,10 @@ class SendActivityReminders extends Command
                 ->get();
 
             foreach ($registrations as $registration) {
+                if ($registration->user->isDisabled()) {
+                    continue;
+                }
+
                 try {
                     $registration->user->notify(new ActivityReminder($activity));
                 } catch (Throwable $e) {

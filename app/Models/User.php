@@ -25,11 +25,12 @@ class User extends Authenticatable implements FilamentUser, HasLocalePreference,
     use HasApiTokens, HasFactory, InteractsWithPasskeys, Notifiable;
 
     /**
-     * Members and admins share the panel; per-resource gating handles the rest.
+     * Members and admins share the panel; per-resource gating handles the rest. Disabled
+     * members are refused, which also ends a session that was open when they were disabled.
      */
     public function canAccessPanel(Panel $panel): bool
     {
-        return true;
+        return ! $this->isDisabled();
     }
 
     /**
@@ -85,6 +86,7 @@ class User extends Authenticatable implements FilamentUser, HasLocalePreference,
             'birthday_email_sent_at' => 'datetime',
             'activated_at' => 'datetime',
             'invited_at' => 'datetime',
+            'disabled_at' => 'datetime',
         ];
     }
 
@@ -113,11 +115,26 @@ class User extends Authenticatable implements FilamentUser, HasLocalePreference,
     }
 
     /**
-     * Invited, never claimed, and the invitation has run out. Derived rather than stored, so
-     * no job has to flip it, and resending the invitation (a fresh invited_at) re-enables
-     * the account. Members who were never invited are never disabled.
+     * A disabled member can't sign in or claim, isn't billed and gets no notifications.
+     * Two ways to get here: an admin disabled them (disabled_at, e.g. they resigned), or
+     * they were invited and never claimed within the window.
      */
     public function isDisabled(): bool
+    {
+        return $this->isManuallyDisabled() || $this->invitationExpired();
+    }
+
+    public function isManuallyDisabled(): bool
+    {
+        return $this->disabled_at !== null;
+    }
+
+    /**
+     * Invited, never claimed, and the invitation has run out. Derived rather than stored, so
+     * no job has to flip it, and resending the invitation (a fresh invited_at) re-enables
+     * the account. Members who were never invited never expire.
+     */
+    public function invitationExpired(): bool
     {
         return $this->activated_at === null
             && $this->invited_at !== null
@@ -127,16 +144,18 @@ class User extends Authenticatable implements FilamentUser, HasLocalePreference,
     /** Same rule as isDisabled(), as a query. */
     public function scopeDisabled(Builder $query): void
     {
-        $query->whereNull('activated_at')
-            ->where('invited_at', '<=', now()->subDays(self::INVITATION_VALID_DAYS));
+        $query->where(fn (Builder $q) => $q->whereNotNull('disabled_at')
+            ->orWhere(fn (Builder $q) => $q->whereNull('activated_at')
+                ->where('invited_at', '<=', now()->subDays(self::INVITATION_VALID_DAYS))));
     }
 
     /** Everyone isDisabled() is false for: who gets bills, notifications and appears in pickers. */
     public function scopeEnabled(Builder $query): void
     {
-        $query->where(fn (Builder $q) => $q->whereNotNull('activated_at')
-            ->orWhereNull('invited_at')
-            ->orWhere('invited_at', '>', now()->subDays(self::INVITATION_VALID_DAYS)));
+        $query->whereNull('disabled_at')
+            ->where(fn (Builder $q) => $q->whereNotNull('activated_at')
+                ->orWhereNull('invited_at')
+                ->orWhere('invited_at', '>', now()->subDays(self::INVITATION_VALID_DAYS)));
     }
 
     public function memberCategory()

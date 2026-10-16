@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Users\Tables;
 use App\Filament\Imports\UserImporter;
 use App\Filament\Resources\Users\UserResource;
 use App\Models\User;
+use App\Services\MemberAccess;
 use App\Services\MemberInviter;
 use Filament\Actions\Action;
 use Filament\Actions\BulkAction;
@@ -38,8 +39,8 @@ class UsersTable
                     ->label(__('Account status'))
                     ->state(fn (User $record): string => match (true) {
                         $record->is_admin => 'admin',
-                        $record->activated_at !== null => 'claimed',
                         $record->isDisabled() => 'disabled',
+                        $record->activated_at !== null => 'claimed',
                         default => 'unclaimed',
                     })
                     ->badge()
@@ -56,8 +57,9 @@ class UsersTable
                         default => __('Not claimed yet'),
                     })
                     ->description(fn (User $record): ?string => match (true) {
+                        $record->isManuallyDisabled() => __('Disabled by an admin :when', ['when' => $record->disabled_at->diffForHumans()]),
                         $record->activated_at !== null || $record->invited_at === null => null,
-                        $record->isDisabled() => __('Invitation expired :when', ['when' => $record->invitationExpiresAt()->diffForHumans()]),
+                        $record->invitationExpired() => __('Invitation expired :when', ['when' => $record->invitationExpiresAt()->diffForHumans()]),
                         default => __('Invited :when · expires :date', [
                             'when' => $record->invited_at->diffForHumans(),
                             'date' => $record->invitationExpiresAt()->translatedFormat('j M'),
@@ -94,7 +96,7 @@ class UsersTable
                     // Same rules as the column: admin first, then whether the account was activated.
                     ->query(fn (Builder $query, array $data) => match ($data['value'] ?? null) {
                         'admin' => $query->where('is_admin', true),
-                        'claimed' => $query->where('is_admin', false)->whereNotNull('activated_at'),
+                        'claimed' => $query->where('is_admin', false)->whereNotNull('activated_at')->enabled(),
                         'unclaimed' => $query->where('is_admin', false)->whereNull('activated_at')->enabled(),
                         'disabled' => $query->where('is_admin', false)->disabled(),
                         default => $query,
@@ -116,7 +118,7 @@ class UsersTable
                     ->visible(fn (User $record): bool => app(MemberInviter::class)->canInvite($record))
                     ->requiresConfirmation()
                     ->modalHeading(fn (User $record): string => $record->invited_at ? __('Resend invitation') : __('Send invitation'))
-                    ->modalDescription(fn (User $record): string => $record->isDisabled()
+                    ->modalDescription(fn (User $record): string => $record->invitationExpired()
                         ? __('This account is disabled because the last invitation expired. Sending a new one re-enables it and gives :email another :days days to claim it.', [
                             'email' => $record->email,
                             'days' => User::INVITATION_VALID_DAYS,
@@ -130,6 +132,37 @@ class UsersTable
                     ->action(function (User $record, MemberInviter $inviter) {
                         $inviter->invite($record);
                         Notification::make()->title(__('Invitation sent to :email', ['email' => $record->email]))->success()->send();
+                    }),
+                Action::make('disable')
+                    ->label(__('Disable'))
+                    // Icon-only so the row stays as compact as before; the tooltip names it.
+                    ->iconButton()
+                    ->tooltip(__('Disable'))
+                    ->icon('heroicon-o-no-symbol')
+                    ->color('danger')
+                    ->visible(fn (User $record): bool => app(MemberAccess::class)->canDisable($record))
+                    ->requiresConfirmation()
+                    ->modalHeading(fn (User $record): string => __('Disable :name?', ['name' => $record->name]))
+                    ->modalDescription(__('They will be signed out and can no longer sign in. They stop receiving bills and notifications. Bills they already have are kept. You can enable the account again at any time.'))
+                    ->modalSubmitActionLabel(__('Disable'))
+                    ->action(function (User $record, MemberAccess $access) {
+                        $access->disable($record);
+                        Notification::make()->title(__(':name has been disabled', ['name' => $record->name]))->success()->send();
+                    }),
+                Action::make('enable')
+                    ->label(__('Enable'))
+                    ->iconButton()
+                    ->tooltip(__('Enable'))
+                    ->icon('heroicon-o-arrow-path')
+                    ->color('success')
+                    ->visible(fn (User $record): bool => $record->isManuallyDisabled())
+                    ->requiresConfirmation()
+                    ->modalHeading(fn (User $record): string => __('Enable :name?', ['name' => $record->name]))
+                    ->modalDescription(__('They can sign in again and will be billed and notified like any other member from now on.'))
+                    ->modalSubmitActionLabel(__('Enable'))
+                    ->action(function (User $record, MemberAccess $access) {
+                        $access->enable($record);
+                        Notification::make()->title(__(':name has been enabled', ['name' => $record->name]))->success()->send();
                     }),
             ])
             ->toolbarActions([

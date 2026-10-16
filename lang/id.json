@@ -576,5 +576,15 @@
     "Members who have not claimed their account yet get an email with a link to claim it, and :days days to do so. Disabled members are re-enabled. Admins and claimed members are skipped.": "Anggota yang belum mengklaim akunnya akan menerima email berisi tautan untuk mengklaimnya, dengan waktu :days hari. Anggota nonaktif akan diaktifkan kembali. Admin dan anggota yang sudah mengklaim akun dilewati.",
     "Offer valid until :date": "Penawaran berlaku hingga :date",
     "If you do not claim your account by :date, it will be disabled. Your admin can always send you a new invitation.": "Jika Anda tidak mengklaim akun sebelum :date, akun akan dinonaktifkan. Admin Anda selalu bisa mengirim undangan baru.",
-    "Invite": "Undang"
+    "Invite": "Undang",
+    "This account has been disabled. Please contact your admin.": "Akun ini telah dinonaktifkan. Silakan hubungi admin Anda.",
+    "Disabled by an admin :when": "Dinonaktifkan oleh admin :when",
+    "Disable": "Nonaktifkan",
+    "Enable": "Aktifkan",
+    "Disable :name?": "Nonaktifkan :name?",
+    "Enable :name?": "Aktifkan :name?",
+    "They will be signed out and can no longer sign in. They stop receiving bills and notifications. Bills they already have are kept. You can enable the account again at any time.": "Mereka akan dikeluarkan dan tidak bisa masuk lagi. Mereka tidak lagi menerima tagihan dan notifikasi. Tagihan yang sudah ada tetap disimpan. Anda bisa mengaktifkan akun ini kembali kapan saja.",
+    "They can sign in again and will be billed and notified like any other member from now on.": "Mereka bisa masuk lagi dan akan menerima tagihan serta notifikasi seperti anggota lain mulai sekarang.",
+    ":name has been disabled": ":name telah dinonaktifkan",
+    ":name has been enabled": ":name telah diaktifkan"
 }
