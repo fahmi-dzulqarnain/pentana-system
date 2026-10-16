@@ -51,7 +51,7 @@ class DashboardController extends Controller
     private function nextLunch(User $user): ?array
     {
         $lunches = Lunch::query()
-            ->with(['catererMeal', 'caterer', 'responses' => fn ($query) => $query->where('user_id', $user->id)])
+            ->with(['menus.caterer', 'menus.catererMeal', 'responses' => fn ($query) => $query->where('user_id', $user->id)])
             ->where('status', 'published')
             ->whereDate('date', '>=', today())
             ->whereDate('date', '<=', today()->addDays(14))
@@ -69,8 +69,12 @@ class DashboardController extends Controller
         return [
             'id' => $target->id,
             'date' => $target->date->toDateString(),
-            'caterer' => $target->caterer?->name,
-            'menu' => $target->catererMeal?->name,
+            'caterer' => $target->catererLabel(),
+            'menu' => $target->legacyMenuText($user->preferredLocale()),
+            'menus' => $target->menus->map(fn ($menu) => [
+                'caterer' => $menu->caterer?->name,
+                'menu' => $menu->catererMeal?->name,
+            ])->values(),
             'is_open' => $target->isOpenForVoting(),
             'responded' => $target->responses->first() !== null,
         ];

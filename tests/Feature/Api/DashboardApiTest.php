@@ -4,13 +4,16 @@ namespace Tests\Feature\Api;
 
 use App\Models\Activity;
 use App\Models\ActivityRegistration;
+use App\Models\CatererMeal;
 use App\Models\Lunch;
+use App\Models\LunchMenu;
 use App\Models\LunchResponse;
 use App\Models\Payment\FeePeriod;
 use App\Models\Payment\PaymentProof;
 use App\Models\User;
 use App\Services\FinanceService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Testing\TestResponse;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
@@ -108,6 +111,35 @@ class DashboardApiTest extends TestCase
             ->assertJsonPath('data.next_lunch.id', $lunch->id)
             ->assertJsonPath('data.next_lunch.responded', true)
             ->assertJsonPath('data.next_lunch.menu', $lunch->menus->first()?->catererMeal?->name);
+    }
+
+    public function test_dashboard_next_lunch_lists_menus(): void
+    {
+        $member = User::factory()->create();
+        $mealA = CatererMeal::factory()->create();
+        $mealB = CatererMeal::factory()->create();
+        $lunch = Lunch::factory()->withMenu($mealA)->create(['status' => 'published', 'date' => today()->addDay(), 'deadline' => now()->addDays(2)]);
+        $one = $this->getJsonAs($member);
+        $one->assertJsonPath('data.next_lunch.caterer', $mealA->caterer->name)
+            ->assertJsonPath('data.next_lunch.menu', $mealA->name)
+            ->assertJsonCount(1, 'data.next_lunch.menus')
+            ->assertJsonPath('data.next_lunch.menus.0.menu', $mealA->name);
+
+        LunchMenu::create(['lunch_id' => $lunch->id, 'caterer_id' => $mealB->caterer_id, 'caterer_meal_id' => $mealB->id, 'sort' => 1]);
+
+        $this->getJsonAs($member)
+            ->assertJsonPath('data.next_lunch.menu', 'Several menus today — update the app to order')
+            ->assertJsonPath('data.next_lunch.caterer', $mealA->caterer->name.' · '.$mealB->caterer->name)
+            ->assertJsonCount(2, 'data.next_lunch.menus')
+            ->assertJsonPath('data.next_lunch.menus.1.caterer', $mealB->caterer->name)
+            ->assertJsonPath('data.next_lunch.menus.1.menu', $mealB->name);
+    }
+
+    private function getJsonAs(User $member): TestResponse
+    {
+        Sanctum::actingAs($member);
+
+        return $this->getJson('/api/v1/dashboard')->assertOk();
     }
 
     public function test_empty_state_returns_nulls_and_zeroes(): void

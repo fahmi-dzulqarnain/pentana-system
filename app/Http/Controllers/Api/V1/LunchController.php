@@ -17,9 +17,9 @@ class LunchController extends Controller
     {
         $lunches = Lunch::query()
             ->with([
-                'catererMeal',
-                'caterer',
-                'options.mealOption',
+                'menus.caterer',
+                'menus.catererMeal',
+                'menus.options.mealOption',
                 'responses' => fn ($query) => $query->where('user_id', $request->user()->id),
             ])
             ->where('status', 'published')
@@ -33,23 +33,28 @@ class LunchController extends Controller
 
     public function respond(Request $request, Lunch $lunch): JsonResponse
     {
-        $data = $request->validate(['meal_option_id' => 'nullable|integer']);
+        $data = $request->validate([
+            'lunch_option_id' => 'nullable|integer',
+            'meal_option_id' => 'nullable|integer',
+        ]);
 
         try {
             // Acts on the authenticated member; all voting rules live in the service.
             $service = app(LunchVotingService::class);
-            // Bridge for the current app: map meal_option_id to the day's single matching option.
-            $mealOptionId = $data['meal_option_id'] ?? null;
-            $lunchOptionId = $mealOptionId === null ? null : $service->resolveLegacyMealOption($lunch, (int) $mealOptionId);
-            $service->respond($lunch, $request->user(), $lunchOptionId);
+            $lunchOptionId = $data['lunch_option_id'] ?? null;
+            // Apps from before multi-menu days send meal_option_id; lunch_option_id wins when both come.
+            if ($lunchOptionId === null && ($data['meal_option_id'] ?? null) !== null) {
+                $lunchOptionId = $service->resolveLegacyMealOption($lunch, (int) $data['meal_option_id']);
+            }
+            $service->respond($lunch, $request->user(), $lunchOptionId === null ? null : (int) $lunchOptionId);
         } catch (RuntimeException $e) {
-            return response()->json(['message' => $e->getMessage()], 422);
+            return response()->json(['message' => __($e->getMessage(), [], $request->user()->preferredLocale())], 422);
         }
 
         $lunch->load([
-            'catererMeal',
-            'caterer',
-            'options.mealOption',
+            'menus.caterer',
+            'menus.catererMeal',
+            'menus.options.mealOption',
             'responses' => fn ($query) => $query->where('user_id', $request->user()->id),
         ]);
 

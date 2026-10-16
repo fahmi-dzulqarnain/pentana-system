@@ -78,6 +78,20 @@ class Lunch extends Model
         return $this->menus->count() > 1;
     }
 
+    /** What a pre-menus app shows as the caterer: the one caterer, or every distinct caterer joined with " · ". */
+    public function catererLabel(): ?string
+    {
+        return $this->menus->map(fn (LunchMenu $menu) => $menu->caterer?->name)->filter()->unique()->implode(' · ') ?: null;
+    }
+
+    /** What a pre-menus app shows as the menu: the one menu's name, or a prompt to update when there are several. */
+    public function legacyMenuText(?string $locale = null): ?string
+    {
+        return $this->hasSeveralMenus()
+            ? __('Several menus today — update the app to order', [], $locale)
+            : $this->menus->first()?->catererMeal?->name;
+    }
+
     /** Past the deadline, or closed by an admin: picks can no longer change. */
     public function isLocked(): bool
     {
