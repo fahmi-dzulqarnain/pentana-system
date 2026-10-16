@@ -2,11 +2,14 @@
 
 namespace Tests\Feature\Email;
 
+use App\Filament\Resources\AutoEmails\Pages\ListAutoEmails;
 use App\Models\Activity;
 use App\Models\Lunch;
 use App\Models\Payment\PaymentProof;
 use App\Models\User;
+use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
 use Symfony\Component\Mime\Email;
 use Tests\TestCase;
 
@@ -60,5 +63,27 @@ class SendTestEmailsTest extends TestCase
         $this->artisan('app:send-test-emails', ['email' => 'nobody@example.com'])->assertFailed();
 
         $this->assertCount(0, $this->sent());
+    }
+
+    public function test_an_admin_can_send_the_samples_to_themselves_from_the_panel(): void
+    {
+        $admin = User::factory()->admin()->create(['email' => 'admin@example.com']);
+        $this->actingAs($admin);
+        Filament::setCurrentPanel(Filament::getPanel('account'));
+
+        Livewire::test(ListAutoEmails::class)
+            ->callAction('sendTestEmails')
+            ->assertNotified();
+
+        $sent = $this->sent();
+        $this->assertCount(12, $sent);
+        $this->assertSame('admin@example.com', $sent[0]->getTo()[0]->getAddress());
+    }
+
+    public function test_members_cannot_reach_the_button(): void
+    {
+        $this->actingAs(User::factory()->create());
+
+        $this->get(ListAutoEmails::getUrl(panel: 'account'))->assertForbidden();
     }
 }
