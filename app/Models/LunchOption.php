@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class LunchOption extends Model
 {
@@ -27,5 +28,11 @@ class LunchOption extends Model
     public function mealOption(): BelongsTo
     {
         return $this->belongsTo(MealOption::class);
+    }
+
+    /** Members' picks of this option. */
+    public function responses(): HasMany
+    {
+        return $this->hasMany(LunchResponse::class);
     }
 }

@@ -70,6 +70,16 @@ class Lunch extends Model
         return $this->status === 'closed' || ($this->deadline !== null && now()->gt($this->deadline));
     }
 
+    /**
+     * The committee can no longer change the day's menus, option toggles or counts: ordering
+     * has closed (closed, or published past the deadline before the close job ran). A draft
+     * never opened for ordering, so it stays editable whatever its deadline.
+     */
+    public function menusAreLocked(): bool
+    {
+        return $this->status !== 'draft' && $this->isLocked();
+    }
+
     /** Planned cost: the sum of every menu's cost, each at its own prices. */
     public function estimatedCost(): float
     {

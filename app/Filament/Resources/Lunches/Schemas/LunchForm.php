@@ -13,6 +13,7 @@ use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Resources\Pages\EditRecord;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
@@ -21,6 +22,15 @@ class LunchForm
 {
     public static function configure(Schema $schema): Schema
     {
+        // Once ordering has closed, the day's menus, toggles and counts are frozen. Livewire state is
+        // tamperable, so the guard is server-side: saved(false) keeps Filament from writing the
+        // repeaters whatever the state says (disabled() also does, but only via Filament's
+        // disabled-means-not-saved rule), and EditLunch skips the pick changes.
+        // Edit only: on create the new record already exists when relationships save.
+        $locked = static fn ($livewire): bool => $livewire instanceof EditRecord
+            && ($record = $livewire->getRecord()) instanceof Lunch
+            && $record->menusAreLocked();
+
         return $schema
             ->components([
                 DatePicker::make('date')->required()->unique(ignoreRecord: true)->default(fn () => request('date'))->native(false),
@@ -38,6 +48,9 @@ class LunchForm
                     ->minItems(1)
                     ->required()
                     ->addActionLabel(__('Add menu'))
+                    ->disabled($locked)
+                    ->saved(fn ($livewire): bool => ! $locked($livewire))
+                    ->helperText(fn ($livewire) => $locked($livewire) ? __('Ordering has closed, so this day\'s menus can no longer change.') : null)
                     ->columnSpanFull()
                     ->schema([
                         Select::make('caterer_id')
@@ -61,6 +74,8 @@ class LunchForm
                                 TextInput::make('default_count')->numeric()->default(0)->minValue(0),
                             ])
                             ->columns(3)->columnSpanFull()->addable(false)->deletable(false)
+                            ->disabled($locked)
+                            ->saved(fn ($livewire): bool => ! $locked($livewire))
                             ->hiddenOn('create'),
                     ])
                     ->columns(2),
