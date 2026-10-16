@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Caterers\RelationManagers;
 
+use App\Filament\Support\GuardsLunchDayDeletes;
 use App\Models\Meal;
 use App\Models\MealOption;
 use App\Services\LunchCatalogService;
@@ -110,11 +111,11 @@ class CatererMealsRelationManager extends RelationManager
             ])
             ->recordActions([
                 EditAction::make(),
-                DeleteAction::make(),
+                GuardsLunchDayDeletes::single(DeleteAction::make(), fn (int $count): string => __('This menu is used by :count lunch days, so it can\'t be deleted.', ['count' => $count])),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+                    GuardsLunchDayDeletes::bulk(DeleteBulkAction::make()),
                 ]),
             ]);
     }

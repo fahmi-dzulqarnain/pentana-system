@@ -512,5 +512,9 @@
     "Your payment has been verified": "Bayaran anda telah disahkan",
     "Your rights": "Hak anda",
     "your sign-ups and the answers you give to event questions.": "pendaftaran anda dan jawapan yang anda berikan kepada soalan acara.",
-    "{1} for :count activity|[2,*] across :count activities": "{1} untuk :count aktiviti|[2,*] dalam :count aktiviti"
+    "{1} for :count activity|[2,*] across :count activities": "{1} untuk :count aktiviti|[2,*] dalam :count aktiviti",
+    "This caterer is used by :count lunch days, so it can't be deleted.": "Katerer ini digunakan oleh :count hari makan tengah hari, jadi ia tidak boleh dipadam.",
+    "This menu is used by :count lunch days, so it can't be deleted.": "Menu ini digunakan oleh :count hari makan tengah hari, jadi ia tidak boleh dipadam.",
+    "This option is used by :count lunch days, so it can't be deleted.": "Pilihan ini digunakan oleh :count hari makan tengah hari, jadi ia tidak boleh dipadam.",
+    "Skipped :count still used by lunch days.": ":count dilangkau kerana masih digunakan oleh hari makan tengah hari."
 }
