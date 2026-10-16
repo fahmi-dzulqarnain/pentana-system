@@ -12,6 +12,7 @@ use App\Models\MealOption;
 use App\Services\LunchPlanningService;
 use App\Services\LunchPlanningStats;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -100,8 +101,17 @@ class LunchPlanningTest extends TestCase
         $this->sync($lunch);
         LunchOption::where('lunch_id', $lunch->id)->update(['default_count' => 3]); // 3 × 15 = 45
 
-        $this->assertSame(45.0, $stats->estimatedCostForMonth(Carbon::parse('2025-07-10')));
-        $this->assertSame(1, $stats->daysPlanned(Carbon::parse('2025-07-10')));
+        // A second, option-less day in the month (cost 0) so the lazy-loading guard has a collection to watch.
+        Lunch::factory()->withMenu()->create(['date' => '2025-07-02']);
+
+        // Every relation estimatedCost() reads is eager-loaded: a lazy load would throw here.
+        Model::preventLazyLoading();
+        try {
+            $this->assertSame(45.0, $stats->estimatedCostForMonth(Carbon::parse('2025-07-10')));
+        } finally {
+            Model::preventLazyLoading(false);
+        }
+        $this->assertSame(2, $stats->daysPlanned(Carbon::parse('2025-07-10')));
     }
 
     public function test_estimated_cost_sums_every_menu_at_its_own_prices(): void

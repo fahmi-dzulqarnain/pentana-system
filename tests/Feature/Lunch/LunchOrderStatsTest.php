@@ -21,20 +21,23 @@ class LunchOrderStatsTest extends TestCase
 
     public function test_lunch_count_helpers(): void
     {
-        $lunch = Lunch::factory()->create(['status' => 'published', 'deadline' => now()->addDay()]);
-        $beef = MealOption::factory()->create();
-        $chicken = MealOption::factory()->create();
+        $beefOption = MealOption::factory()->create();
+        $chickenOption = MealOption::factory()->create();
+        $lunch = Lunch::factory()->withMenu(null, [$beefOption, $chickenOption])
+            ->create(['status' => 'published', 'deadline' => now()->addDay()]);
+        $beef = $lunch->options()->where('meal_option_id', $beefOption->id)->sole();
+        $chicken = $lunch->options()->where('meal_option_id', $chickenOption->id)->sole();
 
-        LunchResponse::create(['lunch_id' => $lunch->id, 'user_id' => User::factory()->create()->id, 'meal_option_id' => $beef->id]);
-        LunchResponse::create(['lunch_id' => $lunch->id, 'user_id' => User::factory()->create()->id, 'meal_option_id' => $beef->id]);
-        LunchResponse::create(['lunch_id' => $lunch->id, 'user_id' => User::factory()->create()->id, 'meal_option_id' => $chicken->id]);
+        foreach ([$beef, $beef, $chicken] as $pick) {
+            LunchResponse::create(['lunch_id' => $lunch->id, 'user_id' => User::factory()->create()->id, 'meal_option_id' => $pick->meal_option_id, 'lunch_option_id' => $pick->id]);
+        }
         LunchResponse::create(['lunch_id' => $lunch->id, 'user_id' => User::factory()->create()->id, 'meal_option_id' => null]);
 
         $lunch->refresh()->load('responses');
 
         $this->assertSame(3, $lunch->attendingCount());
         $this->assertSame(1, $lunch->notAttendingCount());
-        $this->assertSame([$beef->id => 2, $chicken->id => 1], $lunch->optionCounts());
+        $this->assertSame([$beef->id => 2, $chicken->id => 1], $lunch->optionCountsByLunchOption());
     }
 
     public function test_avg_orders_per_day_over_published_or_closed_lunches(): void

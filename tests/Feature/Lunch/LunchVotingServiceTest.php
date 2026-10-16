@@ -104,7 +104,7 @@ class LunchVotingServiceTest extends TestCase
         $service->respond($lunch, $user, $b->id);
 
         $this->assertSame(1, LunchResponse::where(['lunch_id' => $lunch->id, 'user_id' => $user->id])->count());
-        $this->assertSame([$b->meal_option_id => 1], $lunch->fresh()->optionCounts());
+        $this->assertSame([$b->id => 1], $lunch->fresh()->optionCountsByLunchOption());
     }
 
     public function test_same_meal_option_on_two_menus_records_the_chosen_menu(): void

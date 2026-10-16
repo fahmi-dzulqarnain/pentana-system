@@ -49,18 +49,8 @@ class Lunch extends Model
         return $this->responses->whereNull('meal_option_id')->count();
     }
 
-    /** @return array<int, int> meal_option_id => count */
-    public function optionCounts(): array
-    {
-        return $this->responses
-            ->whereNotNull('meal_option_id')
-            ->countBy('meal_option_id')
-            ->map(fn ($count) => (int) $count)
-            ->all();
-    }
-
     /**
-     * Unlike optionCounts(), this keeps the same meal option on two menus apart.
+     * Picks per lunch option, so the same meal option on two menus stays apart.
      *
      * @return array<int, int> lunch_option_id => count
      */
