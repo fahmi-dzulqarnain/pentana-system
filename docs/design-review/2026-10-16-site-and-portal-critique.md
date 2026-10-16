@@ -80,7 +80,7 @@ Admins open on a "Needs attention" row (payments to verify, next lunch's orders,
 - 🟡 Covered under navigation above: personal and admin items are mixed.
 - 🟢 The welcome card repeats the user menu and emphasises "Selamat Datang" over the name. The stats widget loads as a blank box on phone. Counts use "3,000" instead of the Indonesian "3.000".
 
-## 5. Member pages — Profile items ✅ fixed 2026-10-16 (the My lunch / My activities empty states are still open)
+## 5. Member pages — ✅ fixed 2026-10-16
 
 | Finding | Severity | Recommendation |
 |---|---|---|

@@ -21,8 +21,6 @@
         .dark .ml-btn--active { background:var(--primary-500,#f59e0b); border-color:var(--primary-500,#f59e0b); color:#1f2937; }
         .ml-locked { margin-top:0.75rem; font-size:0.875rem; color:#6b7280; }
         .dark .ml-locked { color:#9ca3af; }
-        .ml-empty { text-align:center; padding:3rem 1rem; color:#6b7280; }
-        .dark .ml-empty { color:#9ca3af; }
     </style>
 
     @php($responses = $this->myResponses())
@@ -69,6 +67,12 @@
             </div>
         </div>
     @empty
-        <div class="ml-empty">{{ __('No upcoming lunches to order right now.') }}</div>
+        <x-empty-state
+            icon="heroicon-o-cake"
+            :heading="__('No lunch to order right now')"
+            :description="__('When the next menu is published, it appears here and we will email you and notify you in the app.')"
+            :action-url="auth()->user()?->is_admin ? \App\Filament\Pages\LunchCalendar::getUrl() : null"
+            :action-label="__('Plan a lunch')"
+        />
     @endforelse
 </x-filament-panels::page>

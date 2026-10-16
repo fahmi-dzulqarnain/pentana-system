@@ -20,8 +20,6 @@
         .ma-badge--ok { background:#dcfce7; color:#166534; }
         .ma-badge--wait { background:#fef9c3; color:#854d0e; }
         .ma-section { font-size:0.875rem; font-weight:700; color:#6b7280; text-transform:uppercase; letter-spacing:0.05em; margin:1.5rem 0 0.75rem; }
-        .ma-empty { text-align:center; padding:3rem 1rem; color:#6b7280; }
-        .dark .ma-empty { color:#9ca3af; }
         .ma-answers { margin-top:0.625rem; font-size:0.8125rem; color:#6b7280; }
         .dark .ma-answers { color:#9ca3af; }
         .ma-answers strong { color:#374151; font-weight:600; }
@@ -89,7 +87,13 @@
             @endif
         </div>
     @empty
-        <div class="ma-empty">{{ __('No upcoming activities right now.') }}</div>
+        <x-empty-state
+            icon="heroicon-o-flag"
+            :heading="__('No upcoming activities')"
+            :description="__('When an activity is announced, it appears here and we will email you and notify you in the app.')"
+            :action-url="auth()->user()?->is_admin ? \App\Filament\Resources\Activities\ActivityResource::getUrl('create') : null"
+            :action-label="__('Create an activity')"
+        />
     @endforelse
 
     @if($this->pastActivities()->isNotEmpty())

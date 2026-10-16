@@ -104,6 +104,6 @@ class MyLunchPageTest extends TestCase
 
         Livewire::test(MyLunch::class)
             ->assertSuccessful()
-            ->assertSee('No upcoming lunches to order right now.');
+            ->assertSee('No lunch to order right now');
     }
 }
