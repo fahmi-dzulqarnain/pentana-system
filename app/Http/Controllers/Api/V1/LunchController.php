@@ -37,7 +37,11 @@ class LunchController extends Controller
 
         try {
             // Acts on the authenticated member; all voting rules live in the service.
-            app(LunchVotingService::class)->respond($lunch, $request->user(), $data['meal_option_id'] ?? null);
+            $service = app(LunchVotingService::class);
+            // Bridge for the current app: map meal_option_id to the day's single matching option.
+            $mealOptionId = $data['meal_option_id'] ?? null;
+            $lunchOptionId = $mealOptionId === null ? null : $service->resolveLegacyMealOption($lunch, (int) $mealOptionId);
+            $service->respond($lunch, $request->user(), $lunchOptionId);
         } catch (RuntimeException $e) {
             return response()->json(['message' => $e->getMessage()], 422);
         }

@@ -85,7 +85,10 @@ class MyLunch extends Page
         }
 
         try {
-            app(LunchVotingService::class)->respond($lunch, auth()->user(), $mealOptionId);
+            $service = app(LunchVotingService::class);
+            // Bridge until the portal picks lunch options directly (reworked later).
+            $lunchOptionId = $mealOptionId === null ? null : $service->resolveLegacyMealOption($lunch, $mealOptionId);
+            $service->respond($lunch, auth()->user(), $lunchOptionId);
             $this->cachedLunches = null; // re-query so the highlighted choice updates
             Notification::make()->title($success)->success()->send();
         } catch (RuntimeException $e) {

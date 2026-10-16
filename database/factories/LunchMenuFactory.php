@@ -16,8 +16,8 @@ class LunchMenuFactory extends Factory
     {
         return [
             'lunch_id' => Lunch::factory(),
-            'caterer_id' => fn (array $attrs) => CatererMeal::find($attrs['caterer_meal_id'])->caterer_id,
             'caterer_meal_id' => CatererMeal::factory(),
+            'caterer_id' => fn (array $attrs) => CatererMeal::find($attrs['caterer_meal_id'])->caterer_id,
             'sort' => 0,
         ];
     }
