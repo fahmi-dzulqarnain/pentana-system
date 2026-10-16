@@ -18,11 +18,11 @@ class PaymentReviewActions
     public static function verify(): Action
     {
         return Action::make('verifyPayment')
-            ->label(__('Verify Payment'))
+            ->label(__('Verify payment'))
             ->color('success')
             ->icon('heroicon-o-check-badge')
-            ->modalHeading(__('Verify Payment'))
-            ->modalSubmitActionLabel(__('Verify Payment'))
+            ->modalHeading(__('Verify payment'))
+            ->modalSubmitActionLabel(__('Verify payment'))
             ->modalDescription(fn (PaymentProof $record) => __('Enter the amount that actually reached the account. The member claimed MYR :amount.', [
                 'amount' => number_format((float) $record->amount_claimed, 2),
             ]))
@@ -46,11 +46,11 @@ class PaymentReviewActions
     public static function reject(): Action
     {
         return Action::make('rejectPayment')
-            ->label(__('Reject Payment'))
+            ->label(__('Reject payment'))
             ->color('danger')
             ->icon('heroicon-o-x-circle')
-            ->modalHeading(__('Reject Payment'))
-            ->modalSubmitActionLabel(__('Reject Payment'))
+            ->modalHeading(__('Reject payment'))
+            ->modalSubmitActionLabel(__('Reject payment'))
             ->modalDescription(__('The member sees this reason on their payment and can submit a new proof.'))
             ->schema([
                 Textarea::make('admin_note')

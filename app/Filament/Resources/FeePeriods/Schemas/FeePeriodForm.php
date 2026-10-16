@@ -20,7 +20,7 @@ class FeePeriodForm
                     ->searchable()
                     ->required(),
                 DatePicker::make('month_date')
-                    ->label(__('Billing Month'))
+                    ->label(__('Billing month'))
                     ->format('Y-m-01') // Force start of month
                     ->required()
                     ->native(false),

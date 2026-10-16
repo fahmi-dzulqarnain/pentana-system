@@ -95,7 +95,10 @@ Admins open on a "Needs attention" row (payments to verify, next lunch's orders,
 | The landing page promises "Satu dasbor, plus notifikasi untuk semua hal yang perlu Anda tindak lanjuti" (one dashboard, plus notifications for everything you need to act on). The real dashboard doesn't deliver that (see §4). | 🟢 | Fix the dashboard, or soften the claim. |
 | The Google Play badge is dimmed but still looks like a button. | 🟢 | Remove the badge until the app is out; the "Segera hadir" (coming soon) pill already says it. |
 
-## 7. Consistency
+## 7. Consistency — ✅ fixed 2026-10-16
+
+One date style ("16 Okt 2026, 10:42") set once for every table, detail page and date picker; sentence case for every label except page titles and menu items (a test now enforces it); MYR on member category dues; drag-to-reorder meal options; "Belum ada …" empty states with a neutral icon; "Payment proof" everywhere; Malay create buttons name their item ("Cipta ahli"). Plus: the Lunch planner explains that a caterer is needed first, and its hint text now has readable contrast.
+
 | Element | Issue | Recommendation |
 |---|---|---|
 | Dates | "Jun 25, 2026 04:08:36" (US order, seconds, UTC) on view pages. | One app-wide format via `Table::configureUsing`/`TextEntry` defaults: `j M Y, H:i` in Malaysia time. |
@@ -124,4 +127,4 @@ Admins open on a "Needs attention" row (payments to verify, next lunch's orders,
 2. **Make payment verification work from one page:** uncropped proof, Verify/Reject in the header, a pending filter, a text status.
 3. **Restructure the navigation and dashboard together:** personal vs admin groups, a single lunch planner, and a "Needs attention" dashboard.
 4. ✅ (2026-10-16) **Make the admin lists work on a phone:** card layout for Fee payments and Users, agenda view for the calendar.
-5. **Run a consistency pass:** dates, casing, money, empty states, contrast. It's mostly configuration in `AppServiceProvider` and `lang/*.json`.
+5. ✅ (2026-10-16) **Run a consistency pass:** dates, casing, money, empty states, contrast. It's mostly configuration in `AppServiceProvider` and `lang/*.json`.

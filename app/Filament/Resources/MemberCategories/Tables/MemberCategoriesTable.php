@@ -15,7 +15,7 @@ class MemberCategoriesTable
         return $table
             ->columns([
                 TextColumn::make('name'),
-                TextColumn::make('default_fee'),
+                TextColumn::make('default_fee')->money('MYR'),
             ])
             ->filters([
                 //

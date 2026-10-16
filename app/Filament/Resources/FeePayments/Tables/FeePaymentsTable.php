@@ -30,7 +30,7 @@ class FeePaymentsTable
                     ->formatStateUsing(fn (string $state): string => StatusLabel::for($state)),
                 TextColumn::make('created_at')
                     ->label(__('Submitted'))
-                    ->dateTime('j M Y, H:i')
+                    ->dateTime()
                     ->sortable(),
             ])
             // Admins work the queue oldest first; members see their latest submission first.

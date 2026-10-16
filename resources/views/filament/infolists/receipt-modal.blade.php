@@ -2,7 +2,7 @@
 <div style="display:flex;flex-direction:column;align-items:center;gap:0.75rem;">
     <img
         src="{{ $url }}"
-        alt="{{ __('Receipt proof') }}"
+        alt="{{ __('Payment proof') }}"
         style="max-height:75vh;max-width:100%;height:auto;border-radius:0.5rem;"
     />
 

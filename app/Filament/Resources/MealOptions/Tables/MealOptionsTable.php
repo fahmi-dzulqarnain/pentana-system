@@ -16,13 +16,13 @@ class MealOptionsTable
         return $table
             ->columns([
                 TextColumn::make('name')
-                    ->searchable()
-                    ->sortable(),
+                    ->searchable(),
                 IconColumn::make('is_active')
                     ->boolean(),
-                TextColumn::make('sort')
-                    ->sortable(),
             ])
+            // Drag rows to set the order members see options in; the stored number stays out of sight.
+            ->reorderable('sort')
+            ->defaultSort('sort')
             ->recordActions([
                 EditAction::make(),
             ])

@@ -17,7 +17,7 @@ class FeePaymentForm
     {
         return $schema
             ->components([
-                Section::make(__('Submit Fee Payment'))
+                Section::make(__('Submit fee payment'))
                     ->description(__('Please enter the total amount transferred and upload your bank receipt.'))
                     ->schema([
                         // Automatically associate with the logged-in member
@@ -25,7 +25,7 @@ class FeePaymentForm
                             ->default(fn () => Auth::id()),
 
                         TextInput::make('amount_claimed')
-                            ->label(__('Total Amount Transferred'))
+                            ->label(__('Total amount transferred'))
                             ->mask(RawJs::make('$money($input)'))
                             ->stripCharacters(',')
                             ->numeric()
@@ -36,7 +36,7 @@ class FeePaymentForm
                             ->required(),
 
                         FileUpload::make('proof_image_path')
-                            ->label(__('Upload Receipt'))
+                            ->label(__('Upload payment proof'))
                             ->image()
                             ->imageEditor()
                             ->disk('public')

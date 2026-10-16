@@ -28,9 +28,9 @@ class StatusLabel
             'unpaid' => __('Unpaid'),
             'one_off' => __('One-off'),
             'birthday' => __('Birthday email'),
-            'regular' => __('Regular Fee'),
-            'free' => __('Free Month'),
-            'adjustment' => __('Manual Adjustment'),
+            'regular' => __('Regular fee'),
+            'free' => __('Free month'),
+            'adjustment' => __('Manual adjustment'),
             null => '',
             default => ucwords(str_replace('_', ' ', $state)),
         };

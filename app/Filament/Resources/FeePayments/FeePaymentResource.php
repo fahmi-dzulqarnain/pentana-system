@@ -58,12 +58,12 @@ class FeePaymentResource extends Resource
 
     public static function getModelLabel(): string
     {
-        return __('Fee Payment');
+        return __('fee payment');
     }
 
     public static function getPluralModelLabel(): string
     {
-        return __('Fee Payments');
+        return __('fee payments');
     }
 
     public static function form(Schema $schema): Schema

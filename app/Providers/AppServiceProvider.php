@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use App\Http\Middleware\SetLocale;
 use App\Mail\BudgetedTransport;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Field;
 use Filament\Infolists\Components\Entry;
 use Filament\Schemas\Schema;
@@ -79,5 +81,24 @@ class AppServiceProvider extends ServiceProvider
         // Phones get each row as a labelled card instead of a table that scrolls sideways.
         Table::configureUsing(fn ($table) => $table->stackedOnMobile());
         Schema::configureUsing(fn ($schema) => $schema->defaultNumberLocale('en'));
+
+        // One date style everywhere, day first as people write it here: "16 Okt 2026, 10:42".
+        foreach ([Table::class, Schema::class] as $container) {
+            $container::configureUsing(fn ($c) => $c
+                ->defaultDateDisplayFormat(self::DATE_FORMAT)
+                ->defaultDateTimeDisplayFormat(self::DATE_TIME_FORMAT));
+        }
+        DatePicker::configureUsing(fn (DatePicker $picker) => $picker->displayFormat(self::DATE_FORMAT));
+        DateTimePicker::configureUsing(fn (DateTimePicker $picker) => $picker->displayFormat(self::DATE_TIME_FORMAT));
+
+        // An empty list is a normal starting state, not an error: a neutral icon and "No … yet"
+        // instead of Filament's grey ✕ and "No records found".
+        Table::configureUsing(fn (Table $table) => $table
+            ->emptyStateIcon('heroicon-o-inbox')
+            ->emptyStateHeading(fn (Table $table): string => __('No :items yet', ['items' => $table->getPluralModelLabel()])));
     }
+
+    public const DATE_FORMAT = 'j M Y';
+
+    public const DATE_TIME_FORMAT = 'j M Y, H:i';
 }

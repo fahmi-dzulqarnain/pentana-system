@@ -16,7 +16,7 @@ class MyBillsStats extends StatsOverviewWidget
 
     protected function getHeading(): ?string
     {
-        return __('My Bills');
+        return __('My bills');
     }
 
     public static function canView(): bool

@@ -37,6 +37,13 @@
         .dark .lc-setmenu { color:#9ca3af; }
         .dark .lc-setmenu:hover { color:#d1d5db; }
 
+        .lc-stat-hint { font-size:0.75rem; color:#6b7280; margin-top:0.125rem; }
+        .dark .lc-stat-hint { color:#9ca3af; }
+
+        .lc-notice { display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap; padding:0.875rem 1rem; margin-bottom:1.25rem; border-radius:0.75rem; border:1px solid var(--primary-200,#fde68a); background:var(--primary-50,#fffbeb); color:#78350f; font-size:0.875rem; }
+        .lc-notice a { font-weight:600; color:inherit; }
+        .dark .lc-notice { background:rgb(245 158 11 / 0.12); border-color:rgb(245 158 11 / 0.3); color:#fde68a; }
+
         .lc-stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:1rem; margin-bottom:1.5rem; }
 
         /* Phones: seven columns can't fit, so the month becomes a list of days. */
@@ -79,6 +86,15 @@
         </button>
     </div>
 
+    @unless($this->hasCaterers())
+        {{-- A lunch needs a caterer's menu, so planning dead-ends until one exists. --}}
+        <div class="lc-notice" role="status">
+            <x-heroicon-o-information-circle style="width:1.25rem;height:1.25rem;flex:none;" />
+            <span>{{ __('Add a caterer and their menu before planning lunches.') }}</span>
+            <a href="{{ \App\Filament\Resources\Caterers\CatererResource::getUrl('create') }}">{{ __('Add a caterer') }} →</a>
+        </div>
+    @endunless
+
     {{-- Stat cards --}}
     <div class="lc-stats">
         <x-filament::section>
@@ -86,8 +102,8 @@
                 <div style="font-size:1.75rem;font-weight:700;color:var(--primary-600,#d97706);line-height:1.2;">
                     {{ $this->daysPlanned() }} / {{ $this->workingDays() }}
                 </div>
-                <div style="font-size:0.8125rem;color:var(--gray-500,#6b7280);margin-top:0.25rem;font-weight:500;">{{ __('Days Planned') }}</div>
-                <div style="font-size:0.75rem;color:var(--gray-400,#9ca3af);margin-top:0.125rem;">{{ __('working days this month') }}</div>
+                <div style="font-size:0.8125rem;color:var(--gray-500,#6b7280);margin-top:0.25rem;font-weight:500;">{{ __('Days planned') }}</div>
+                <div class="lc-stat-hint">{{ __('working days this month') }}</div>
             </div>
         </x-filament::section>
 
@@ -96,8 +112,8 @@
                 <div style="font-size:1.75rem;font-weight:700;color:var(--primary-600,#d97706);line-height:1.2;">
                     {{ number_format($this->avgOrdersPerDay(), 0) }}
                 </div>
-                <div style="font-size:0.8125rem;color:var(--gray-500,#6b7280);margin-top:0.25rem;font-weight:500;">{{ __('Avg. Orders/Day') }}</div>
-                <div style="font-size:0.75rem;color:var(--gray-400,#9ca3af);margin-top:0.125rem;">{{ __('published days this month') }}</div>
+                <div style="font-size:0.8125rem;color:var(--gray-500,#6b7280);margin-top:0.25rem;font-weight:500;">{{ __('Average orders per day') }}</div>
+                <div class="lc-stat-hint">{{ __('published days this month') }}</div>
             </div>
         </x-filament::section>
 
@@ -106,8 +122,8 @@
                 <div style="font-size:1.75rem;font-weight:700;color:var(--primary-600,#d97706);line-height:1.2;">
                     MYR {{ number_format($this->estimatedCost(), 2) }}
                 </div>
-                <div style="font-size:0.8125rem;color:var(--gray-500,#6b7280);margin-top:0.25rem;font-weight:500;">{{ __('Estimated Cost') }}</div>
-                <div style="font-size:0.75rem;color:var(--gray-400,#9ca3af);margin-top:0.125rem;">{{ __('this month') }}</div>
+                <div style="font-size:0.8125rem;color:var(--gray-500,#6b7280);margin-top:0.25rem;font-weight:500;">{{ __('Estimated cost') }}</div>
+                <div class="lc-stat-hint">{{ __('this month') }}</div>
             </div>
         </x-filament::section>
     </div>

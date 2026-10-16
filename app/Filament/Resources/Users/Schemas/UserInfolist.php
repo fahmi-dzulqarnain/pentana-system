@@ -24,7 +24,7 @@ class UserInfolist
                     ->dateTime()
                     ->placeholder('-'),
                 TextEntry::make('credit')
-                    ->label(__('Available Credit'))
+                    ->label(__('Available credit'))
                     ->money('MYR'),
             ]);
     }

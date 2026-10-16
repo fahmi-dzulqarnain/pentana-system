@@ -29,7 +29,7 @@ class MyBillsTable extends TableWidget
             ->query(fn () => FeePeriod::forMember(auth()->id()))
             ->columns([
                 TextColumn::make('month_date')
-                    ->label(__('Billing Month'))
+                    ->label(__('Billing month'))
                     ->date('F Y')
                     ->sortable(),
                 TextColumn::make('amount_due')

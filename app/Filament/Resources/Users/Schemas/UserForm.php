@@ -40,13 +40,13 @@ class UserForm
                     ->required()
                     ->live(),
                 TextInput::make('custom_fee')
-                    ->label(__('Custom Monthly Fee (Override)'))
+                    ->label(__('Custom monthly fee (override)'))
                     ->numeric()
                     ->prefix('MYR')
                     ->helperText(__('Leave empty to use the Category default fee.')),
                 // Credit is derived from unallocated payment proofs, so it is read-only here.
                 Placeholder::make('credit')
-                    ->label(__('Available Credit'))
+                    ->label(__('Available credit'))
                     ->content(fn ($record): string => 'MYR '.number_format((float) ($record?->credit ?? 0), 2)),
             ]);
     }

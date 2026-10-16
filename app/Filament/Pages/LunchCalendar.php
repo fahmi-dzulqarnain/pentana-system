@@ -4,6 +4,7 @@ namespace App\Filament\Pages;
 
 use App\Filament\NavGroup;
 use App\Filament\Resources\Lunches\LunchResource;
+use App\Models\Caterer;
 use App\Models\Lunch;
 use App\Services\LunchPlanningStats;
 use BackedEnum;
@@ -63,7 +64,7 @@ class LunchCalendar extends Page
         return [
             Action::make('listView')->label(__('List view'))->icon('heroicon-o-list-bullet')->color('gray')
                 ->url(fn () => LunchResource::getUrl('index')),
-            Action::make('addMenu')->label(__('Add Menu'))->icon('heroicon-o-plus')
+            Action::make('addMenu')->label(__('Add menu'))->icon('heroicon-o-plus')
                 ->url(fn () => LunchResource::getUrl('create')),
         ];
     }
@@ -86,6 +87,11 @@ class LunchCalendar extends Page
     public function monthStart(): Carbon
     {
         return Carbon::parse($this->month.'-01');
+    }
+
+    public function hasCaterers(): bool
+    {
+        return Caterer::exists();
     }
 
     public function monthLabel(): string

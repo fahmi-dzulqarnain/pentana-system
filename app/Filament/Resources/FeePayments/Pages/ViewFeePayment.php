@@ -24,23 +24,23 @@ class ViewFeePayment extends ViewRecord
     {
         return $infolist
             ->schema([
-                Section::make(__('Payment Details'))
+                Section::make(__('Payment details'))
                     ->schema([
-                        TextEntry::make('user.name')->label(__('Member Name')),
+                        TextEntry::make('user.name')->label(__('Member name')),
                         TextEntry::make('amount_claimed')->money('MYR'),
                         TextEntry::make('created_at')
                             ->label(__('Submitted'))
-                            ->dateTime('j M Y, H:i'),
+                            ->dateTime(),
                         TextEntry::make('member_note')
                             ->label(__('Member note'))
                             ->visible(fn ($record) => filled($record->member_note))
                             ->columnSpanFull(),
                         ImageEntry::make('proof_image_path')
-                            ->label(__('Receipt Proof'))
+                            ->label(__('Payment proof'))
                             ->disk('public')
                             ->visibility('public')
                             ->extraImgAttributes([
-                                'alt' => __('Receipt proof'),
+                                'alt' => __('Payment proof'),
                                 // Inline styles: Filament's precompiled CSS doesn't ship arbitrary Tailwind utilities,
                                 // so class-based styling here would silently do nothing.
                                 // contain, not cover: the admin must see the whole receipt (amount, reference) to verify it.
@@ -49,7 +49,7 @@ class ViewFeePayment extends ViewRecord
                             ->action(
                                 Action::make('viewReceipt')
                                     ->label(__('View receipt'))
-                                    ->modalHeading(__('Receipt proof'))
+                                    ->modalHeading(__('Payment proof'))
                                     ->modalContent(fn ($record) => view('filament.infolists.receipt-modal', [
                                         'url' => Storage::disk('public')->url($record->proof_image_path),
                                     ]))
