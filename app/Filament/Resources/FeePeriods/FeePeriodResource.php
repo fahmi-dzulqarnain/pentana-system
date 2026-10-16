@@ -13,14 +13,27 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 
 class FeePeriodResource extends Resource
 {
     protected static ?string $model = FeePeriod::class;
 
-    protected static ?string $recordTitleAttribute = 'Fee Period';
-
     protected static string|BackedEnum|null $navigationIcon = Heroicon::Calendar;
+
+    public static function getRecordTitle(?Model $record): string
+    {
+        if (! $record) {
+            return static::getModelLabel();
+        }
+
+        return trim(($record->user?->name ?? '').' · '.$record->month_date?->translatedFormat('F Y'), ' ·');
+    }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['user.name'];
+    }
 
     public static function getNavigationGroup(): ?string
     {

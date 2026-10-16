@@ -16,7 +16,7 @@ class MemberCategoryResource extends Resource
 {
     protected static ?string $model = MemberCategory::class;
 
-    protected static ?string $recordTitleAttribute = 'Member Category';
+    protected static ?string $recordTitleAttribute = 'name';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::Tag;
 

@@ -21,9 +21,22 @@ class FeePaymentResource extends Resource
 {
     protected static ?string $model = PaymentProof::class;
 
-    protected static ?string $recordTitleAttribute = 'Fee Payment';
-
     protected static string|BackedEnum|null $navigationIcon = Heroicon::CreditCard;
+
+    public static function getRecordTitle(?Model $record): string
+    {
+        return $record?->user?->name ?? static::getModelLabel();
+    }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['user.name'];
+    }
+
+    public static function getGlobalSearchResultTitle(Model $record): string
+    {
+        return static::getRecordTitle($record).' · MYR '.number_format((float) $record->amount_claimed, 2);
+    }
 
     public static function getNavigationGroup(): ?string
     {
