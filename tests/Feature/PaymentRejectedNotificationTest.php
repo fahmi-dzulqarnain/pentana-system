@@ -29,6 +29,7 @@ class PaymentRejectedNotificationTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->travelTo('2026-10-16 10:00'); // the email quotes the submission date
         $this->member = User::factory()->create(['activated_at' => now()]);
         $this->proof = PaymentProof::create([
             'user_id' => $this->member->id,
