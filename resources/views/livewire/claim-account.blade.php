@@ -93,7 +93,16 @@
                     <span wire:loading.remove wire:target="lookup">{{ __('Find my account') }}</span>
                     <span wire:loading wire:target="lookup">{{ __('Searching…') }}</span>
                 </button>
+
+                <p style="margin:0.75rem 0 0;font-size:0.8125rem;color:#6b7280;">
+                    {{ __('Next, you will confirm your details and choose a password.') }}
+                </p>
             </form>
+
+            <p style="margin:2rem 0 0;padding-top:1.25rem;border-top:1px solid #e5e7eb;text-align:center;font-size:0.875rem;color:#4b5563;">
+                {{ __('Already activated your account?') }}
+                <a href="/account/login" style="color:#b45309;font-weight:600;">{{ __('Sign in') }}</a>
+            </p>
         </div>
     @else
         <div class="claim-stage">

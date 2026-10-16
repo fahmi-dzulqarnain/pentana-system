@@ -93,7 +93,7 @@ Admins open on a "Needs attention" row (payments to verify, next lunch's orders,
 ## 6. Public pages
 | Finding | Severity | Recommendation |
 |---|---|---|
-| `/claim` (account activation) has **no logo, no link home and no "already have an account? Sign in"**. It's a bare form with a floating globe icon, which is a trust problem on a page that asks for an email. | 🟡 | Add the PENTANA mark and header, a sign-in link, and a short note on what happens next. |
+| ✅ (fixed 2026-10-16) `/claim` (account activation) has **no logo, no link home and no "already have an account? Sign in"**. It's a bare form with a floating globe icon, which is a trust problem on a page that asks for an email. | 🟡 | Add the PENTANA mark and header, a sign-in link, and a short note on what happens next. |
 | The landing page promises "Satu dasbor, plus notifikasi untuk semua hal yang perlu Anda tindak lanjuti" (one dashboard, plus notifications for everything you need to act on). The real dashboard doesn't deliver that (see §4). | 🟢 | Fix the dashboard, or soften the claim. |
 | The Google Play badge is dimmed but still looks like a button. | 🟢 | Remove the badge until the app is out; the "Segera hadir" (coming soon) pill already says it. |
 

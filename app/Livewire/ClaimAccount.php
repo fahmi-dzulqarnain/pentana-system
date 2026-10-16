@@ -126,6 +126,6 @@ class ClaimAccount extends Component implements HasSchemas
     #[Layout('components.layouts.guest')]
     public function render()
     {
-        return view('livewire.claim-account');
+        return view('livewire.claim-account')->title(__('Activate your account').' · PENTANA');
     }
 }
