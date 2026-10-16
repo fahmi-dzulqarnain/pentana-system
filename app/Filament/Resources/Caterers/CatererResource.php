@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Caterers;
 
+use App\Filament\NavGroup;
 use App\Filament\Resources\Caterers\Pages\CreateCaterer;
 use App\Filament\Resources\Caterers\Pages\EditCaterer;
 use App\Filament\Resources\Caterers\Pages\ListCaterers;
@@ -14,6 +15,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class CatererResource extends Resource
 {
@@ -21,14 +23,16 @@ class CatererResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::BuildingStorefront;
 
+    protected static ?int $navigationSort = 2;
+
     public static function canAccess(): bool
     {
         return (bool) auth()->user()?->is_admin;
     }
 
-    public static function getNavigationGroup(): ?string
+    public static function getNavigationGroup(): string|UnitEnum|null
     {
-        return __('Welfare & Social');
+        return NavGroup::Lunch;
     }
 
     public static function getNavigationLabel(): string

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Lunches;
 
+use App\Filament\NavGroup;
 use App\Filament\Resources\Lunches\Pages\CreateLunch;
 use App\Filament\Resources\Lunches\Pages\EditLunch;
 use App\Filament\Resources\Lunches\Pages\ListLunches;
@@ -13,6 +14,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class LunchResource extends Resource
 {
@@ -20,19 +22,17 @@ class LunchResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::ClipboardDocumentList;
 
+    // The Lunch planner calendar is the single way in; this list is reached from its "List view" button.
+    protected static bool $shouldRegisterNavigation = false;
+
     public static function canAccess(): bool
     {
         return (bool) auth()->user()?->is_admin;
     }
 
-    public static function getNavigationGroup(): ?string
+    public static function getNavigationGroup(): string|UnitEnum|null
     {
-        return __('Welfare & Social');
-    }
-
-    public static function getNavigationLabel(): string
-    {
-        return __('Lunch Planner');
+        return NavGroup::Lunch;
     }
 
     public static function getModelLabel(): string

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Users;
 
+use App\Filament\NavGroup;
 use App\Filament\Resources\Users\Pages\CreateUser;
 use App\Filament\Resources\Users\Pages\EditUser;
 use App\Filament\Resources\Users\Pages\ListUsers;
@@ -15,6 +16,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class UserResource extends Resource
 {
@@ -24,24 +26,26 @@ class UserResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::UserGroup;
 
+    protected static ?int $navigationSort = 1;
+
     public static function canAccess(): bool
     {
         return (bool) auth()->user()?->is_admin;
     }
 
-    public static function getNavigationGroup(): ?string
+    public static function getNavigationGroup(): string|UnitEnum|null
     {
-        return __('Accounts');
+        return NavGroup::Members;
     }
 
     public static function getModelLabel(): string
     {
-        return __('user');
+        return __('member');
     }
 
     public static function getPluralModelLabel(): string
     {
-        return __('users');
+        return __('members');
     }
 
     public static function form(Schema $schema): Schema

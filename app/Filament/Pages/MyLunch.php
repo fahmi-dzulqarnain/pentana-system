@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\NavGroup;
 use App\Models\Lunch;
 use App\Models\LunchResponse;
 use App\Services\LunchVotingService;
@@ -11,10 +12,13 @@ use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Collection;
 use RuntimeException;
+use UnitEnum;
 
 class MyLunch extends Page
 {
     protected static string|BackedEnum|null $navigationIcon = Heroicon::Ticket;
+
+    protected static ?int $navigationSort = 1;
 
     protected string $view = 'filament.pages.my-lunch';
 
@@ -25,9 +29,9 @@ class MyLunch extends Page
         return auth()->check();
     }
 
-    public static function getNavigationGroup(): ?string
+    public static function getNavigationGroup(): string|UnitEnum|null
     {
-        return __('Welfare & Social');
+        return NavGroup::Personal;
     }
 
     public static function getNavigationLabel(): string

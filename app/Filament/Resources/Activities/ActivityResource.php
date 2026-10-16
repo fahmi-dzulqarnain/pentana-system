@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Activities;
 
+use App\Filament\NavGroup;
 use App\Filament\Resources\Activities\Pages\CreateActivity;
 use App\Filament\Resources\Activities\Pages\EditActivity;
 use App\Filament\Resources\Activities\Pages\ListActivities;
@@ -13,6 +14,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class ActivityResource extends Resource
 {
@@ -20,19 +22,16 @@ class ActivityResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::Sparkles;
 
+    protected static ?int $navigationSort = 1;
+
     public static function canAccess(): bool
     {
         return (bool) auth()->user()?->is_admin;
     }
 
-    public static function getNavigationGroup(): ?string
+    public static function getNavigationGroup(): string|UnitEnum|null
     {
-        return __('Activity');
-    }
-
-    public static function getNavigationLabel(): string
-    {
-        return __('Activity Management');
+        return NavGroup::Activities;
     }
 
     public static function getModelLabel(): string

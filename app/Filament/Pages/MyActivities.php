@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\NavGroup;
 use App\Models\Activity;
 use App\Models\ActivityRegistration;
 use App\Services\ActivityRegistrationService;
@@ -11,10 +12,13 @@ use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Collection;
+use UnitEnum;
 
 class MyActivities extends Page
 {
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::Sparkles;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::Flag;
+
+    protected static ?int $navigationSort = 2;
 
     protected string $view = 'filament.pages.my-activities';
 
@@ -31,9 +35,9 @@ class MyActivities extends Page
         return auth()->check();
     }
 
-    public static function getNavigationGroup(): ?string
+    public static function getNavigationGroup(): string|UnitEnum|null
     {
-        return __('Welfare & Social');
+        return NavGroup::Personal;
     }
 
     public static function getNavigationLabel(): string

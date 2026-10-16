@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\FeePeriods;
 
+use App\Filament\NavGroup;
 use App\Filament\Resources\FeePeriods\Pages\CreateFeePeriod;
 use App\Filament\Resources\FeePeriods\Pages\EditFeePeriod;
 use App\Filament\Resources\FeePeriods\Pages\ListFeePeriods;
@@ -14,12 +15,15 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
+use UnitEnum;
 
 class FeePeriodResource extends Resource
 {
     protected static ?string $model = FeePeriod::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::Calendar;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::DocumentText;
+
+    protected static ?int $navigationSort = 2;
 
     public static function getRecordTitle(?Model $record): string
     {
@@ -35,9 +39,9 @@ class FeePeriodResource extends Resource
         return ['user.name'];
     }
 
-    public static function getNavigationGroup(): ?string
+    public static function getNavigationGroup(): string|UnitEnum|null
     {
-        return __('Finance');
+        return NavGroup::Finance;
     }
 
     public static function getModelLabel(): string

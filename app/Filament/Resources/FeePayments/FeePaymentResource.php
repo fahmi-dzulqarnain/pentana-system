@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\FeePayments;
 
+use App\Filament\NavGroup;
 use App\Filament\Resources\FeePayments\Pages\CreateFeePayment;
 use App\Filament\Resources\FeePayments\Pages\EditFeePayment;
 use App\Filament\Resources\FeePayments\Pages\ListFeePayments;
@@ -16,6 +17,7 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use UnitEnum;
 
 class FeePaymentResource extends Resource
 {
@@ -38,9 +40,20 @@ class FeePaymentResource extends Resource
         return static::getRecordTitle($record).' · MYR '.number_format((float) $record->amount_claimed, 2);
     }
 
-    public static function getNavigationGroup(): ?string
+    // Members reach this as their own payment history; admins as the verification queue.
+    public static function getNavigationGroup(): string|UnitEnum|null
     {
-        return __('Finance');
+        return auth()->user()?->is_admin ? NavGroup::Finance : NavGroup::Personal;
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return auth()->user()?->is_admin ? static::getTitleCasePluralModelLabel() : __('My Payments');
+    }
+
+    public static function getNavigationSort(): ?int
+    {
+        return auth()->user()?->is_admin ? 1 : 3;
     }
 
     public static function getModelLabel(): string

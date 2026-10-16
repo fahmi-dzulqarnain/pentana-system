@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\MemberCategories;
 
+use App\Filament\NavGroup;
 use App\Filament\Resources\MemberCategories\Pages\ListMemberCategories;
 use App\Filament\Resources\MemberCategories\Schemas\MemberCategoryForm;
 use App\Filament\Resources\MemberCategories\Tables\MemberCategoriesTable;
@@ -11,6 +12,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class MemberCategoryResource extends Resource
 {
@@ -20,14 +22,16 @@ class MemberCategoryResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::Tag;
 
+    protected static ?int $navigationSort = 2;
+
     public static function canAccess(): bool
     {
         return (bool) auth()->user()?->is_admin;
     }
 
-    public static function getNavigationGroup(): ?string
+    public static function getNavigationGroup(): string|UnitEnum|null
     {
-        return __('Accounts');
+        return NavGroup::Members;
     }
 
     public static function getModelLabel(): string

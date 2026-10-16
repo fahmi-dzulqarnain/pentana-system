@@ -2,12 +2,20 @@
 
 namespace App\Providers;
 
+use App\Http\Middleware\SetLocale;
 use App\Mail\BudgetedTransport;
+use Filament\Forms\Components\Field;
+use Filament\Infolists\Components\Entry;
+use Filament\Schemas\Schema;
 use Filament\Support\Assets\Js;
 use Filament\Support\Facades\FilamentAsset;
+use Filament\Tables\Columns\Column;
+use Filament\Tables\Filters\BaseFilter;
+use Filament\Tables\Table;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
+use Livewire\Livewire;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -52,22 +60,22 @@ class AppServiceProvider extends ServiceProvider
         // Safeguard: Livewire's update route already runs the `web` group (which appends
         // SetLocale), but persistent middleware also re-applies it to routes that get it
         // only from a custom group, so a re-render never falls back to English mid-form.
-        \Livewire\Livewire::addPersistentMiddleware([\App\Http\Middleware\SetLocale::class]);
+        Livewire::addPersistentMiddleware([SetLocale::class]);
 
         // Route Filament's auto-generated labels ("Send at") through __() so they can
         // be translated in lang/*.json like any explicit label.
         foreach ([
-            \Filament\Forms\Components\Field::class,
-            \Filament\Tables\Columns\Column::class,
-            \Filament\Tables\Filters\BaseFilter::class,
-            \Filament\Infolists\Components\Entry::class,
+            Field::class,
+            Column::class,
+            BaseFilter::class,
+            Entry::class,
         ] as $component) {
             $component::configureUsing(fn ($c) => $c->translateLabel());
         }
 
         // Money always renders "MYR 70.00": without a pinned number locale Filament's
         // ->money('MYR') follows the app locale and prints "RM 70.00" (ms) / "MYR 70,00" (id).
-        \Filament\Tables\Table::configureUsing(fn ($table) => $table->defaultNumberLocale('en'));
-        \Filament\Schemas\Schema::configureUsing(fn ($schema) => $schema->defaultNumberLocale('en'));
+        Table::configureUsing(fn ($table) => $table->defaultNumberLocale('en'));
+        Schema::configureUsing(fn ($schema) => $schema->defaultNumberLocale('en'));
     }
 }

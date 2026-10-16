@@ -66,7 +66,7 @@ class LunchCalendarTest extends TestCase
         $component = Livewire::test(LunchCalendar::class)
             ->assertSuccessful()
             ->assertSee('Nasi Lemak')
-            ->assertSee('Menu Calendar');
+            ->assertSee('Lunch Planner');
 
         // Assert stats computed correctly
         $this->assertSame(1, $component->instance()->daysPlanned());

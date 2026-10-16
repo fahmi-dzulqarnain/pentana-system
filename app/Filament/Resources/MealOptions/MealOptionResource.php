@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\MealOptions;
 
+use App\Filament\NavGroup;
 use App\Filament\Resources\MealOptions\Pages\CreateMealOption;
 use App\Filament\Resources\MealOptions\Pages\EditMealOption;
 use App\Filament\Resources\MealOptions\Pages\ListMealOptions;
@@ -13,6 +14,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class MealOptionResource extends Resource
 {
@@ -20,14 +22,16 @@ class MealOptionResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::Swatch;
 
+    protected static ?int $navigationSort = 4;
+
     public static function canAccess(): bool
     {
         return (bool) auth()->user()?->is_admin;
     }
 
-    public static function getNavigationGroup(): ?string
+    public static function getNavigationGroup(): string|UnitEnum|null
     {
-        return __('Welfare & Social');
+        return NavGroup::Lunch;
     }
 
     public static function getNavigationLabel(): string

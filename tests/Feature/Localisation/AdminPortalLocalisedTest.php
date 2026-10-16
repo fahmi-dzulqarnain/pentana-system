@@ -27,10 +27,13 @@ class AdminPortalLocalisedTest extends TestCase
 
         $this->actingAs($admin)->get('/account')
             ->assertOk()
-            ->assertSee('Kesejahteraan & Sosial')
-            ->assertSee('Akun')
+            ->assertSee('Pribadi')
+            ->assertSee('Makan siang')
+            ->assertSee('Kegiatan &amp; email', false)
             ->assertSee('Keuangan')
-            ->assertDontSee('>Accounts<', false);
+            ->assertSee('Anggota')
+            ->assertDontSee('>Members<', false)
+            ->assertDontSee('>Finance<', false);
     }
 
     public function test_resource_labels_and_status_badges_follow_the_account_language(): void
@@ -43,8 +46,8 @@ class AdminPortalLocalisedTest extends TestCase
             ->assertOk()
             ->assertSee('Family Day')                       // admin-authored content is left as typed
             ->assertSee('Diterbitkan')                      // status badge, stored value stays 'published'
-            ->assertSee('Pengurusan Aktiviti')              // navigation label
-            ->assertDontSee('Activity Management');
+            ->assertSee('Aktiviti')                         // navigation label now matches the page title
+            ->assertDontSee('Pengurusan Aktiviti');         // the old, mismatched label
 
         // Filament's page title is built from the translated model label.
         $this->actingAs($admin)->get('/account/activities/create')

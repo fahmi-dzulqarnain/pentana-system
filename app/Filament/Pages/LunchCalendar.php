@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\NavGroup;
 use App\Filament\Resources\Lunches\LunchResource;
 use App\Models\Lunch;
 use App\Services\LunchPlanningStats;
@@ -13,10 +14,13 @@ use Filament\Actions\Action;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Collection;
+use UnitEnum;
 
 class LunchCalendar extends Page
 {
     protected static string|BackedEnum|null $navigationIcon = Heroicon::CalendarDays;
+
+    protected static ?int $navigationSort = 1;
 
     protected string $view = 'filament.pages.lunch-calendar';
 
@@ -33,24 +37,32 @@ class LunchCalendar extends Page
         return (bool) auth()->user()?->is_admin;
     }
 
-    public static function getNavigationGroup(): ?string
+    /** Keep "Lunch planner" highlighted on the lunch list and form pages it leads to. */
+    public static function getNavigationItemActiveRoutePattern(): string|array
     {
-        return __('Welfare & Social');
+        return [static::getRouteName(), LunchResource::getRouteBaseName().'.*'];
+    }
+
+    public static function getNavigationGroup(): string|UnitEnum|null
+    {
+        return NavGroup::Lunch;
     }
 
     public static function getNavigationLabel(): string
     {
-        return __('Menu Calendar');
+        return __('Lunch Planner');
     }
 
     public function getTitle(): string
     {
-        return __('Menu Calendar');
+        return __('Lunch Planner');
     }
 
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('listView')->label(__('List view'))->icon('heroicon-o-list-bullet')->color('gray')
+                ->url(fn () => LunchResource::getUrl('index')),
             Action::make('addMenu')->label(__('Add Menu'))->icon('heroicon-o-plus')
                 ->url(fn () => LunchResource::getUrl('create')),
         ];

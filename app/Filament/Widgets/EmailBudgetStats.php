@@ -18,7 +18,8 @@ use Illuminate\Support\Carbon;
  */
 class EmailBudgetStats extends StatsOverviewWidget
 {
-    protected static ?int $sort = -5;
+    // Last on the dashboard: it is deliberately quiet unless the email cap is in trouble.
+    protected static ?int $sort = 50;
 
     protected function getHeading(): ?string
     {
@@ -120,7 +121,7 @@ class EmailBudgetStats extends StatsOverviewWidget
                 ->descriptionIcon($dailyColour === 'gray' ? 'heroicon-m-envelope' : 'heroicon-m-exclamation-triangle')
                 ->color($dailyColour),
 
-            Stat::make(__('This month'), number_format($usedMonth).' / '.number_format(EmailBudget::MONTHLY_LIMIT))
+            Stat::make(__('This month'), NeedsAttention::count($usedMonth).' / '.NeedsAttention::count(EmailBudget::MONTHLY_LIMIT))
                 ->description($monthDescription)
                 ->descriptionIcon($monthlyColour === 'gray' ? 'heroicon-m-calendar' : 'heroicon-m-arrow-trending-up')
                 ->color($monthlyColour),

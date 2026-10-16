@@ -59,7 +59,10 @@ All five items below were addressed (shared Verify/Reject actions on the payment
 | The **user view page shows system fields** (created and updated timestamps) instead of membership information: category, birthday, claim status, bills, payments, lunch orders, registrations. | 🟡 | Rebuild it as a member profile with sections, adding relation managers for bills and payments. |
 | The page is "Pengguna" (users), but its button says "Impor anggota" (import members). | 🟢 | Pick one word. "Anggota" fits a membership app. |
 
-## 3. Information architecture and navigation
+## 3. Information architecture and navigation — ✅ fixed 2026-10-16 (except the two 🟢 items: breadcrumb "Daftar", search on every list)
+
+Sidebar is now Personal (My lunch, My activities, My payments for members) → Lunch → Activities & emails → Finance → Members. The Lunch planner calendar is the one way into lunch planning (the list is a "List view" from it), menu labels match page titles, "Users" is "Members", and personal and admin pages use different icons.
+
 | Finding | Severity | Recommendation |
 |---|---|---|
 | The admin's **personal pages and admin tools are mixed** in one group. *Kesejahteraan & Sosial* (Welfare & Social) holds Menu calendar (admin-only), My activities and My lunch, next to Caterers and Meals. Meanwhile "Kegiatan Saya" (My activities) is separate from the *Kegiatan* (Activities) group, and both use the same sparkle icon. | 🟡 | Make a personal group (Dashboard, My lunch, My activities, Profile), then admin groups for Lunch, Activities, Finance and Members. Use distinct icons for "mine" and "manage". |
@@ -67,7 +70,10 @@ All five items below were addressed (shared Verify/Reject actions on the payment
 | Every breadcrumb ends "› Daftar" (› List), which adds nothing. | 🟢 | Turn off the list breadcrumb (`$breadcrumb = null` on List pages). |
 | Search and filters are inconsistent: Lunches has no search, while Activities has search and filters. | 🟢 | Every list gets search, plus a status filter where there's a status. |
 
-## 4. Dashboard (parked from the earlier critique)
+## 4. Dashboard — ✅ fixed 2026-10-16
+
+Admins open on a "Needs attention" row (payments to verify, next lunch's orders, waitlists, unpaid bills this month), each linking to where the work is done and grey when there is nothing to do. The email budget moved to the bottom, the welcome card is gone, and counts follow the language (3.000 in Indonesian).
+
 - 🔴 There's no work queue. Add a "Needs attention" row: payment proofs to verify, the next lunch's orders against its deadline, waitlists, unpaid bills.
 - 🟡 The email budget takes the top spot even though it's designed to be quiet. Move it down or collapse it.
 - 🟡 Covered under navigation above: personal and admin items are mixed.
