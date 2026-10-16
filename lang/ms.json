@@ -575,5 +575,16 @@
     "Email :email a link to claim their :app account? They have :days days to claim it.": "E-melkan pautan kepada :email untuk menuntut akaun :app mereka? Mereka ada :days hari untuk menuntutnya.",
     "Members who have not claimed their account yet get an email with a link to claim it, and :days days to do so. Disabled members are re-enabled. Admins and claimed members are skipped.": "Ahli yang belum menuntut akaun akan menerima e-mel berserta pautan untuk menuntutnya, dan :days hari untuk berbuat demikian. Ahli yang dinyahaktifkan akan diaktifkan semula. Pentadbir dan ahli yang sudah menuntut akaun dilangkau.",
     "Offer valid until :date": "Tawaran sah sehingga :date",
-    "If you do not claim your account by :date, it will be disabled. Your admin can always send you a new invitation.": "Jika anda tidak menuntut akaun anda sebelum :date, akaun itu akan dinyahaktifkan. Pentadbir anda sentiasa boleh menghantar jemputan baharu."
+    "If you do not claim your account by :date, it will be disabled. Your admin can always send you a new invitation.": "Jika anda tidak menuntut akaun anda sebelum :date, akaun itu akan dinyahaktifkan. Pentadbir anda sentiasa boleh menghantar jemputan baharu.",
+    "Invite": "Jemput",
+    "This account has been disabled. Please contact your admin.": "Akaun ini telah dinyahaktifkan. Sila hubungi pentadbir anda.",
+    "Disabled by an admin :when": "Dinyahaktifkan oleh pentadbir :when",
+    "Disable": "Nyahaktifkan",
+    "Enable": "Aktifkan",
+    "Disable :name?": "Nyahaktifkan :name?",
+    "Enable :name?": "Aktifkan :name?",
+    "They will be signed out and can no longer sign in. They stop receiving bills and notifications. Bills they already have are kept. You can enable the account again at any time.": "Mereka akan dilog keluar dan tidak lagi boleh log masuk. Mereka tidak lagi menerima bil dan pemberitahuan. Bil sedia ada dikekalkan. Anda boleh mengaktifkan semula akaun ini pada bila-bila masa.",
+    "They can sign in again and will be billed and notified like any other member from now on.": "Mereka boleh log masuk semula dan akan menerima bil serta pemberitahuan seperti ahli lain mulai sekarang.",
+    ":name has been disabled": ":name telah dinyahaktifkan",
+    ":name has been enabled": ":name telah diaktifkan"
 }

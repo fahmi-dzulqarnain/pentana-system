@@ -7,10 +7,13 @@ use App\Notifications\MemberInvitation;
 
 class MemberInviter
 {
-    /** Only members who still have to claim their account can be invited. */
+    /**
+     * Only members who still have to claim their account can be invited. A member an
+     * admin disabled by hand must be enabled first; an expired invitation can be resent.
+     */
     public function canInvite(User $user): bool
     {
-        return ! $user->is_admin && $user->activated_at === null;
+        return ! $user->is_admin && $user->activated_at === null && ! $user->isManuallyDisabled();
     }
 
     /**

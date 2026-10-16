@@ -64,7 +64,8 @@ class ClaimAccount extends Component implements HasSchemas
 
         $existing = User::where('email', trim($this->email))->first();
         $this->lookupMessage = match (true) {
-            $existing?->isDisabled() => __('Your invitation expired on :date. Ask your admin to send you a new one.', [
+            (bool) $existing?->isManuallyDisabled() => __('This account has been disabled. Please contact your admin.'),
+            (bool) $existing?->invitationExpired() => __('Your invitation expired on :date. Ask your admin to send you a new one.', [
                 'date' => $existing->invitationExpiresAt()->translatedFormat('j F Y'),
             ]),
             $existing !== null => __('This account is already active. Please log in.'),

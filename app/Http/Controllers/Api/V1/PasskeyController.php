@@ -58,7 +58,7 @@ class PasskeyController extends Controller
         }
 
         $user = $passkey?->authenticatable;
-        if (! $user || ! $user->isActivated()) {
+        if (! $user || ! $user->isActivated() || $user->isDisabled()) {
             return response()->json(['message' => 'The provided credentials are incorrect.'], 422);
         }
 

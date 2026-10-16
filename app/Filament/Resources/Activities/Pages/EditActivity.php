@@ -34,7 +34,7 @@ class EditActivity extends EditRecord
                     $this->record->update(['status' => 'published']);
 
                     app(MemberNotifier::class)->sendAfterResponse(
-                        User::whereNotNull('activated_at')->get(),
+                        User::whereNotNull('activated_at')->enabled()->get(),
                         new ActivityPublished($this->record->fresh()),
                     );
 
@@ -52,7 +52,7 @@ class EditActivity extends EditRecord
                     $this->record->update(['status' => 'cancelled']);
 
                     if ($wasPublished) {
-                        $recipients = User::whereIn(
+                        $recipients = User::enabled()->whereIn(
                             'id',
                             $this->record->registrations()->whereIn('status', ['registered', 'waitlisted'])->pluck('user_id'),
                         )->get();
