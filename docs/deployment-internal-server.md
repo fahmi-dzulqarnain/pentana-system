@@ -401,6 +401,40 @@ delivery, bounces and spam complaints.
 `noreply@pentana.silentmode.net` is send-only. The MX record above makes inbound possible
 for later use.
 
+### Inbound mail — deferred, and silently dropping today
+
+`pentana.silentmode.net` has an MX pointing at Resend Inbound
+(`inbound-smtp.ap-northeast-1.amazonaws.com`, added with the sending records). **Nothing
+consumes it.** Resend accepts mail for the domain, so the sender gets no bounce, and with no
+webhook configured the message is simply never read. A member who hits Reply on a bill
+reminder gets silence, not an error. That is arguably worse than having no MX at all, where
+they would at least be told the address does not accept mail.
+
+Forwarding everything to `pentana.src@gmail.com` (catch-all) is the intended end state. Two
+ways, neither built:
+
+**Cloudflare Email Routing** — free, no code, its own spam filtering, and it never touches
+the send budget. Costs an IT ticket to swap the MX on this subdomain, since the
+`silentmode.net` zone is not self-service. The swap does **not** affect sending: Resend's
+sending path is the `rsend.pentana` / `send.pentana` CNAMEs plus the DKIM TXT, and the MX is
+only there for receiving.
+
+**Resend Inbound webhook** — keeps the current MX, so no ticket, but it is real feature work.
+Resend Inbound has no forward-to-address setting: the `email.received` webhook carries
+*metadata only*, so a handler must verify the svix signature against the raw body, call
+`emails.receiving.get()` for the body, call `attachments.list()` and fetch each
+`download_url`, then re-send. Two consequences worth weighing before choosing it:
+
+- Every forward is an ordinary send counted against the **99/day cap** in section 9.
+  Inbound volume you do not control becomes outbound quota the members' reminders need.
+- Spam gets forwarded too, from your own verified domain.
+
+Either way the original sender cannot be preserved in `From` — Resend requires a
+verified-domain address, so forwarded mail arrives as `noreply@pentana.silentmode.net` with
+the real sender in `Reply-To`.
+
+Docs: <https://resend.com/docs/knowledge-base/forward-emails-with-resend-inbound>
+
 ## 9. Email send cap
 
 Live since 2026-10-14. Resend's free tier allows 100 emails/day and 3,000/month; a message
@@ -510,6 +544,9 @@ language, so the iOS app shows notification text in it while its own screens sta
 - [x] APNs push — key `CVS8SF75ZU` deployed, `APN_PRODUCTION=true`, delivery verified on device
 - [x] Member access from outside — resolved by the tunnel; mobile app can now reach it
 - [ ] Cloudflare Access (or equivalent) in front, and a change-request addendum for the public exposure
+- [ ] Inbound mail: decide between Cloudflare Email Routing and a Resend Inbound webhook,
+      and forward catch-all to `pentana.src@gmail.com` (see *Inbound mail* in section 8).
+      Until then mail to the domain is accepted and silently dropped.
 - [ ] Give `EmailBudget` writes a dedicated connection so the budget lock is not held across
       SMTP sends (see *Known issue* in section 9)
 - [x] Change request approved (2026-10-14)
