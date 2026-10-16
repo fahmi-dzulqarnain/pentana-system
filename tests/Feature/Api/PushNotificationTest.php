@@ -8,7 +8,7 @@ use App\Models\User;
 use App\Notifications\ActivityPublished;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
-use NotificationChannels\Apn\ApnChannel;
+use App\Notifications\Channels\ResilientApnChannel;
 use Tests\TestCase;
 
 class PushNotificationTest extends TestCase
@@ -69,11 +69,11 @@ class PushNotificationTest extends TestCase
         $notification = new ActivityPublished($activity);
 
         $noToken = User::factory()->create();
-        $this->assertNotContains(ApnChannel::class, $notification->via($noToken));
+        $this->assertNotContains(ResilientApnChannel::class, $notification->via($noToken));
 
         $withToken = User::factory()->create();
         DeviceToken::create(['user_id' => $withToken->id, 'token' => 'dev-tok']);
-        $this->assertContains(ApnChannel::class, $notification->via($withToken));
+        $this->assertContains(ResilientApnChannel::class, $notification->via($withToken));
 
         $message = $notification->toApn($withToken);
         $this->assertSame('New activity: Hike', $message->title);
@@ -87,6 +87,6 @@ class PushNotificationTest extends TestCase
         $withToken = User::factory()->create();
         DeviceToken::create(['user_id' => $withToken->id, 'token' => 'dev-tok']);
 
-        $this->assertNotContains(ApnChannel::class, (new ActivityPublished($activity))->via($withToken));
+        $this->assertNotContains(ResilientApnChannel::class, (new ActivityPublished($activity))->via($withToken));
     }
 }

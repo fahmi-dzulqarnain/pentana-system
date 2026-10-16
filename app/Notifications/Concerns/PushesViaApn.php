@@ -2,7 +2,7 @@
 
 namespace App\Notifications\Concerns;
 
-use NotificationChannels\Apn\ApnChannel;
+use App\Notifications\Channels\ResilientApnChannel;
 
 /**
  * Adds APNs delivery to a notification - but only when APNs is configured and the
@@ -17,7 +17,7 @@ trait PushesViaApn
         if (config('broadcasting.connections.apn.key_id')
             && method_exists($notifiable, 'routeNotificationForApn')
             && ! empty($notifiable->routeNotificationForApn())) {
-            $channels[] = ApnChannel::class;
+            $channels[] = ResilientApnChannel::class;
         }
 
         return $channels;

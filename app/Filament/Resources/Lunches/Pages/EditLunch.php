@@ -21,6 +21,11 @@ class EditLunch extends EditRecord
         if ($this->record->wasChanged('caterer_meal_id')) {
             $this->record->options()->delete();
             app(LunchPlanningService::class)->syncOptionsFromMenu($this->record->fresh());
+
+            // The options repeater still holds the rows just deleted; saving again would
+            // re-insert them without a meal option. Reload the form from the new rows.
+            $this->record->unsetRelation('options');
+            $this->fillForm();
         }
     }
 
