@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Mail\BrandedMail;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification as FilamentNotification;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -10,7 +11,8 @@ class ActivityCancelled extends ActivityNotification
 {
     public function toMail(object $notifiable): MailMessage
     {
-        return (new MailMessage)
+        return (new BrandedMail)
+            ->tone('alert', '📅', __('Activities'))
             ->subject($this->pushTitle())
             ->greeting(__('Activity cancelled'))
             ->line(__(':activity scheduled for :when has been cancelled.', ['activity' => $this->activity->title, 'when' => $this->whenLabel()]))

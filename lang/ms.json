@@ -586,5 +586,8 @@
     "They will be signed out and can no longer sign in. They stop receiving bills and notifications. Bills they already have are kept. You can enable the account again at any time.": "Mereka akan dilog keluar dan tidak lagi boleh log masuk. Mereka tidak lagi menerima bil dan pemberitahuan. Bil sedia ada dikekalkan. Anda boleh mengaktifkan semula akaun ini pada bila-bila masa.",
     "They can sign in again and will be billed and notified like any other member from now on.": "Mereka boleh log masuk semula dan akan menerima bil serta pemberitahuan seperti ahli lain mulai sekarang.",
     ":name has been disabled": ":name telah dinyahaktifkan",
-    ":name has been enabled": ":name telah diaktifkan"
+    ":name has been enabled": ":name telah diaktifkan",
+    "Payments": "Pembayaran",
+    "Bills": "Bil",
+    "If the button does not work, copy this link into your browser:": "Jika butang tidak berfungsi, salin pautan ini ke pelayar anda:"
 }

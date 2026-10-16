@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Mail\BrandedMail;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification as FilamentNotification;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -10,7 +11,8 @@ class WaitlistPromoted extends ActivityNotification
 {
     public function toMail(object $notifiable): MailMessage
     {
-        return (new MailMessage)
+        return (new BrandedMail)
+            ->tone('activity', '🙌', __('Activities'))
             ->subject($this->pushTitle())
             ->greeting(__("You're in!"))
             ->line(__('A spot opened up, so you are now registered for :activity on :when.', ['activity' => $this->activity->title, 'when' => $this->whenLabel()]))

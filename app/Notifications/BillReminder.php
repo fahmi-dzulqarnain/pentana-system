@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Mail\BrandedMail;
 use App\Models\QueuedEmail;
 use App\Notifications\Concerns\PushesViaApn;
 use Filament\Actions\Action;
@@ -46,7 +47,8 @@ class BillReminder extends Notification
 
     public function toMail(object $notifiable): MailMessage
     {
-        return (new MailMessage)
+        return (new BrandedMail)
+            ->tone('bill', '🧾', __('Bills'))
             ->subject(__('Reminder: outstanding dues'))
             ->greeting(__('Friendly reminder'))
             ->line(__('You have MYR :amount outstanding across :count bill(s).', $this->amounts()))

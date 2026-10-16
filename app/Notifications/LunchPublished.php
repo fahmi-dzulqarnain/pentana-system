@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Filament\Pages\MyLunch;
+use App\Mail\BrandedMail;
 use App\Models\Lunch;
 use App\Models\QueuedEmail;
 use App\Notifications\Concerns\PushesViaApn;
@@ -46,7 +47,8 @@ class LunchPublished extends Notification
 
     public function toMail(object $notifiable): MailMessage
     {
-        return (new MailMessage)
+        return (new BrandedMail)
+            ->tone('lunch', '🍱', __('Lunch'))
             ->subject(__('Lunch menu for :date', ['date' => $this->lunch->date->translatedFormat('D, j M')]))
             ->greeting(__('Lunch is on the menu'))
             ->line(__(':menu has been published for :date.', [
