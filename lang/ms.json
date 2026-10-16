@@ -589,5 +589,9 @@
     ":name has been enabled": ":name telah diaktifkan",
     "Payments": "Pembayaran",
     "Bills": "Bil",
-    "If the button does not work, copy this link into your browser:": "Jika butang tidak berfungsi, salin pautan ini ke pelayar anda:"
+    "If the button does not work, copy this link into your browser:": "Jika butang tidak berfungsi, salin pautan ini ke pelayar anda:",
+    "Send me test emails": "Hantar e-mel ujian kepada saya",
+    "Sends one [Test] sample of every email type to :email, in your language. Only the emails are sent: nothing else is created or changed.": "Menghantar satu contoh [Test] bagi setiap jenis e-mel kepada :email, dalam bahasa anda. Hanya e-mel dihantar: tiada perkara lain dicipta atau diubah.",
+    ":count test emails sent to :email": ":count e-mel ujian dihantar kepada :email",
+    "If the daily email limit is reached, the rest wait in the email queue and go out later.": "Jika had e-mel harian dicapai, selebihnya menunggu dalam baris gilir e-mel dan dihantar kemudian."
 }
