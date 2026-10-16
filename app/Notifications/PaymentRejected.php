@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Filament\Resources\FeePayments\FeePaymentResource;
+use App\Mail\BrandedMail;
 use App\Models\Payment\PaymentProof;
 use App\Models\QueuedEmail;
 use App\Notifications\Concerns\PushesViaApn;
@@ -41,7 +42,8 @@ class PaymentRejected extends Notification
 
     public function toMail(object $notifiable): MailMessage
     {
-        return (new MailMessage)
+        return (new BrandedMail)
+            ->tone('alert', '🧾', __('Payments'))
             ->subject(__('Your payment could not be verified'))
             ->greeting($this->title())
             ->line(__('We could not verify your payment of MYR :amount submitted on :date.', [

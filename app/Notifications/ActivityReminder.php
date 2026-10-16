@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Mail\BrandedMail;
 use App\Models\QueuedEmail;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification as FilamentNotification;
@@ -12,7 +13,8 @@ class ActivityReminder extends ActivityNotification
 {
     public function toMail(object $notifiable): MailMessage
     {
-        $mail = (new MailMessage)
+        $mail = (new BrandedMail)
+            ->tone('activity', '⏰', __('Activities'))
             ->subject($this->pushTitle())
             ->greeting(__('Coming up soon'))
             ->line(__(':activity is on :when.', ['activity' => $this->activity->title, 'when' => $this->whenLabel()]));

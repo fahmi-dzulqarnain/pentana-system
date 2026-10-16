@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Filament\Resources\FeePayments\FeePaymentResource;
+use App\Mail\BrandedMail;
 use App\Models\Payment\FeePeriod;
 use App\Models\Payment\PaymentProof;
 use App\Models\QueuedEmail;
@@ -39,7 +40,8 @@ class PaymentVerified extends Notification
 
     public function toMail(object $notifiable): MailMessage
     {
-        $mail = (new MailMessage)
+        $mail = (new BrandedMail)
+            ->tone('payment', '✅', __('Payments'))
             ->subject(__('Your payment has been verified'))
             ->greeting($this->title())
             ->line(__('We verified your payment of MYR :amount.', ['amount' => $this->money($this->verified())]));

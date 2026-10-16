@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Filament\Pages\MyLunch;
+use App\Mail\BrandedMail;
 use App\Models\Lunch;
 use App\Models\QueuedEmail;
 use App\Notifications\Concerns\PushesViaApn;
@@ -47,8 +48,10 @@ class LunchPickRemoved extends Notification
 
     public function toMail(object $notifiable): MailMessage
     {
-        return (new MailMessage)
+        return (new BrandedMail)
+            ->tone('alert', '🍽️', __('Lunch'))
             ->subject($this->title())
+            ->greeting($this->title())
             ->line($this->body())
             ->action(__('Place your order'), MyLunch::getUrl(panel: 'account'))
             ->withSymfonyMessage(function (SymfonyEmail $message) {
