@@ -98,7 +98,7 @@
         <p>{{ __('We may update this policy from time to time. Material changes will be posted here with a new “last updated” date.') }}</p>
 
         <h2>{{ __('Contact') }}</h2>
-        <p>{{ __('Questions or requests about your data:') }} <a href="mailto:privacy@silentmode.my">privacy@silentmode.my</a>.</p>
+        <p>{{ __('Questions or requests about your data:') }} <a href="mailto:hipentana@pentana.silentmode.net">hipentana@pentana.silentmode.net</a>.</p>
     </main>
 
     <footer>

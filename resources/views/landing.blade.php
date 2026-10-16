@@ -228,7 +228,7 @@
     .pl-footer .top { display:flex; justify-content:space-between; gap:48px; flex-wrap:wrap; padding:48px 32px 28px; max-width:1160px; margin:0 auto; }
     .pl-footer .about { max-width:300px; }
     .pl-footer .about p { font-size:13.5px; color:#9497A9; line-height:1.55; margin-top:14px; }
-    .pl-footer .about a.mail { font-size:13.5px; color:#CBC8E8; text-decoration:none; font-family:var(--font-mono); display:inline-block; margin-top:4px; padding:6px 0; }
+    .pl-footer .about a.mail { font-size:13.5px; color:#CBC8E8; text-decoration:none; font-family:var(--font-mono); display:inline-block; margin-top:4px; padding:6px 0; max-width:100%; overflow-wrap:anywhere; }
     .pl-footer .cols { display:flex; gap:56px; flex-wrap:wrap; }
     .pl-footer .col h4 { font-size:12px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:#7269BE; margin:0 0 6px; }
     .pl-footer .col a { display:block; font-size:13.5px; color:#B9BBC7; text-decoration:none; padding:5px 0; }
@@ -441,7 +441,7 @@
             <div class="about">
                 <span class="pl-brand on-dark"><img src="{{ asset('images/pentana-mark.png') }}" alt=""><span>PENTANA</span></span>
                 <p>{{ __('The member companion to your organisation\'s welfare fund.') }}</p>
-                <a class="mail" href="mailto:hello@pentanaorg.my">hello@pentanaorg.my</a>
+                <a class="mail" href="mailto:hipentana@pentana.silentmode.net">hipentana@pentana.silentmode.net</a>
             </div>
             <div class="cols">
                 <div class="col">
