@@ -3,6 +3,7 @@
 namespace Tests\Feature\Lunch;
 
 use App\Filament\Resources\Lunches\Pages\EditLunch;
+use App\Models\CatererMeal;
 use App\Models\Lunch;
 use App\Models\User;
 use App\Notifications\LunchPublished;
@@ -86,5 +87,51 @@ class LunchPublishNotificationTest extends TestCase
             'notifiable_id' => $user->id,
             'type' => LunchPublished::class,
         ]);
+    }
+
+    public function test_publishing_a_two_menu_day_sends_one_notification_naming_both_menus(): void
+    {
+        Notification::fake();
+        $this->withoutDefer();
+
+        $admin = User::factory()->admin()->create();
+        $member = User::factory()->create();
+        $lunch = Lunch::factory()
+            ->withMenu(CatererMeal::factory()->create(['name' => 'Nasi Lemak Special']))
+            ->withMenu(CatererMeal::factory()->create(['name' => 'Mee Goreng Mamak']))
+            ->create(['status' => 'draft', 'deadline' => now()->addDay()]);
+
+        $this->actingAs($admin);
+        Filament::setCurrentPanel(Filament::getPanel('account'));
+
+        Livewire::test(EditLunch::class, ['record' => $lunch->getRouteKey()])->callAction('publish');
+
+        Notification::assertSentToTimes($admin, LunchPublished::class, 1);
+        Notification::assertSentToTimes($member, LunchPublished::class, 1);
+        Notification::assertSentTimes(LunchPublished::class, 2);
+
+        Notification::assertSentTo($member, LunchPublished::class, function (LunchPublished $n) use ($member) {
+            $title = $n->toDatabase($member)['title'];
+            $mail = $n->toMail($member);
+
+            return str_contains($title, 'Nasi Lemak Special') && str_contains($title, 'Mee Goreng Mamak')
+                && str_contains($mail->introLines[0], 'Nasi Lemak Special')
+                && str_contains($mail->introLines[0], 'Mee Goreng Mamak');
+        });
+    }
+
+    public function test_the_notification_names_menus_of_a_freshly_loaded_lunch_and_falls_back_without_menus(): void
+    {
+        $user = User::factory()->create();
+        $lunch = Lunch::factory()
+            ->withMenu(CatererMeal::factory()->create(['name' => 'Roti Canai']))
+            ->withMenu(CatererMeal::factory()->create(['name' => 'Laksa Utara']))
+            ->create(['status' => 'published', 'deadline' => now()->addDay()]);
+
+        $title = (new LunchPublished(Lunch::find($lunch->id)))->toDatabase($user)['title'];
+        $this->assertStringContainsString('Roti Canai · Laksa Utara', $title);
+
+        $empty = Lunch::factory()->create(['status' => 'published', 'deadline' => now()->addDay()]);
+        $this->assertStringContainsString('Menu', (new LunchPublished($empty))->toDatabase($user)['title']);
     }
 }

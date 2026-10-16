@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Lunch extends Model
@@ -13,18 +12,13 @@ class Lunch extends Model
 
     protected $table = 'lunches';
 
-    protected $fillable = ['date', 'caterer_id', 'caterer_meal_id', 'deadline', 'status', 'vote_nudge_sent_at'];
+    protected $fillable = ['date', 'deadline', 'status', 'vote_nudge_sent_at'];
 
     protected $casts = ['date' => 'date', 'deadline' => 'datetime', 'vote_nudge_sent_at' => 'datetime'];
 
-    public function caterer(): BelongsTo
+    public function menus(): HasMany
     {
-        return $this->belongsTo(Caterer::class);
-    }
-
-    public function catererMeal(): BelongsTo
-    {
-        return $this->belongsTo(CatererMeal::class);
+        return $this->hasMany(LunchMenu::class)->orderBy('sort')->orderBy('id');
     }
 
     public function options(): HasMany
@@ -55,23 +49,58 @@ class Lunch extends Model
         return $this->responses->whereNull('meal_option_id')->count();
     }
 
-    /** @return array<int, int> meal_option_id => count */
-    public function optionCounts(): array
+    /**
+     * Picks per lunch option, so the same meal option on two menus stays apart.
+     *
+     * @return array<int, int> lunch_option_id => count
+     */
+    public function optionCountsByLunchOption(): array
     {
         return $this->responses
-            ->whereNotNull('meal_option_id')
-            ->countBy('meal_option_id')
+            ->whereNotNull('lunch_option_id')
+            ->countBy('lunch_option_id')
             ->map(fn ($count) => (int) $count)
             ->all();
     }
 
-    /** Planned cost: each enabled option's default_count × its effective price on this menu. */
+    public function hasSeveralMenus(): bool
+    {
+        return $this->menus->count() > 1;
+    }
+
+    /** What a pre-menus app shows as the caterer: the one caterer, or every distinct caterer joined with " · ". */
+    public function catererLabel(): ?string
+    {
+        return $this->menus->map(fn (LunchMenu $menu) => $menu->caterer?->name)->filter()->unique()->implode(' · ') ?: null;
+    }
+
+    /** What a pre-menus app shows as the menu: the one menu's name, or a prompt to update when there are several. */
+    public function legacyMenuText(?string $locale = null): ?string
+    {
+        return $this->hasSeveralMenus()
+            ? __('Several menus today. Update the app to order.', [], $locale)
+            : $this->menus->first()?->catererMeal?->name;
+    }
+
+    /** Past the deadline, or closed by an admin: picks can no longer change. */
+    public function isLocked(): bool
+    {
+        return $this->status === 'closed' || ($this->deadline !== null && now()->gt($this->deadline));
+    }
+
+    /**
+     * The committee can no longer change the day's menus, option toggles or counts: ordering
+     * has closed (closed, or published past the deadline before the close job ran). A draft
+     * never opened for ordering, so it stays editable whatever its deadline.
+     */
+    public function menusAreLocked(): bool
+    {
+        return $this->status !== 'draft' && $this->isLocked();
+    }
+
+    /** Planned cost: the sum of every menu's cost, each at its own prices. */
     public function estimatedCost(): float
     {
-        $prices = $this->catererMeal?->options->keyBy('meal_option_id') ?? collect();
-
-        return round($this->options->where('enabled', true)->sum(
-            fn (LunchOption $o) => $o->default_count * (float) ($prices->get($o->meal_option_id)?->effective_price ?? 0)
-        ), 2);
+        return round($this->menus->sum(fn (LunchMenu $menu) => $menu->estimatedCost()), 2);
     }
 }

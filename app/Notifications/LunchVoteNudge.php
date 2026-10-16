@@ -36,7 +36,7 @@ class LunchVoteNudge extends Notification
 
     private function pushTitle(): string
     {
-        return __('Last call: :menu', ['menu' => $this->lunch->catererMeal?->name ?? __('lunch menu')]);
+        return __('Last call: :menu', ['menu' => $this->menusLine() ?: __('lunch menu')]);
     }
 
     private function pushBody(): string
@@ -79,5 +79,16 @@ class LunchVoteNudge extends Notification
     private function url(): string
     {
         return MyLunch::getUrl(panel: 'account');
+    }
+
+    /** Every menu of the day, in display order, joined with " · "; empty when the day has none. */
+    private function menusLine(): string
+    {
+        $this->lunch->loadMissing('menus.catererMeal');
+
+        return $this->lunch->menus
+            ->map(fn ($menu) => $menu->catererMeal?->name)
+            ->filter()
+            ->implode(' · ');
     }
 }

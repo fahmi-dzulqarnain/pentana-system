@@ -124,7 +124,7 @@ class LunchCalendar extends Page
         $start = $this->monthStart()->copy()->startOfMonth();
         $end = $this->monthStart()->copy()->endOfMonth();
 
-        return Lunch::with(['catererMeal', 'options.mealOption', 'responses'])
+        return Lunch::with(['menus.caterer', 'menus.catererMeal', 'menus.options.mealOption', 'responses'])
             ->whereBetween('date', [$start, $end])->get()
             ->keyBy(fn (Lunch $l) => $l->date->toDateString());
     }

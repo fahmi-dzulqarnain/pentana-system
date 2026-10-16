@@ -105,7 +105,7 @@ notifications and nudges, double-count "not attending", and need extra rules to 
 
 ## Members — portal "My Lunch"
 
-One card per day. Under the date, a section per menu (heading "Caterer — Menu"), each with its
+One card per day. Under the date, a section per menu (heading "Caterer · Menu"), each with its
 option buttons; one "Not attending" for the day. The chosen option is highlighted wherever it
 is. Voting rules stay in `LunchVotingService`.
 
@@ -134,7 +134,7 @@ Legacy fields kept for old apps:
 - **One-menu day:** `caterer`, `menu`, `options[].meal_option_id`, `my_meal_option_id` exactly as
   today, so old apps behave exactly as before.
 - **Two+ menus:** `options` is **empty** and `menu` carries a short, translated message, e.g.
-  "Several menus today — update the app to order". `caterer` lists the caterers joined with " · ".
+  "Several menus today. Update the app to order.". `caterer` lists the caterers joined with " · ".
   The old app then shows the message and only "Not attending" (which is unambiguous). *(Reason:
   old apps show a fixed "Couldn't save your choice" on any respond error, so the update message
   has to arrive through the list, not the error.)*

@@ -47,7 +47,7 @@ class MyLunch extends Page
     public function upcomingLunches(): Collection
     {
         return $this->cachedLunches ??= Lunch::query()
-            ->with(['catererMeal', 'caterer', 'options.mealOption'])
+            ->with(['menus.caterer', 'menus.catererMeal', 'menus.options.mealOption'])
             ->where('status', 'published')
             ->whereDate('date', '>=', today())
             ->whereDate('date', '<=', today()->addDays(14))
@@ -58,15 +58,16 @@ class MyLunch extends Page
     public function myResponses(): Collection
     {
         return LunchResponse::query()
+            ->with('mealOption')
             ->where('user_id', auth()->id())
             ->whereIn('lunch_id', $this->upcomingLunches()->pluck('id'))
             ->get()
             ->keyBy('lunch_id');
     }
 
-    public function choose(int $lunchId, int $mealOptionId): void
+    public function choose(int $lunchId, int $lunchOptionId): void
     {
-        $this->record($lunchId, $mealOptionId, __('Choice saved.'));
+        $this->record($lunchId, $lunchOptionId, __('Choice saved.'));
     }
 
     public function notAttending(int $lunchId): void
@@ -74,7 +75,7 @@ class MyLunch extends Page
         $this->record($lunchId, null, __('Marked not attending.'));
     }
 
-    protected function record(int $lunchId, ?int $mealOptionId, string $success): void
+    protected function record(int $lunchId, ?int $lunchOptionId, string $success): void
     {
         $lunch = $this->upcomingLunches()->firstWhere('id', $lunchId) ?? Lunch::find($lunchId);
 
@@ -85,7 +86,7 @@ class MyLunch extends Page
         }
 
         try {
-            app(LunchVotingService::class)->respond($lunch, auth()->user(), $mealOptionId);
+            app(LunchVotingService::class)->respond($lunch, auth()->user(), $lunchOptionId);
             $this->cachedLunches = null; // re-query so the highlighted choice updates
             Notification::make()->title($success)->success()->send();
         } catch (RuntimeException $e) {

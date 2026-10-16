@@ -35,7 +35,7 @@ class LunchPublished extends Notification
 
     private function pushTitle(): string
     {
-        return __('Lunch published: :menu', ['menu' => $this->lunch->catererMeal?->name ?? __('Menu')]);
+        return __('Lunch published: :menu', ['menu' => $this->menusLine() ?: __('Menu')]);
     }
 
     private function pushBody(): string
@@ -49,7 +49,7 @@ class LunchPublished extends Notification
             ->subject(__('Lunch menu for :date', ['date' => $this->lunch->date->translatedFormat('D, j M')]))
             ->greeting(__('Lunch is on the menu'))
             ->line(__(':menu has been published for :date.', [
-                'menu' => $this->lunch->catererMeal?->name ?? __('A menu'),
+                'menu' => $this->menusLine() ?: __('A menu'),
                 'date' => $this->lunch->date->translatedFormat('l, j M'),
             ]))
             ->line($this->pushBody())
@@ -71,5 +71,16 @@ class LunchPublished extends Notification
                 Action::make('order')->label(__('Order now'))->url(MyLunch::getUrl(panel: 'account'))->markAsRead(),
             ])
             ->getDatabaseMessage();
+    }
+
+    /** Every menu of the day, in display order, joined with " · "; empty when the day has none. */
+    private function menusLine(): string
+    {
+        $this->lunch->loadMissing('menus.catererMeal');
+
+        return $this->lunch->menus
+            ->map(fn ($menu) => $menu->catererMeal?->name)
+            ->filter()
+            ->implode(' · ');
     }
 }

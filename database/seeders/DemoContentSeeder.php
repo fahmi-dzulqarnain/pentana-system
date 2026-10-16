@@ -6,6 +6,7 @@ use App\Models\Activity;
 use App\Models\Caterer;
 use App\Models\CatererMeal;
 use App\Models\Lunch;
+use App\Models\LunchMenu;
 use App\Models\LunchOption;
 use App\Models\MealOption;
 use Illuminate\Database\Seeder;
@@ -32,6 +33,14 @@ class DemoContentSeeder extends Seeder
         return MealOption::firstOrCreate(['name' => $name], ['is_active' => true, 'sort' => 0]);
     }
 
+    /** The lunch day that already carries this catalog menu, else a new one on $date. */
+    private function lunchFor(CatererMeal $meal, string $date, array $attributes): Lunch
+    {
+        $existing = LunchMenu::where('caterer_meal_id', $meal->id)->first()?->lunch;
+
+        return tap($existing ?? new Lunch(['date' => $date]), fn (Lunch $l) => $l->fill($attributes)->save());
+    }
+
     private function seedLunches(): void
     {
         // 1) Open for voting - future deadline, published.
@@ -43,19 +52,20 @@ class DemoContentSeeder extends Seeder
             ['caterer_id' => $dapur->id, 'name' => 'Nasi Lemak Royale'],
             ['price' => 12.00],
         );
-        $open = Lunch::updateOrCreate(
-            ['caterer_meal_id' => $nasiLemak->id],
+        $open = $this->lunchFor($nasiLemak, Carbon::now()->next(Carbon::MONDAY)->toDateString(),
             [
-                'date' => Carbon::now()->next(Carbon::MONDAY)->toDateString(),
-                'caterer_id' => $dapur->id,
                 'deadline' => Carbon::now()->addDays(2)->setTime(18, 0),
                 'status' => 'published',
             ],
         );
+        $openMenu = LunchMenu::firstOrCreate(
+            ['lunch_id' => $open->id, 'caterer_meal_id' => $nasiLemak->id],
+            ['caterer_id' => $dapur->id, 'sort' => 0],
+        );
         foreach (['Chicken rendang set', 'Beef rendang set', 'Vegetable curry set'] as $name) {
             LunchOption::firstOrCreate(
-                ['lunch_id' => $open->id, 'meal_option_id' => $this->mealOption($name)->id],
-                ['enabled' => true, 'default_count' => 0],
+                ['lunch_menu_id' => $openMenu->id, 'meal_option_id' => $this->mealOption($name)->id],
+                ['lunch_id' => $open->id, 'enabled' => true, 'default_count' => 0],
             );
         }
 
@@ -68,19 +78,20 @@ class DemoContentSeeder extends Seeder
             ['caterer_id' => $grind->id, 'name' => 'Chicken Chop & Fries'],
             ['price' => 15.00],
         );
-        $closed = Lunch::updateOrCreate(
-            ['caterer_meal_id' => $chickenChop->id],
+        $closed = $this->lunchFor($chickenChop, Carbon::now()->subDays(3)->toDateString(),
             [
-                'date' => Carbon::now()->subDays(3)->toDateString(),
-                'caterer_id' => $grind->id,
                 'deadline' => Carbon::now()->subDays(4)->setTime(18, 0),
                 'status' => 'published',
             ],
         );
+        $closedMenu = LunchMenu::firstOrCreate(
+            ['lunch_id' => $closed->id, 'caterer_meal_id' => $chickenChop->id],
+            ['caterer_id' => $grind->id, 'sort' => 0],
+        );
         foreach (['Chicken chop', 'Grilled fish', 'Mushroom pasta'] as $name) {
             LunchOption::firstOrCreate(
-                ['lunch_id' => $closed->id, 'meal_option_id' => $this->mealOption($name)->id],
-                ['enabled' => true, 'default_count' => 0],
+                ['lunch_menu_id' => $closedMenu->id, 'meal_option_id' => $this->mealOption($name)->id],
+                ['lunch_id' => $closed->id, 'enabled' => true, 'default_count' => 0],
             );
         }
     }

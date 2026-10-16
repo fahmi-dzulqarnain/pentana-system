@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Lunch;
 
+use App\Models\CatererMeal;
 use App\Models\Lunch;
 use App\Models\LunchResponse;
 use App\Models\User;
@@ -83,5 +84,25 @@ class SendLunchVoteNudgesTest extends TestCase
 
         $this->assertSame([$succeeding->id], $notified);
         $this->assertNotNull($lunch->fresh()->vote_nudge_sent_at);
+    }
+
+    public function test_nudge_is_sent_once_per_day_with_two_menus(): void
+    {
+        Notification::fake();
+        Lunch::factory()
+            ->withMenu(CatererMeal::factory()->create(['name' => 'Nasi Lemak Special']))
+            ->withMenu(CatererMeal::factory()->create(['name' => 'Mee Goreng Mamak']))
+            ->create(['status' => 'published', 'deadline' => now()->addHours(12)]);
+        $user = User::factory()->create();
+
+        $this->artisan('app:send-lunch-vote-nudges')->assertSuccessful();
+        $this->artisan('app:send-lunch-vote-nudges')->assertSuccessful();
+
+        Notification::assertSentToTimes($user, LunchVoteNudge::class, 1);
+        Notification::assertSentTo($user, LunchVoteNudge::class, function (LunchVoteNudge $n) use ($user) {
+            $title = $n->toDatabase($user)['title'];
+
+            return str_contains($title, 'Nasi Lemak Special') && str_contains($title, 'Mee Goreng Mamak');
+        });
     }
 }
