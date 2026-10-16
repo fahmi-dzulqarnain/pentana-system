@@ -25,7 +25,7 @@ class LunchPlanningStats
     {
         return round(
             $this->lunchesForMonth($month)
-                ->load('catererMeal.options', 'options')
+                ->load('menus.catererMeal.options', 'menus.options')
                 ->sum(fn (Lunch $lunch) => $lunch->estimatedCost()),
             2
         );

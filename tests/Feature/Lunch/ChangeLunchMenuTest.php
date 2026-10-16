@@ -43,8 +43,8 @@ class ChangeLunchMenuTest extends TestCase
         $nasiLemak = $this->menu($caterer, 'Nasi Lemak', [$chicken, $beef]);
         $spaghetti = $this->menu($caterer, 'Spaghetti', [$vegan]);
 
-        $lunch = Lunch::factory()->create(['caterer_id' => $caterer->id, 'caterer_meal_id' => $nasiLemak->id, 'date' => '2026-10-20', 'deadline' => '2026-10-19 10:00']);
-        app(LunchPlanningService::class)->syncOptionsFromMenu($lunch);
+        $lunch = Lunch::factory()->withMenu($nasiLemak)->create(['date' => '2026-10-20', 'deadline' => '2026-10-19 10:00']);
+        app(LunchPlanningService::class)->syncOptionsFromMenu($lunch->menus()->first());
 
         $page = Livewire::test(EditLunch::class, ['record' => $lunch->getKey()])
             ->set('data.caterer_meal_id', $spaghetti->id)

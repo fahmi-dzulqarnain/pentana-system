@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Lunch extends Model
@@ -13,18 +12,13 @@ class Lunch extends Model
 
     protected $table = 'lunches';
 
-    protected $fillable = ['date', 'caterer_id', 'caterer_meal_id', 'deadline', 'status', 'vote_nudge_sent_at'];
+    protected $fillable = ['date', 'deadline', 'status', 'vote_nudge_sent_at'];
 
     protected $casts = ['date' => 'date', 'deadline' => 'datetime', 'vote_nudge_sent_at' => 'datetime'];
 
-    public function caterer(): BelongsTo
+    public function menus(): HasMany
     {
-        return $this->belongsTo(Caterer::class);
-    }
-
-    public function catererMeal(): BelongsTo
-    {
-        return $this->belongsTo(CatererMeal::class);
+        return $this->hasMany(LunchMenu::class)->orderBy('sort')->orderBy('id');
     }
 
     public function options(): HasMany
@@ -65,13 +59,20 @@ class Lunch extends Model
             ->all();
     }
 
-    /** Planned cost: each enabled option's default_count × its effective price on this menu. */
+    public function hasSeveralMenus(): bool
+    {
+        return $this->menus->count() > 1;
+    }
+
+    /** Past the deadline, or closed by an admin: picks can no longer change. */
+    public function isLocked(): bool
+    {
+        return $this->status === 'closed' || ($this->deadline !== null && now()->gt($this->deadline));
+    }
+
+    /** Planned cost: the sum of every menu's cost, each at its own prices. */
     public function estimatedCost(): float
     {
-        $prices = $this->catererMeal?->options->keyBy('meal_option_id') ?? collect();
-
-        return round($this->options->where('enabled', true)->sum(
-            fn (LunchOption $o) => $o->default_count * (float) ($prices->get($o->meal_option_id)?->effective_price ?? 0)
-        ), 2);
+        return round($this->menus->sum(fn (LunchMenu $menu) => $menu->estimatedCost()), 2);
     }
 }

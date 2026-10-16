@@ -101,14 +101,12 @@ class LunchResourceTest extends TestCase
         CatererMealOption::create(['caterer_meal_id' => $mealB->id, 'meal_option_id' => $vegan->id, 'price' => null]);
 
         // Create a lunch on mealA and sync its options (simulates the CreateLunch path).
-        $lunch = Lunch::create([
+        $lunch = Lunch::factory()->withMenu($mealA)->create([
             'date' => '2025-10-01',
-            'caterer_id' => $caterer->id,
-            'caterer_meal_id' => $mealA->id,
             'deadline' => '2025-09-30 12:00',
             'status' => 'draft',
         ]);
-        app(LunchPlanningService::class)->syncOptionsFromMenu($lunch);
+        app(LunchPlanningService::class)->syncOptionsFromMenu($lunch->menus()->first());
         $this->assertSame(2, $lunch->options()->count());
 
         // Act: edit lunch to switch to mealB via the Filament EditLunch page.
@@ -133,10 +131,8 @@ class LunchResourceTest extends TestCase
     {
         [$caterer, $meal] = $this->buildCatererWithMenu(1);
 
-        $lunch = Lunch::create([
+        $lunch = Lunch::factory()->withMenu($meal)->create([
             'date' => '2025-09-01',
-            'caterer_id' => $caterer->id,
-            'caterer_meal_id' => $meal->id,
             'deadline' => '2025-08-31 12:00',
             'status' => 'draft',
         ]);

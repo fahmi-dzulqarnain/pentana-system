@@ -19,6 +19,7 @@ class LunchResponseFactory extends Factory
             'lunch_id' => Lunch::factory(),
             'user_id' => User::factory(),
             'meal_option_id' => MealOption::factory(),
+            'lunch_option_id' => null,
         ];
     }
 }

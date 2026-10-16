@@ -152,7 +152,7 @@ class RenderedPagesAreTranslatedTest extends TestCase
         return [
             '{activity}' => Activity::whereHas('registrations')->firstOrFail()->id,
             '{autoEmail}' => $autoEmail->id,
-            '{caterer}' => $lunch->caterer_id,
+            '{caterer}' => $lunch->menus()->value('caterer_id'),
             '{paymentProof}' => $proof->id,
             '{feePeriod}' => FeePeriod::firstOrFail()->id,
             '{lunch}' => $lunch->id,

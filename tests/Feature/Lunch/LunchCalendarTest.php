@@ -47,16 +47,14 @@ class LunchCalendarTest extends TestCase
 
         // Create a lunch in the current month
         $lunchDate = now()->startOfMonth()->addDays(2);
-        $lunch = Lunch::create([
+        $lunch = Lunch::factory()->withMenu($meal)->create([
             'date' => $lunchDate->toDateString(),
-            'caterer_id' => $caterer->id,
-            'caterer_meal_id' => $meal->id,
             'deadline' => $lunchDate->copy()->subDay()->setTime(12, 0)->toDateTimeString(),
             'status' => 'draft',
         ]);
 
         // Sync options and set a default_count so cost > 0
-        app(LunchPlanningService::class)->syncOptionsFromMenu($lunch);
+        app(LunchPlanningService::class)->syncOptionsFromMenu($lunch->menus()->first());
         LunchOption::where('lunch_id', $lunch->id)->update(['default_count' => 3]);
 
         $admin = User::factory()->admin()->create();

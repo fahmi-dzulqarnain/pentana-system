@@ -99,7 +99,7 @@ class DashboardApiTest extends TestCase
             'status' => 'published', 'date' => today()->addDay(), 'deadline' => now()->addDays(2),
         ]);
         LunchResponse::factory()->create(['lunch_id' => $lunch->id, 'user_id' => $member->id]);
-        $lunch->load('catererMeal');
+        $lunch->load('menus.catererMeal');
 
         Sanctum::actingAs($member);
 
@@ -107,7 +107,7 @@ class DashboardApiTest extends TestCase
             ->assertOk()
             ->assertJsonPath('data.next_lunch.id', $lunch->id)
             ->assertJsonPath('data.next_lunch.responded', true)
-            ->assertJsonPath('data.next_lunch.menu', $lunch->catererMeal?->name);
+            ->assertJsonPath('data.next_lunch.menu', $lunch->menus->first()?->catererMeal?->name);
     }
 
     public function test_empty_state_returns_nulls_and_zeroes(): void
