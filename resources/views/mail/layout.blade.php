@@ -7,7 +7,8 @@
     its own dark palette. Elements opt in with an em-* class; $dark maps each class to its
     dark colours. Apple Mail and iOS apply it through prefers-color-scheme, Outlook through
     its [data-ogsc] (text) / [data-ogsb] (background) attributes. Gmail ignores both and
-    keeps the light design.
+    keeps the light design. Checked against a simulation of both Outlook modes (full dark,
+    and backgrounds-only, which left dark text on a darkened card).
 
     Sections (all optional): preheader (inbox preview text), hero_bg / hero_bg_image /
     hero_text (hero colours), kicker (small pill above the heading), emoji, heading,
@@ -60,12 +61,15 @@
             .{{ $class }} { @if ($bg) background-color: {{ $bg }} !important; @endif @if ($fg) color: {{ $fg }} !important; @endif }
 @endforeach
         }
+        {{-- Outlook marks what it recoloured with data-ogsb (background) / data-ogsc (text),
+             on the element or an ancestor. It sometimes darkens backgrounds but leaves text
+             alone, so text colours also follow data-ogsb: dark background, light text. --}}
 @foreach ($dark as $class => [$bg, $fg])
 @if ($bg)
-        [data-ogsb] .{{ $class }} { background-color: {{ $bg }} !important; }
+        [data-ogsb] .{{ $class }}, .{{ $class }}[data-ogsb] { background-color: {{ $bg }} !important; }
 @endif
 @if ($fg)
-        [data-ogsc] .{{ $class }} { color: {{ $fg }} !important; }
+        [data-ogsc] .{{ $class }}, .{{ $class }}[data-ogsc], [data-ogsb] .{{ $class }}, .{{ $class }}[data-ogsb] { color: {{ $fg }} !important; }
 @endif
 @endforeach
     </style>
