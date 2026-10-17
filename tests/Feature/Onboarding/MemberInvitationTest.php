@@ -154,8 +154,9 @@ class MemberInvitationTest extends TestCase
         $this->assertStringContainsString('<meta name="color-scheme" content="light dark">', $html);
         // Apple Mail and Outlook each get the membership card's dark colours.
         $this->assertStringContainsString('@media (prefers-color-scheme: dark)', $html);
-        $this->assertStringContainsString('[data-ogsb] .em-ticket { background-color: #2a2112 !important; }', $html);
-        $this->assertStringContainsString('[data-ogsc] .em-ticket-strong { color: #fef3c7 !important; }', $html);
+        $this->assertStringContainsString('[data-ogsb] .em-ticket, .em-ticket[data-ogsb] { background-color: #2a2112 !important; }', $html);
+        // Text turns light when Outlook darkens the background, even if it left the text alone.
+        $this->assertStringContainsString('[data-ogsb] .em-ticket-strong, .em-ticket-strong[data-ogsb] { color: #fef3c7 !important; }', $html);
         $this->assertStringContainsString('class="em-ticket"', $html);
     }
 }
