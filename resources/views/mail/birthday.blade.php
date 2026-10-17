@@ -27,7 +27,7 @@
 @section('after_cta')
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-            <td style="background:#fff7ed;border-radius:16px;padding:18px 22px;font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:17px;line-height:1.5;color:#9a3412;">
+            <td class="em-note" bgcolor="#fff7ed" style="background:#fff7ed;border-radius:16px;padding:18px 22px;font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:17px;line-height:1.5;color:#9a3412;">
                 {{ __('Warm wishes,') }}<br>
                 <span style="font-style:normal;font-weight:700;">{{ __('The :app team', ['app' => config('app.name')]) }}</span>
             </td>

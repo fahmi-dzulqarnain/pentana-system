@@ -28,40 +28,40 @@
     {{-- The offer: their fee, then the address they will type on the claim page. --}}
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 28px;">
         <tr>
-            <td style="background:#fffbeb;border:2px dashed #d97706;border-radius:16px;padding:20px 22px;">
-                <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.14em;color:#92400e;margin-bottom:6px;">🎟️ {{ __('Your membership') }}</div>
+            <td class="em-ticket" bgcolor="#fffbeb" style="background:#fffbeb;border:2px dashed #d97706;border-radius:16px;padding:20px 22px;">
+                <div class="em-ticket-label" style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.14em;color:#92400e;margin-bottom:6px;">🎟️ {{ __('Your membership') }}</div>
                 @if ($fee)
-                    <div style="font-family:Georgia,'Times New Roman',serif;font-size:32px;font-weight:700;line-height:1.2;color:#1c1917;">
-                        MYR {{ $fee }}<span style="font-family:ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:15px;font-weight:500;color:#57534e;"> {{ __('/ month') }}</span>
+                    <div class="em-ticket-strong" style="font-family:Georgia,'Times New Roman',serif;font-size:32px;font-weight:700;line-height:1.2;color:#1c1917;">
+                        MYR {{ $fee }}<span class="em-ticket-muted" style="font-family:ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:15px;font-weight:500;color:#57534e;"> {{ __('/ month') }}</span>
                     </div>
                 @endif
                 @if ($category)
-                    <div style="font-size:14px;color:#57534e;margin-top:2px;">{{ __('Member category: :category', ['category' => $category]) }}</div>
+                    <div class="em-ticket-muted" style="font-size:14px;color:#57534e;margin-top:2px;">{{ __('Member category: :category', ['category' => $category]) }}</div>
                 @endif
                 <div style="display:inline-block;margin-top:10px;padding:4px 10px;border-radius:999px;background:#1c1917;color:#fcd34d;font-size:12px;font-weight:700;">⏳ {{ __('Offer valid until :date', ['date' => $expires]) }}</div>
                 <div style="border-top:1px dashed #f59e0b;margin:14px 0 12px;font-size:0;line-height:0;">&nbsp;</div>
-                <div style="font-size:12px;color:#78350f;">{{ __('Your account email') }}</div>
-                <div style="font-size:16px;font-weight:700;color:#1c1917;word-break:break-all;">{{ $email }}</div>
+                <div class="em-ticket-muted" style="font-size:12px;color:#78350f;">{{ __('Your account email') }}</div>
+                <div class="em-ticket-strong" style="font-size:16px;font-weight:700;color:#1c1917;word-break:break-all;">{{ $email }}</div>
             </td>
         </tr>
     </table>
 
-    <p style="margin:0 0 14px;font-weight:700;font-size:17px;color:#1c1917;">{{ __('What your membership includes') }}</p>
+    <p class="em-strong" style="margin:0 0 14px;font-weight:700;font-size:17px;color:#1c1917;">{{ __('What your membership includes') }}</p>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 26px;">
         @foreach ($benefits as [$icon, $title, $text])
             <tr>
                 <td valign="top" width="44" style="padding:0 12px 16px 0;">
-                    <div style="width:40px;height:40px;line-height:40px;border-radius:12px;background:#f5f5f4;font-size:20px;text-align:center;">{{ $icon }}</div>
+                    <div class="em-chip" style="width:40px;height:40px;line-height:40px;border-radius:12px;background:#f5f5f4;font-size:20px;text-align:center;">{{ $icon }}</div>
                 </td>
                 <td valign="top" style="padding:0 0 16px;font-size:15px;line-height:1.5;">
-                    <strong style="color:#1c1917;">{{ $title }}</strong><br>
-                    <span style="color:#57534e;">{{ $text }}</span>
+                    <strong class="em-strong" style="color:#1c1917;">{{ $title }}</strong><br>
+                    <span class="em-muted" style="color:#57534e;">{{ $text }}</span>
                 </td>
             </tr>
         @endforeach
     </table>
 
-    <p style="margin:0 0 12px;font-weight:700;font-size:17px;color:#1c1917;">{{ __('How to join') }}</p>
+    <p class="em-strong" style="margin:0 0 12px;font-weight:700;font-size:17px;color:#1c1917;">{{ __('How to join') }}</p>
     <table role="presentation" cellpadding="0" cellspacing="0" border="0">
         @foreach ([
             __('Open the claim page and enter the email above.'),
@@ -70,7 +70,7 @@
         ] as $step)
             <tr>
                 <td valign="top" style="padding:0 14px 12px 0;">
-                    <div style="width:28px;height:28px;line-height:28px;border-radius:14px;background:#1c1917;color:#fcd34d;font-size:13px;font-weight:700;text-align:center;">{{ $loop->iteration }}</div>
+                    <div class="em-step" style="width:28px;height:28px;line-height:28px;border-radius:14px;background:#1c1917;color:#fcd34d;font-size:13px;font-weight:700;text-align:center;">{{ $loop->iteration }}</div>
                 </td>
                 <td valign="top" style="padding:3px 0 12px;font-size:15px;">{{ $step }}</td>
             </tr>
@@ -83,10 +83,10 @@
 @section('cta_label', __('Join now'))
 
 @section('after_cta')
-    <p style="margin:0 0 10px;font-size:13px;color:#57534e;">{{ __('If you do not claim your account by :date, it will be disabled. Your admin can always send you a new invitation.', ['date' => $expires]) }}</p>
-    <p style="margin:0 0 18px;font-size:13px;color:#57534e;">{{ __('Questions about your membership or your fee? Just ask your :app admin.', ['app' => config('app.name')]) }}</p>
+    <p class="em-muted" style="margin:0 0 10px;font-size:13px;color:#57534e;">{{ __('If you do not claim your account by :date, it will be disabled. Your admin can always send you a new invitation.', ['date' => $expires]) }}</p>
+    <p class="em-muted" style="margin:0 0 18px;font-size:13px;color:#57534e;">{{ __('Questions about your membership or your fee? Just ask your :app admin.', ['app' => config('app.name')]) }}</p>
     {{ __('Hope to see you inside,') }}<br>
-    <strong style="color:#1c1917;">{{ __('The :app team', ['app' => config('app.name')]) }}</strong>
+    <strong class="em-strong" style="color:#1c1917;">{{ __('The :app team', ['app' => config('app.name')]) }}</strong>
 @endsection
 
 @section('footer_note', __('You are receiving this email because your organisation added you to :app.', ['app' => config('app.name')]))

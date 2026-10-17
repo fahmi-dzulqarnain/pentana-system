@@ -30,9 +30,9 @@
         {{ __('The :app team', ['app' => config('app.name')]) }}
     </p>
     @isset($actionText)
-        <p style="margin:0;font-size:12px;line-height:1.5;color:#78716c;">
+        <p class="em-muted" style="margin:0;font-size:12px;line-height:1.5;color:#78716c;">
             {{ __('If the button does not work, copy this link into your browser:') }}<br>
-            <a href="{{ $actionUrl }}" style="color:#57534e;word-break:break-all;">{{ $displayableActionUrl }}</a>
+            <a class="em-muted" href="{{ $actionUrl }}" style="color:#57534e;word-break:break-all;">{{ $displayableActionUrl }}</a>
         </p>
     @endisset
 @endsection
