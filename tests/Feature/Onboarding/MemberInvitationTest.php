@@ -142,4 +142,20 @@ class MemberInvitationTest extends TestCase
         $this->assertNotNull($a->fresh()->invited_at);
         $this->assertNull($claimed->fresh()->invited_at);
     }
+
+    public function test_the_email_brings_its_own_dark_mode_colours(): void
+    {
+        $member = User::factory()->create(['activated_at' => null]);
+
+        $mail = (new MemberInvitation)->toMail($member);
+        $html = view($mail->view['html'], $mail->viewData)->render();
+
+        // Declared, so mail apps use our palette instead of recolouring on their own.
+        $this->assertStringContainsString('<meta name="color-scheme" content="light dark">', $html);
+        // Apple Mail and Outlook each get the membership card's dark colours.
+        $this->assertStringContainsString('@media (prefers-color-scheme: dark)', $html);
+        $this->assertStringContainsString('[data-ogsb] .em-ticket { background-color: #2a2112 !important; }', $html);
+        $this->assertStringContainsString('[data-ogsc] .em-ticket-strong { color: #fef3c7 !important; }', $html);
+        $this->assertStringContainsString('class="em-ticket"', $html);
+    }
 }
