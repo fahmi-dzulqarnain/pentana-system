@@ -35,10 +35,15 @@ class UserResource extends Resource
     }
 
     /**
-     * Finance accounts (treasurer, super-admin) can only be deleted by a super-admin.
+     * Nobody can delete their own account (a super-admin would lock finance out), and
+     * finance accounts (treasurer, super-admin) can only be deleted by a super-admin.
      */
     public static function canDelete(Model $record): bool
     {
+        if ($record->is(auth()->user())) {
+            return false;
+        }
+
         if ($record instanceof User && UserRoleGuard::isProtected($record) && ! auth()->user()?->isSuperAdmin()) {
             return false;
         }
