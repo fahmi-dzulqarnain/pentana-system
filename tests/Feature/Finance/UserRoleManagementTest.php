@@ -157,4 +157,34 @@ class UserRoleManagementTest extends TestCase
             ->assertCanSeeTableRecords([$treasurer])
             ->assertCanNotSeeTableRecords([$admin, $member]);
     }
+
+    public function test_super_admin_cannot_delete_themself(): void
+    {
+        $super = User::factory()->superAdmin()->create();
+        $member = $this->member();
+        $this->actingAs($super);
+
+        $this->assertFalse(UserResource::canDelete($super));
+        $this->assertTrue(UserResource::canDelete($member));
+
+        Livewire::test(ListUsers::class)
+            ->selectTableRecords([$super->getKey(), $member->getKey()])
+            ->callAction(TestAction::make('delete')->table()->bulk());
+
+        $this->assertNotNull($super->fresh());
+        $this->assertNull($member->fresh());
+    }
+
+    public function test_treasurer_flag_without_admin_shows_plain_status_and_is_not_filtered_as_treasurer(): void
+    {
+        $this->actingAs(User::factory()->superAdmin()->create());
+        $stale = User::factory()->create(['name' => 'Stale Treasurer', 'is_admin' => false, 'is_treasurer' => true, 'activated_at' => now()]);
+        $treasurer = User::factory()->treasurer()->create(['name' => 'Tom Treasurer']);
+
+        Livewire::test(ListUsers::class)
+            ->assertTableColumnStateSet('account_status', 'claimed', $stale)
+            ->filterTable('account_status', 'treasurer')
+            ->assertCanSeeTableRecords([$treasurer])
+            ->assertCanNotSeeTableRecords([$stale]);
+    }
 }
