@@ -537,11 +537,16 @@ language, so the iOS app shows notification text in it while its own screens sta
 ## 11. Treasurer finance summary (Oct 2026)
 
 Finance access is now gated by roles on the user account, so the order of these steps matters.
-Run them on the server after deploying:
+
+**Auto-deploy (section 5) runs `migrate --force` on every push to main and goes live with no
+pause, and the gating ships in the same deploy.** The migration and the new access rules
+activate at the same moment, so every admin loses Finance immediately, before any
+super-admin exists. Have a super-admin ready, and run steps 2 and 3 right after the deploy lands.
 
 1. `php artisan migrate` — adds `users.is_super_admin`, `users.is_treasurer` and
-   `payment_proofs.verified_at`. `verified_at` is backfilled from `updated_at`, so the
-   "collected" month of historical payments is approximate.
+   `payment_proofs.verified_at`. Auto-deploy runs this for you; run it by hand only on a
+   manual deploy. `verified_at` is backfilled from `updated_at`, so the "collected" month of
+   historical payments is approximate.
 2. `php artisan app:make-super-admin <email>` — promotes the first super-admin.
 3. Have the super-admin switch on **Treasurer** for whoever approves payments.
 
