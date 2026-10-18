@@ -8,6 +8,8 @@ use App\Models\Payment\PaymentProof;
 use App\Models\User;
 use App\Services\FinanceService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
 class FinanceServiceTest extends TestCase
@@ -156,5 +158,33 @@ class FinanceServiceTest extends TestCase
         $this->service()->verifyAndAllocate($proof, 100.0);
 
         $this->assertSame(0.0, FinanceService::outstanding(FeePeriod::forMember($user->id)->get()));
+    }
+
+    public function test_verifying_records_verified_at(): void
+    {
+        $this->travelTo(now()->startOfSecond());
+        $user = User::factory()->create();
+        $proof = $this->pendingProof($user, 100.0);
+
+        $this->service()->verifyAndAllocate($proof, 100.0);
+
+        $this->assertTrue($proof->fresh()->verified_at->equalTo(now()));
+    }
+
+    public function test_migration_backfills_verified_at_from_updated_at(): void
+    {
+        $user = User::factory()->create();
+        $verified = $this->pendingProof($user, 50.0);
+        $pending = $this->pendingProof($user, 20.0);
+        $verified->forceFill(['status' => 'verified', 'amount_verified' => 50])->saveQuietly();
+
+        $updatedAt = '2026-03-04 05:06:07';
+        DB::table('payment_proofs')->where('id', $verified->id)->update(['updated_at' => $updatedAt]);
+
+        Schema::table('payment_proofs', fn ($table) => $table->dropColumn('verified_at'));
+        (require database_path('migrations/2026_10_19_000002_add_verified_at_to_payment_proofs_table.php'))->up();
+
+        $this->assertSame($updatedAt, (string) DB::table('payment_proofs')->where('id', $verified->id)->value('verified_at'));
+        $this->assertNull(DB::table('payment_proofs')->where('id', $pending->id)->value('verified_at'));
     }
 }

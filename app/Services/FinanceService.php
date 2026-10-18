@@ -20,6 +20,7 @@ class FinanceService
             $payment->update([
                 'amount_verified' => $verifiedAmount,
                 'status' => 'verified',
+                'verified_at' => now(),
             ]);
 
             $this->applyAvailableFunds($payment->user);
