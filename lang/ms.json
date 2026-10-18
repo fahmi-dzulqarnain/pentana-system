@@ -593,5 +593,9 @@
     "Send me test emails": "Hantar e-mel ujian kepada saya",
     "Sends one [Test] sample of every email type to :email, in your language. Only the emails are sent: nothing else is created or changed.": "Menghantar satu contoh [Test] bagi setiap jenis e-mel kepada :email, dalam bahasa anda. Hanya e-mel dihantar: tiada perkara lain dicipta atau diubah.",
     ":count test emails sent to :email": ":count e-mel ujian dihantar kepada :email",
-    "If the daily email limit is reached, the rest wait in the email queue and go out later.": "Jika had e-mel harian dicapai, selebihnya menunggu dalam baris gilir e-mel dan dihantar kemudian."
+    "If the daily email limit is reached, the rest wait in the email queue and go out later.": "Jika had e-mel harian dicapai, selebihnya menunggu dalam baris gilir e-mel dan dihantar kemudian.",
+    "Treasurer": "Bendahari",
+    "Super-admin": "Pentadbir super",
+    "Can manage finance: payments, bills and the finance summary.": "Boleh mengurus kewangan: bayaran, bil dan ringkasan kewangan.",
+    "Full access, including granting roles.": "Akses penuh, termasuk memberi peranan."
 }

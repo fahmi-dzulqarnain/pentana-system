@@ -593,5 +593,9 @@
     "Send me test emails": "Kirim email uji ke saya",
     "Sends one [Test] sample of every email type to :email, in your language. Only the emails are sent: nothing else is created or changed.": "Mengirim satu contoh [Test] untuk setiap jenis email ke :email, dalam bahasa Anda. Hanya email yang dikirim: tidak ada hal lain yang dibuat atau diubah.",
     ":count test emails sent to :email": ":count email uji terkirim ke :email",
-    "If the daily email limit is reached, the rest wait in the email queue and go out later.": "Jika batas email harian tercapai, sisanya menunggu di antrean email dan dikirim nanti."
+    "If the daily email limit is reached, the rest wait in the email queue and go out later.": "Jika batas email harian tercapai, sisanya menunggu di antrean email dan dikirim nanti.",
+    "Treasurer": "Bendahara",
+    "Super-admin": "Super-admin",
+    "Can manage finance: payments, bills and the finance summary.": "Dapat mengelola keuangan: pembayaran, tagihan, dan ringkasan keuangan.",
+    "Full access, including granting roles.": "Akses penuh, termasuk memberikan peran."
 }
