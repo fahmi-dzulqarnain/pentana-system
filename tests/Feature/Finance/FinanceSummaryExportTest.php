@@ -93,6 +93,18 @@ class FinanceSummaryExportTest extends TestCase
         $this->assertSame('No', str_getcsv($lines[1])[7]);
     }
 
+    public function test_export_neutralises_formula_injection(): void
+    {
+        $this->owing('=1+1');
+        $this->owing('@SUM(A1)');
+
+        $body = $this->export();
+
+        $this->assertStringContainsString("'=1+1,", $body);
+        $this->assertStringContainsString("'@SUM(A1),", $body);
+        $this->assertStringNotContainsString("\n=1+1", $body);
+    }
+
     public function test_export_filename_and_columns(): void
     {
         Bus::fake();

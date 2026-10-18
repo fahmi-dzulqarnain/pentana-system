@@ -33,9 +33,9 @@ class FinanceSummaryCsv
 
             foreach ($members->get() as $member) {
                 fputcsv($out, [
-                    $member->name,
-                    $member->email,
-                    $member->memberCategory?->name,
+                    self::cell($member->name),
+                    self::cell($member->email),
+                    self::cell($member->memberCategory?->name),
                     number_format((float) $member->owes, 2, '.', ''),
                     (int) $member->unpaid_count,
                     $member->oldest_unpaid?->format('Y-m'),
@@ -46,5 +46,15 @@ class FinanceSummaryCsv
 
             fclose($out);
         }, 'finance-summary-'.$date->format('Y-m-d').'.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
+    /** Neutralises spreadsheet formula injection: text starting with = + - @ tab or CR gets a leading quote. */
+    private static function cell(?string $value): ?string
+    {
+        if ($value !== null && $value !== '' && str_contains("=+-@\t\r", $value[0])) {
+            return "'".$value;
+        }
+
+        return $value;
     }
 }
