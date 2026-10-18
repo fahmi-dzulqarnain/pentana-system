@@ -43,6 +43,8 @@ class User extends Authenticatable implements FilamentUser, HasLocalePreference,
         'email',
         'password',
         'is_admin',
+        'is_super_admin',
+        'is_treasurer',
         'member_category_id',
         'custom_fee',
         'birthday',
@@ -81,6 +83,8 @@ class User extends Authenticatable implements FilamentUser, HasLocalePreference,
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_admin' => 'boolean',
+            'is_super_admin' => 'boolean',
+            'is_treasurer' => 'boolean',
             'custom_fee' => 'decimal:2',
             'birthday' => 'date',
             'birthday_email_sent_at' => 'datetime',
@@ -99,6 +103,17 @@ class User extends Authenticatable implements FilamentUser, HasLocalePreference,
     public function getAuthPassword(): string
     {
         return $this->password ?? '';
+    }
+
+    public function isSuperAdmin(): bool
+    {
+        return $this->is_admin && $this->is_super_admin;
+    }
+
+    /** Finance summary access: an admin who is a treasurer or super-admin. */
+    public function canManageFinance(): bool
+    {
+        return $this->is_admin && ($this->is_treasurer || $this->is_super_admin);
     }
 
     public function isActivated(): bool

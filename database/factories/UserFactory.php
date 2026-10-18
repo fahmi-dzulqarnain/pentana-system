@@ -51,4 +51,26 @@ class UserFactory extends Factory
             'is_admin' => true,
         ]);
     }
+
+    /**
+     * Indicate that the user is an administrator who is also the treasurer.
+     */
+    public function treasurer(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'is_admin' => true,
+            'is_treasurer' => true,
+        ]);
+    }
+
+    /**
+     * Indicate that the user is a super-admin.
+     */
+    public function superAdmin(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'is_admin' => true,
+            'is_super_admin' => true,
+        ]);
+    }
 }
