@@ -38,6 +38,8 @@ class UsersTable
                 TextColumn::make('account_status')
                     ->label(__('Account status'))
                     ->state(fn (User $record): string => match (true) {
+                        $record->isSuperAdmin() => 'super-admin',
+                        $record->is_treasurer => 'treasurer',
                         $record->is_admin => 'admin',
                         $record->isDisabled() => 'disabled',
                         $record->activated_at !== null => 'claimed',
@@ -45,12 +47,15 @@ class UsersTable
                     })
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
+                        'super-admin', 'treasurer' => 'warning',
                         'admin' => 'primary',
                         'claimed' => 'success',
                         'disabled' => 'danger',
                         default => 'gray',
                     })
                     ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'super-admin' => __('Super-admin'),
+                        'treasurer' => __('Treasurer'),
                         'admin' => __('Admin'),
                         'claimed' => __('Claimed'),
                         'disabled' => __('Disabled'),
@@ -88,6 +93,8 @@ class UsersTable
                 SelectFilter::make('account_status')
                     ->label(__('Account status'))
                     ->options([
+                        'super-admin' => __('Super-admin'),
+                        'treasurer' => __('Treasurer'),
                         'admin' => __('Admin'),
                         'claimed' => __('Claimed'),
                         'unclaimed' => __('Not claimed yet'),
@@ -95,6 +102,8 @@ class UsersTable
                     ])
                     // Same rules as the column: admin first, then whether the account was activated.
                     ->query(fn (Builder $query, array $data) => match ($data['value'] ?? null) {
+                        'super-admin' => $query->where('is_admin', true)->where('is_super_admin', true),
+                        'treasurer' => $query->where('is_treasurer', true),
                         'admin' => $query->where('is_admin', true),
                         'claimed' => $query->where('is_admin', false)->whereNotNull('activated_at')->enabled(),
                         'unclaimed' => $query->where('is_admin', false)->whereNull('activated_at')->enabled(),
@@ -187,7 +196,9 @@ class UsersTable
                                 ->send();
                         })
                         ->deselectRecordsAfterCompletion(),
-                    DeleteBulkAction::make(),
+                    DeleteBulkAction::make()
+                        // Finance accounts can only be deleted by a super-admin; others are skipped.
+                        ->authorizeIndividualRecords(fn (User $record): bool => UserResource::canDelete($record)),
                 ]),
             ]);
     }

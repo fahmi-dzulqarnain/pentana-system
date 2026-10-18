@@ -16,6 +16,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 use UnitEnum;
 
 class UserResource extends Resource
@@ -31,6 +32,18 @@ class UserResource extends Resource
     public static function canAccess(): bool
     {
         return (bool) auth()->user()?->is_admin;
+    }
+
+    /**
+     * Finance accounts (treasurer, super-admin) can only be deleted by a super-admin.
+     */
+    public static function canDelete(Model $record): bool
+    {
+        if ($record instanceof User && UserRoleGuard::isProtected($record) && ! auth()->user()?->isSuperAdmin()) {
+            return false;
+        }
+
+        return parent::canDelete($record);
     }
 
     public static function getNavigationGroup(): string|UnitEnum|null
