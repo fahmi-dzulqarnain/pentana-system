@@ -64,6 +64,7 @@ class RenderedPagesAreTranslatedTest extends TestCase
             '/account/fee-periods',
             '/account/fee-periods/create',
             '/account/fee-periods/{feePeriod}/edit',
+            '/account/finance-summary',
             '/account/lunches',
             '/account/lunches/create',
             '/account/lunches/{lunch}/edit',

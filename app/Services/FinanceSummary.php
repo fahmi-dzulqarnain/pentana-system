@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Payment\PaymentProof;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -30,22 +31,24 @@ class FinanceSummary
 
     /**
      * Enabled members (including those owing nothing) with the aliases
-     * owes, unpaid_count, oldest_unpaid, credit and paid_this_month (0/1).
+     * owes, unpaid_count, oldest_unpaid, oldest_unpaid_status, credit and
+     * paid_this_month, cast to float/int/date/string/bool on the model.
      */
     public static function members(): Builder
     {
         $remainder = self::BILL_REMAINDER;
-        $bills = fn () => DB::table('fee_periods')->whereColumn('fee_periods.user_id', 'users.id');
+        $unpaidBills = fn () => self::bills()->whereRaw("{$remainder} > 0");
 
         return User::query()
             ->enabled()
             ->select('users.*')
+            ->selectSub(self::owes(), 'owes')
+            ->selectSub($unpaidBills()->selectRaw('COUNT(*)'), 'unpaid_count')
+            ->selectSub($unpaidBills()->selectRaw('MIN(fee_periods.month_date)'), 'oldest_unpaid')
             ->selectSub(
-                $bills()->selectRaw("COALESCE(SUM(CASE WHEN {$remainder} > 0 THEN {$remainder} ELSE 0 END), 0)"),
-                'owes'
+                $unpaidBills()->orderBy('fee_periods.month_date')->limit(1)->select('fee_periods.status'),
+                'oldest_unpaid_status'
             )
-            ->selectSub($bills()->whereRaw("{$remainder} > 0")->selectRaw('COUNT(*)'), 'unpaid_count')
-            ->selectSub($bills()->whereRaw("{$remainder} > 0")->selectRaw('MIN(fee_periods.month_date)'), 'oldest_unpaid')
             ->selectSub(
                 DB::table('payment_proofs')
                     ->whereColumn('payment_proofs.user_id', 'users.id')
@@ -54,7 +57,7 @@ class FinanceSummary
                 'credit'
             )
             ->selectSub(
-                $bills()
+                self::bills()
                     ->where('fee_periods.status', 'paid')
                     ->whereBetween('fee_periods.month_date', [
                         now()->startOfMonth()->toDateString(),
@@ -63,7 +66,37 @@ class FinanceSummary
                     ->selectRaw('CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END'),
                 'paid_this_month'
             )
+            ->withCasts([
+                'owes' => 'float',
+                'unpaid_count' => 'integer',
+                'oldest_unpaid' => 'date',
+                'credit' => 'float',
+                'paid_this_month' => 'boolean',
+            ])
             ->with('memberCategory');
+    }
+
+    /**
+     * Narrow members() to those owing something. Postgres cannot filter on a
+     * select alias, so the owes expression is repeated in the WHERE.
+     */
+    public static function owingOnly(Builder $query): Builder
+    {
+        return $query->where(self::owes(), '>', 0);
+    }
+
+    /** The member's bills, correlated to the outer users row. */
+    private static function bills(): QueryBuilder
+    {
+        return DB::table('fee_periods')->whereColumn('fee_periods.user_id', 'users.id');
+    }
+
+    /** What the member owes: each bill's remainder, clamped at zero, summed. */
+    private static function owes(): QueryBuilder
+    {
+        $remainder = self::BILL_REMAINDER;
+
+        return self::bills()->selectRaw("COALESCE(SUM(CASE WHEN {$remainder} > 0 THEN {$remainder} ELSE 0 END), 0)");
     }
 
     /**

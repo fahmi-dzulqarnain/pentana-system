@@ -44,6 +44,11 @@ class FeePeriodsTable
             ->defaultSort('month_date', 'desc')
             ->filters([
                 SelectFilter::make('status')->options(StatusLabel::options(['unpaid', 'partial', 'paid'])),
+                // The Finance summary's "Bills" action opens this list filtered to one member.
+                SelectFilter::make('user_id')
+                    ->label(__('Member'))
+                    ->relationship('user', 'name')
+                    ->searchable(),
             ])
             ->recordActions([
                 EditAction::make(),
