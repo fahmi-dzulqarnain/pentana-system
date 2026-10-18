@@ -534,7 +534,22 @@ A member's choice is stored on their account (`users.locale`) and in a `locale` 
 mirrored to `localStorage`. Emails, push and in-app notifications use the account's
 language, so the iOS app shows notification text in it while its own screens stay English.
 
-## 11. Open items before go-live
+## 11. Treasurer finance summary (Oct 2026)
+
+Finance access is now gated by roles on the user account, so the order of these steps matters.
+Run them on the server after deploying:
+
+1. `php artisan migrate` — adds `users.is_super_admin`, `users.is_treasurer` and
+   `payment_proofs.verified_at`. `verified_at` is backfilled from `updated_at`, so the
+   "collected" month of historical payments is approximate.
+2. `php artisan app:make-super-admin <email>` — promotes the first super-admin.
+3. Have the super-admin switch on **Treasurer** for whoever approves payments.
+
+Until step 3 is done, every current admin loses access to Finance (Fee Payments review,
+Fee Periods, Finance summary). Do not announce the change before then. Plain admins now see
+Fee Payments as "My Payments" (their own payments only).
+
+## 12. Open items before go-live
 
 - [x] TLS — Cloudflare edge certificate (trusted) via the tunnel; origin keeps a self-signed cert for the loopback hop
 - [x] Email — Resend SMTP, sending as `noreply@pentana.silentmode.net`, verified end to end
