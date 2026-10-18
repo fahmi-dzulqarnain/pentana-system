@@ -547,7 +547,12 @@ super-admin exists. Have a super-admin ready, and run steps 2 and 3 right after 
    `payment_proofs.verified_at`. Auto-deploy runs this for you; run it by hand only on a
    manual deploy. `verified_at` is backfilled from `updated_at`, so the "collected" month of
    historical payments is approximate.
-2. `php artisan app:make-super-admin <email>` — promotes the first super-admin.
+2. Promote the first super-admin on the server. The email must match exactly as stored —
+   it is case-sensitive on Postgres, so copy it from the Users list rather than retyping it:
+
+   ```bash
+   ssh pentana 'cd /var/www/pentana && php artisan app:make-super-admin <email>'
+   ```
 3. Have the super-admin switch on **Treasurer** for whoever approves payments.
 
 Until step 3 is done, every current admin loses access to Finance (Fee Payments review,
