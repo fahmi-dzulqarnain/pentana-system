@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Notifications\BillReminder;
 use App\Services\FinanceService;
 use App\Services\FinanceSummary as Summary;
+use App\Services\FinanceSummaryCsv;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
@@ -68,6 +69,18 @@ class FinanceSummary extends Page implements HasTable
     public function getHeaderWidgetsColumns(): int|array
     {
         return 1;
+    }
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Action::make('export')
+                ->label(__('Export'))
+                ->icon('heroicon-m-arrow-down-tray')
+                ->color('gray')
+                ->authorize(fn (): bool => (bool) auth()->user()?->canManageFinance())
+                ->action(fn () => FinanceSummaryCsv::stream($this->getFilteredSortedTableQuery(), now())),
+        ];
     }
 
     public function content(Schema $schema): Schema

@@ -616,5 +616,10 @@
     "Collected this month": "Dikutip bulan ini",
     ":amount all time": ":amount sepanjang masa",
     "Credit held": "Kredit dipegang",
-    "{1} Paid ahead by :count member|[0,*] Paid ahead by :count members": "{1} Dibayar awal oleh :count ahli|[0,*] Dibayar awal oleh :count ahli"
+    "{1} Paid ahead by :count member|[0,*] Paid ahead by :count members": "{1} Dibayar awal oleh :count ahli|[0,*] Dibayar awal oleh :count ahli",
+    "Category": "Kategori",
+    "Export": "Eksport",
+    "Owes (MYR)": "Hutang (MYR)",
+    "Credit (MYR)": "Kredit (MYR)",
+    "Paid this month": "Dibayar bulan ini"
 }
