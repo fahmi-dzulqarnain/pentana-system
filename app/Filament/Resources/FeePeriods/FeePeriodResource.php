@@ -64,10 +64,10 @@ class FeePeriodResource extends Resource
         return FeePeriodsTable::configure($table);
     }
 
-    // Fee periods are admin-only; members see their bills via the dashboard timeline.
+    // Fee periods are treasurer and super-admin only; members see their bills via the dashboard timeline.
     public static function canAccess(): bool
     {
-        return (bool) auth()->user()?->is_admin;
+        return (bool) auth()->user()?->canManageFinance();
     }
 
     public static function getRelations(): array

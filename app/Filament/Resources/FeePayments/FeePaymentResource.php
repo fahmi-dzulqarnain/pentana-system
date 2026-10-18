@@ -40,20 +40,20 @@ class FeePaymentResource extends Resource
         return static::getRecordTitle($record).' · MYR '.number_format((float) $record->amount_claimed, 2);
     }
 
-    // Members reach this as their own payment history; admins as the verification queue.
+    // Members reach this as their own payment history; finance users as the verification queue.
     public static function getNavigationGroup(): string|UnitEnum|null
     {
-        return auth()->user()?->is_admin ? NavGroup::Finance : NavGroup::Personal;
+        return auth()->user()?->canManageFinance() ? NavGroup::Finance : NavGroup::Personal;
     }
 
     public static function getNavigationLabel(): string
     {
-        return auth()->user()?->is_admin ? static::getTitleCasePluralModelLabel() : __('My Payments');
+        return auth()->user()?->canManageFinance() ? static::getTitleCasePluralModelLabel() : __('My Payments');
     }
 
     public static function getNavigationSort(): ?int
     {
-        return auth()->user()?->is_admin ? 1 : 3;
+        return auth()->user()?->canManageFinance() ? 1 : 3;
     }
 
     public static function getModelLabel(): string
@@ -79,12 +79,12 @@ class FeePaymentResource extends Resource
     // Members submit their own proofs but cannot edit, delete, or verify them.
     public static function canEdit(Model $record): bool
     {
-        return (bool) auth()->user()?->is_admin;
+        return (bool) auth()->user()?->canManageFinance();
     }
 
     public static function canDelete(Model $record): bool
     {
-        return (bool) auth()->user()?->is_admin;
+        return (bool) auth()->user()?->canManageFinance();
     }
 
     // Members only ever see their own submitted proofs.
@@ -92,7 +92,7 @@ class FeePaymentResource extends Resource
     {
         $query = parent::getEloquentQuery();
 
-        if (! auth()->user()?->is_admin) {
+        if (! auth()->user()?->canManageFinance()) {
             $query->where('user_id', auth()->id());
         }
 

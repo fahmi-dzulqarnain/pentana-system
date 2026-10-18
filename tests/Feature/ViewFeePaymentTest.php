@@ -20,7 +20,7 @@ class ViewFeePaymentTest extends TestCase
         Storage::fake('public');
         Storage::disk('public')->put('receipts/test.jpg', 'fake-image-bytes');
 
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->treasurer()->create();
         $member = User::factory()->create();
         $proof = PaymentProof::create([
             'user_id' => $member->id,

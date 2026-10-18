@@ -55,7 +55,7 @@ class ResilientPushTest extends TestCase
     {
         $member = $this->brokenPushSetup();
         $proof = PaymentProof::create(['user_id' => $member->id, 'proof_image_path' => 'r.jpg', 'amount_claimed' => 30, 'status' => 'pending']);
-        $this->actingAs(User::factory()->admin()->create());
+        $this->actingAs(User::factory()->treasurer()->create());
         Filament::setCurrentPanel(Filament::getPanel('account'));
 
         Livewire::test(ViewFeePayment::class, ['record' => $proof->getKey()])

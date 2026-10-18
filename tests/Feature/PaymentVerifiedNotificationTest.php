@@ -25,7 +25,7 @@ class PaymentVerifiedNotificationTest extends TestCase
     {
         parent::setUp();
         $this->member = User::factory()->create(['activated_at' => now()]);
-        $this->actingAs(User::factory()->admin()->create());
+        $this->actingAs(User::factory()->treasurer()->create());
         Filament::setCurrentPanel(Filament::getPanel('account'));
     }
 

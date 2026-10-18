@@ -42,7 +42,7 @@ class PanelAccessTest extends TestCase
 
     public function test_admins_can_access_admin_only_resources(): void
     {
-        $this->actingAs(User::factory()->admin()->create());
+        $this->actingAs(User::factory()->treasurer()->create());
 
         $this->assertTrue(UserResource::canAccess());
         $this->assertTrue(MemberCategoryResource::canAccess());
@@ -57,7 +57,7 @@ class PanelAccessTest extends TestCase
 
     public function test_admins_can_access_fee_periods(): void
     {
-        $this->actingAs(User::factory()->admin()->create());
+        $this->actingAs(User::factory()->treasurer()->create());
 
         $this->assertTrue(FeePeriodResource::canAccess());
     }
@@ -80,7 +80,7 @@ class PanelAccessTest extends TestCase
         $this->proofFor(User::factory()->create());
         $this->proofFor(User::factory()->create());
 
-        $this->actingAs(User::factory()->admin()->create());
+        $this->actingAs(User::factory()->treasurer()->create());
 
         $this->assertSame(2, FeePaymentResource::getEloquentQuery()->count());
     }
@@ -106,7 +106,7 @@ class PanelAccessTest extends TestCase
 
     public function test_admins_can_verify_pending_payments(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->treasurer()->create();
         $proof = $this->proofFor(User::factory()->create());
 
         $this->actingAs($admin);
@@ -150,7 +150,7 @@ class PanelAccessTest extends TestCase
 
     public function test_admins_can_reject_pending_payments(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->treasurer()->create();
         $proof = $this->proofFor(User::factory()->create());
 
         $this->actingAs($admin);
@@ -162,7 +162,7 @@ class PanelAccessTest extends TestCase
 
     public function test_rejecting_a_payment_records_the_reason_and_grants_no_credit(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->treasurer()->create();
         $member = User::factory()->create();
         $bill = FeePeriod::create([
             'user_id' => $member->id,
@@ -194,7 +194,7 @@ class PanelAccessTest extends TestCase
 
     public function test_rejecting_a_payment_requires_a_reason(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->treasurer()->create();
         $proof = $this->proofFor(User::factory()->create());
 
         $this->actingAs($admin);
@@ -209,7 +209,7 @@ class PanelAccessTest extends TestCase
 
     public function test_status_icon_handles_an_unexpected_status(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->treasurer()->create();
         PaymentProof::create([
             'user_id' => User::factory()->create()->id,
             'proof_image_path' => 'receipts/test.jpg',

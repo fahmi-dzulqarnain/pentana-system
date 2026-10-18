@@ -17,7 +17,7 @@ class GlobalSearchTest extends TestCase
 
     public function test_admin_global_search_finds_members_and_their_payments_and_bills(): void
     {
-        $admin = User::factory()->create(['is_admin' => true, 'activated_at' => now()]);
+        $admin = User::factory()->create(['is_admin' => true, 'is_treasurer' => true, 'activated_at' => now()]);
         $member = User::factory()->create(['name' => 'Banmathi Mahaindran', 'activated_at' => now()]);
         PaymentProof::create(['user_id' => $member->id, 'proof_image_path' => 'x.jpg', 'amount_claimed' => 30, 'status' => 'pending']);
         FeePeriod::create(['user_id' => $member->id, 'month_date' => '2026-10-01', 'amount_due' => 30, 'status' => 'unpaid']);

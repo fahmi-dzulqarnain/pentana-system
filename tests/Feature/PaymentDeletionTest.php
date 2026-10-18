@@ -76,7 +76,7 @@ class PaymentDeletionTest extends TestCase
         $bill = $this->bill($member, '2026-10-01', 20);
         $proof = $this->verifiedProof($member, 20);
 
-        $this->actingAs(User::factory()->admin()->create());
+        $this->actingAs(User::factory()->treasurer()->create());
         Filament::setCurrentPanel(Filament::getPanel('account'));
 
         Livewire::test(EditFeePayment::class, ['record' => $proof->getRouteKey()])

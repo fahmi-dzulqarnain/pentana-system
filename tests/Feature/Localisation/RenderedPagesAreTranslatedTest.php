@@ -84,7 +84,7 @@ class RenderedPagesAreTranslatedTest extends TestCase
     public function test_pages_have_no_missing_translations(): void
     {
         config(['app.locales' => 'en,ms,id']);
-        $admin = User::factory()->create(['is_admin' => true, 'activated_at' => now()]);
+        $admin = User::factory()->create(['is_admin' => true, 'is_treasurer' => true, 'activated_at' => now()]);
         $ids = $this->seedForRendering($admin);
         $urls = array_map(fn (string $url): string => strtr($url, $ids), self::pages());
 

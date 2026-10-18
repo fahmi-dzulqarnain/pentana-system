@@ -16,7 +16,7 @@ class FeePeriodsTableTest extends TestCase
 
     public function test_table_renders_the_bill_columns_with_data(): void
     {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->treasurer()->create();
         $member = User::factory()->create(['name' => 'Alice Member']);
         FeePeriod::create([
             'user_id' => $member->id,

@@ -18,7 +18,7 @@ class FeePaymentsTable
 {
     public static function configure(Table $table): Table
     {
-        $isAdmin = fn (): bool => (bool) auth()->user()?->is_admin;
+        $canManageFinance = fn (): bool => (bool) auth()->user()?->canManageFinance();
 
         return $table
             ->columns([
@@ -34,11 +34,11 @@ class FeePaymentsTable
                     ->sortable(),
             ])
             // Admins work the queue oldest first; members see their latest submission first.
-            ->defaultSort('created_at', fn () => $isAdmin() ? 'asc' : 'desc')
+            ->defaultSort('created_at', fn () => $canManageFinance() ? 'asc' : 'desc')
             ->filters([
                 SelectFilter::make('status')
                     ->options(StatusLabel::options(['pending', 'verified', 'rejected']))
-                    ->default(fn () => $isAdmin() ? 'pending' : null),
+                    ->default(fn () => $canManageFinance() ? 'pending' : null),
             ])
             // Opening a payment means reviewing its proof, so a row leads to the view page, not the edit form.
             ->recordUrl(fn ($record) => FeePaymentResource::getUrl('view', ['record' => $record]))

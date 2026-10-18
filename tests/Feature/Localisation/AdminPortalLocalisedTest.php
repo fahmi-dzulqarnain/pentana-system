@@ -23,7 +23,7 @@ class AdminPortalLocalisedTest extends TestCase
     public function test_admin_navigation_groups_are_translated(): void
     {
         config(['app.locales' => 'en,ms,id']);
-        $admin = User::factory()->create(['is_admin' => true, 'locale' => 'id', 'activated_at' => now()]);
+        $admin = User::factory()->create(['is_admin' => true, 'is_treasurer' => true, 'locale' => 'id', 'activated_at' => now()]);
 
         $this->actingAs($admin)->get('/account')
             ->assertOk()

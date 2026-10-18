@@ -37,7 +37,7 @@ class PaymentVerificationTest extends TestCase
     public function test_admin_verifies_from_the_payment_page(): void
     {
         $proof = $this->proof(extra: ['member_note' => 'For October']);
-        $this->actingAs(User::factory()->admin()->create());
+        $this->actingAs(User::factory()->treasurer()->create());
 
         Livewire::test(ViewFeePayment::class, ['record' => $proof->getKey()])
             ->assertSee('For October')
@@ -54,7 +54,7 @@ class PaymentVerificationTest extends TestCase
     public function test_admin_rejects_with_a_reason_that_is_shown_afterwards(): void
     {
         $proof = $this->proof();
-        $this->actingAs(User::factory()->admin()->create());
+        $this->actingAs(User::factory()->treasurer()->create());
 
         Livewire::test(ViewFeePayment::class, ['record' => $proof->getKey()])
             ->callAction('rejectPayment', data: ['admin_note' => ''])
@@ -87,7 +87,7 @@ class PaymentVerificationTest extends TestCase
     {
         $pending = $this->proof();
         $verified = $this->proof('verified');
-        $this->actingAs(User::factory()->admin()->create());
+        $this->actingAs(User::factory()->treasurer()->create());
 
         Livewire::test(ListFeePayments::class)
             ->assertCanSeeTableRecords([$pending])

@@ -26,7 +26,7 @@ class ListSearchAndFiltersTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->admin = User::factory()->admin()->create(['activated_at' => now()]);
+        $this->admin = User::factory()->treasurer()->create(['activated_at' => now()]);
         $this->actingAs($this->admin);
         Filament::setCurrentPanel(Filament::getPanel('account'));
     }

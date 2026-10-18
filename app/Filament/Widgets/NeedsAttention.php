@@ -28,8 +28,6 @@ class NeedsAttention extends StatsOverviewWidget
     // Rendered with the page: this is the first thing an admin needs, not a placeholder box.
     protected static bool $isLazy = false;
 
-    protected int|array|null $columns = ['md' => 2, 'xl' => 4];
-
     public static function canView(): bool
     {
         return (bool) auth()->user()?->is_admin;
@@ -42,12 +40,21 @@ class NeedsAttention extends StatsOverviewWidget
 
     protected function getStats(): array
     {
+        if (! auth()->user()?->canManageFinance()) {
+            return [$this->nextLunch(), $this->waitlists()];
+        }
+
         return [
             $this->paymentsToVerify(),
             $this->nextLunch(),
             $this->waitlists(),
             $this->unpaidBills(),
         ];
+    }
+
+    protected function getColumns(): int|array|null
+    {
+        return auth()->user()?->canManageFinance() ? ['md' => 2, 'xl' => 4] : ['md' => 2];
     }
 
     private function paymentsToVerify(): Stat

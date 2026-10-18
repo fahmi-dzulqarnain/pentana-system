@@ -20,9 +20,14 @@ class NavigationAndDashboardTest extends TestCase
         return User::factory()->admin()->create(['activated_at' => now()]);
     }
 
+    private function treasurer(): User
+    {
+        return User::factory()->treasurer()->create(['activated_at' => now()]);
+    }
+
     public function test_admin_sidebar_puts_personal_pages_first_then_tools_by_domain(): void
     {
-        $html = $this->actingAs($this->admin())->get('/account')->assertOk()->getContent();
+        $html = $this->actingAs($this->treasurer())->get('/account')->assertOk()->getContent();
 
         preg_match_all('/fi-sidebar-group-label[^>]*>\s*([^<]+?)\s*</', $html, $groups);
         $this->assertSame(['Personal', 'Lunch', 'Activities & emails', 'Finance', 'Members'], array_map('html_entity_decode', $groups[1]));
@@ -58,7 +63,7 @@ class NavigationAndDashboardTest extends TestCase
     {
         $member = User::factory()->create();
         PaymentProof::create(['user_id' => $member->id, 'proof_image_path' => 'r.jpg', 'amount_claimed' => 30, 'status' => 'pending']);
-        $this->actingAs($this->admin());
+        $this->actingAs($this->treasurer());
         Filament::setCurrentPanel(Filament::getPanel('account'));
 
         Livewire::test(NeedsAttention::class)
@@ -82,7 +87,7 @@ class NavigationAndDashboardTest extends TestCase
 
     public function test_dashboard_is_admin_work_first_and_has_no_welcome_card(): void
     {
-        $html = $this->actingAs($this->admin())->get('/account')->assertOk()->getContent();
+        $html = $this->actingAs($this->treasurer())->get('/account')->assertOk()->getContent();
 
         $this->assertStringNotContainsString('fi-account-widget', $html);
         preg_match_all('/wire:name="App\\\\Filament\\\\Widgets\\\\(\w+)"/', $html, $widgets);

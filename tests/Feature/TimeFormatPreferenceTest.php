@@ -71,16 +71,16 @@ class TimeFormatPreferenceTest extends TestCase
         $this->travelTo('2026-10-16 14:30');
         PaymentProof::create(['user_id' => User::factory()->create()->id, 'proof_image_path' => 'r.jpg', 'amount_claimed' => 30, 'status' => 'pending']);
 
-        $this->actingAs(User::factory()->admin()->create(['locale' => 'en', 'time_format' => '12h', 'activated_at' => now()]))
+        $this->actingAs(User::factory()->treasurer()->create(['locale' => 'en', 'time_format' => '12h', 'activated_at' => now()]))
             ->get('/account/fee-payments')->assertOk()->assertSee('16 Oct 2026, 2:30 PM');
 
-        $this->actingAs(User::factory()->admin()->create(['locale' => 'id', 'time_format' => null, 'activated_at' => now()]))
+        $this->actingAs(User::factory()->treasurer()->create(['locale' => 'id', 'time_format' => null, 'activated_at' => now()]))
             ->get('/account/fee-payments')->assertOk()->assertSee('16 Okt 2026, 14:30');
     }
 
     public function test_each_recipient_gets_their_own_clock_not_the_senders(): void
     {
-        $this->actingAs(User::factory()->admin()->create(['time_format' => '24h']));
+        $this->actingAs(User::factory()->treasurer()->create(['time_format' => '24h']));
         $indonesianWhoChose12h = User::factory()->create(['locale' => 'id', 'time_format' => '12h']);
         $indonesianDefault = User::factory()->create(['locale' => 'id', 'time_format' => null]);
         $englishDefault = User::factory()->create(['locale' => 'en', 'time_format' => null]);

@@ -98,6 +98,6 @@ class PaymentReviewActions
 
     private static function reviewable(PaymentProof $record): bool
     {
-        return $record->status === 'pending' && (bool) auth()->user()?->is_admin;
+        return $record->status === 'pending' && (bool) auth()->user()?->canManageFinance();
     }
 }

@@ -38,7 +38,7 @@ class PaymentRejectedNotificationTest extends TestCase
             'status' => 'pending',
             'created_at' => '2026-10-16 09:08:00',
         ]);
-        $this->actingAs(User::factory()->admin()->create());
+        $this->actingAs(User::factory()->treasurer()->create());
         Filament::setCurrentPanel(Filament::getPanel('account'));
     }
 

@@ -19,7 +19,7 @@ class FeePeriodFormTest extends TestCase
     {
         parent::setUp();
 
-        $this->actingAs(User::factory()->admin()->create());
+        $this->actingAs(User::factory()->treasurer()->create());
         Filament::setCurrentPanel(Filament::getPanel('account'));
     }
 
