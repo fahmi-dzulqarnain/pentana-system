@@ -15,6 +15,9 @@ Route::get('/android/download', \App\Http\Controllers\AndroidDownloadController:
     ->middleware('throttle:30,1')
     ->name('android.download');
 
+Route::get('/android', fn () => view('android-install', ['androidRelease' => AndroidRelease::current()]))
+    ->name('android.install');
+
 Route::get('/claim', ClaimAccount::class)->name('claim');
 Route::post('/locale', [\App\Http\Controllers\LocaleController::class, 'update'])->name('locale.update');
 
