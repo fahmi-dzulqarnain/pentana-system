@@ -157,6 +157,17 @@ class AndroidReleaseTest extends TestCase
             ->assertHasFormErrors(['apk_path', 'version_code']);
     }
 
+    public function test_upload_field_leaves_type_checking_to_the_server(): void
+    {
+        // FilePond reads the input's accept attribute as MIME types; ".apk" made it reject
+        // every APK in the browser ("File of invalid type"). The server checks the extension.
+        $this->actingAs(User::factory()->admin()->create(['activated_at' => now()]));
+        Filament::setCurrentPanel(Filament::getPanel('account'));
+
+        Livewire::test(CreateAndroidRelease::class)
+            ->assertDontSeeHtml('accept=".apk"');
+    }
+
     public function test_deleting_a_release_removes_its_file(): void
     {
         $release = $this->publish('1.0.0', 1);
