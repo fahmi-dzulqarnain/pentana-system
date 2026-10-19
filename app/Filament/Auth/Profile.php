@@ -5,6 +5,7 @@ namespace App\Filament\Auth;
 use App\Providers\AppServiceProvider;
 use App\Support\LocaleCookie;
 use App\Support\Locales;
+use App\Support\Nickname;
 use App\Support\TimeFormat;
 use Filament\Auth\Pages\EditProfile;
 use Filament\Forms\Components\Select;
@@ -25,6 +26,12 @@ class Profile extends EditProfile
             ->components([
                 // No autofocus: on a phone it pops the keyboard over the page on every visit.
                 $this->getNameFormComponent()->autofocus(false),
+                TextInput::make('nickname')
+                    ->label(__('Nickname'))
+                    ->maxLength(30)
+                    ->rules(fn (): array => Nickname::rules($this->getUser()))
+                    ->dehydrateStateUsing(fn (?string $state) => Nickname::normalise($state))
+                    ->helperText(__('What people call you. Shown instead of your full name.')),
                 $this->getEmailFormComponent(),
                 Select::make('locale')
                     ->label(__('Language'))
