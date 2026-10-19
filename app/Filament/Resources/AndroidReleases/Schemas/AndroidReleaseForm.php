@@ -25,8 +25,8 @@ class AndroidReleaseForm
                     ->required()
                     ->maxSize(self::MAX_APK_KILOBYTES)
                     // Browsers report an APK as zip or octet-stream, so check the extension, not the MIME type.
+                    // No accept=".apk" on the input: FilePond treats it as a MIME list and rejects every APK.
                     ->rules(['extensions:apk'])
-                    ->extraInputAttributes(['accept' => '.apk'])
                     ->helperText(__('The signed release build, up to 50 MB.'))
                     ->columnSpanFull(),
                 TextInput::make('version_name')
