@@ -121,7 +121,7 @@ class Profile extends EditProfile
             return parent::handleRecordUpdate($record, $data);
         } catch (UniqueConstraintViolationException $e) {
             // Lost a race for the same nickname between validation and save.
-            if (filled($data['nickname'] ?? null)) {
+            if (Nickname::isTakenViolation($e)) {
                 throw ValidationException::withMessages(['data.nickname' => __('That nickname is already taken.')]);
             }
 

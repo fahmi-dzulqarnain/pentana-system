@@ -4,10 +4,23 @@ namespace App\Support;
 
 use App\Models\User;
 use Closure;
+use Illuminate\Database\UniqueConstraintViolationException;
 
 class Nickname
 {
     public const MAX_LENGTH = 30;
+
+    /** Case-insensitive unique index on users (lower(nickname)). */
+    public const UNIQUE_INDEX = 'users_nickname_lower_unique';
+
+    /**
+     * Whether a unique violation came from the nickname index rather than another column
+     * (e.g. email). SQLite and Postgres both name the index in the message.
+     */
+    public static function isTakenViolation(UniqueConstraintViolationException $e): bool
+    {
+        return str_contains($e->getMessage(), self::UNIQUE_INDEX);
+    }
 
     public static function normalise(?string $value): ?string
     {

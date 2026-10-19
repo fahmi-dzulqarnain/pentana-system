@@ -5,6 +5,7 @@ namespace Tests\Feature\Nickname;
 use App\Filament\Auth\Profile;
 use App\Models\User;
 use Filament\Facades\Filament;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -85,6 +86,26 @@ class ProfileNicknameTest extends TestCase
             ->assertHasFormErrors(['nickname']);
 
         $this->assertNull($this->member->fresh()->nickname);
+    }
+
+    public function test_losing_a_race_for_an_email_is_not_reported_as_a_nickname_error(): void
+    {
+        $fired = false;
+        User::updating(function () use (&$fired) {
+            if (! $fired) {
+                $fired = true;
+                User::factory()->create(['email' => 'taken@org.com']);
+            }
+        });
+
+        $this->expectException(UniqueConstraintViolationException::class);
+
+        Livewire::test(Profile::class)
+            ->set('data.nickname', 'Fahmi')
+            ->set('data.email', 'taken@org.com')
+            // Changing the email asks for the current password (the factory's default).
+            ->set('data.currentPassword', 'password')
+            ->call('save');
     }
 
     public function test_full_name_field_is_still_shown(): void
