@@ -6,6 +6,7 @@ use App\Filament\Pages\FinanceSummary;
 use App\Filament\Resources\Activities\Pages\EditActivity;
 use App\Filament\Resources\Activities\RelationManagers\RegistrationsRelationManager;
 use App\Filament\Resources\FeePayments\Pages\ListFeePayments;
+use App\Filament\Resources\FeePeriods\Pages\ListFeePeriods;
 use App\Filament\Resources\Users\Pages\ListUsers;
 use App\Filament\Support\MemberName;
 use App\Models\Activity;
@@ -15,6 +16,10 @@ use App\Models\Payment\FeePeriod;
 use App\Models\Payment\PaymentProof;
 use App\Models\User;
 use Filament\Facades\Filament;
+use Filament\Forms\Components\Select;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Schemas\Schema;
+use Filament\Support\Enums\FontWeight;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -32,11 +37,41 @@ class AdminNicknameTest extends TestCase
 
     public function test_users_table_shows_nickname_with_full_name_beneath(): void
     {
-        User::factory()->create(['name' => 'Muhammad Fahmi bin Dzulqarnain', 'nickname' => 'Fahmi']);
+        $member = User::factory()->create(['name' => 'Ahmad Zulkifli', 'nickname' => 'Fahmi']);
 
         Livewire::test(ListUsers::class)
-            ->assertSee('Fahmi')
-            ->assertSee('Muhammad Fahmi bin Dzulqarnain');
+            ->assertTableColumnStateSet('name', 'Fahmi', $member)
+            ->assertTableColumnFormattedStateSet('name', 'Fahmi', $member)
+            ->assertSeeInOrder(['Fahmi', 'Ahmad Zulkifli']);
+    }
+
+    public function test_bold_marks_only_members_with_a_nickname(): void
+    {
+        $nicknamed = new User(['name' => 'Ahmad Zulkifli', 'nickname' => 'Fahmi']);
+        $plain = new User(['name' => 'Siti Aminah']);
+        $column = MemberName::column();
+
+        $this->assertSame(FontWeight::Bold, $column->record($nicknamed)->getWeight());
+        $this->assertNull($column->record($plain)->getWeight());
+
+        $entry = fn (User $user): TextEntry => collect(
+            Schema::make(Livewire::new(ListUsers::class))->record($user)->components([MemberName::entry()])->getFlatComponents()
+        )->first(fn ($c) => $c instanceof TextEntry);
+
+        $this->assertSame(FontWeight::Bold, $entry($nicknamed)->getWeight());
+        $this->assertNull($entry($plain)->getWeight());
+    }
+
+    public function test_fee_periods_member_filter_uses_nickname_labels_and_searches_both(): void
+    {
+        $member = User::factory()->create(['name' => 'Ahmad Zulkifli', 'nickname' => 'Fahmi']);
+        $component = Livewire::test(ListFeePeriods::class);
+
+        $select = collect($component->instance()->getTableFiltersForm()->getFlatComponents())
+            ->first(fn ($c) => $c instanceof Select && str_ends_with($c->getStatePath(), 'user_id.value'));
+
+        $this->assertSame([$member->id => 'Fahmi (Ahmad Zulkifli)'], $select->getSearchResults('fahmi'));
+        $this->assertSame([$member->id => 'Fahmi (Ahmad Zulkifli)'], $select->getSearchResults('zulkifli'));
     }
 
     public function test_users_table_search_matches_nickname(): void

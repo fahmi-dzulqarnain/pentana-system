@@ -25,6 +25,11 @@ class NicknameModelTest extends TestCase
         $this->assertSame('Fahmi', $user->getFilamentName());
     }
 
+    public function test_display_name_keeps_a_zero_nickname(): void
+    {
+        $this->assertSame('0', (new User(['name' => 'Fahmi Dzulqarnain', 'nickname' => '0']))->display_name);
+    }
+
     public function test_normalise_trims_and_nulls_blank(): void
     {
         $this->assertSame('Fahmi', Nickname::normalise('  Fahmi '));
@@ -76,6 +81,35 @@ class NicknameModelTest extends TestCase
         $this->expectException(UniqueConstraintViolationException::class);
 
         $other->forceFill(['nickname' => 'FAHMI'])->save();
+    }
+
+    public function test_length_message_uses_the_translated_attribute_name(): void
+    {
+        app()->setLocale('ms');
+        $validator = Validator::make(['nickname' => str_repeat('a', 31)], ['nickname' => Nickname::rules()]);
+
+        $this->assertStringContainsString('nama panggilan', $validator->errors()->first('nickname'));
+    }
+
+    public function test_validation_and_index_agree_on_non_ascii_case_pairs(): void
+    {
+        foreach ([['Élan', 'élan'], ['élan2', 'ÉLAN2'], ['ÄNNA', 'änna'], ['Straße', 'STRASSE']] as $i => [$first, $second]) {
+            User::factory()->create(['nickname' => $first]);
+            $other = User::factory()->create();
+
+            $accepted = Validator::make(['nickname' => $second], ['nickname' => Nickname::rules($other)])->passes();
+
+            try {
+                $other->forceFill(['nickname' => $second])->save();
+                $saved = true;
+            } catch (UniqueConstraintViolationException) {
+                $saved = false;
+            }
+
+            // Whatever the DB's lower() does with non-ASCII, validation must predict it:
+            // no pair validation accepts may blow up at the index (a 500 for the member).
+            $this->assertSame($saved, $accepted, "validation and index disagree for pair #{$i}");
+        }
     }
 
     public function test_many_users_may_have_no_nickname(): void

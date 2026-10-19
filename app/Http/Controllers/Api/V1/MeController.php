@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\UserResource;
 use App\Support\Nickname;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class MeController extends Controller
 {
@@ -29,7 +31,12 @@ class MeController extends Controller
             'nickname' => ['present', ...Nickname::rules($user)],
         ]);
 
-        $user->forceFill(['nickname' => $validated['nickname']])->save();
+        try {
+            $user->forceFill(['nickname' => $validated['nickname']])->save();
+        } catch (UniqueConstraintViolationException) {
+            // Lost a race for the same nickname between validation and save.
+            throw ValidationException::withMessages(['nickname' => __('That nickname is already taken.')]);
+        }
 
         return new UserResource($user->fresh());
     }

@@ -38,7 +38,7 @@ class User extends Authenticatable implements FilamentUser, HasLocalePreference,
     /** The nickname when set, otherwise the full name. */
     protected function displayName(): Attribute
     {
-        return Attribute::get(fn (): string => $this->nickname ?: $this->name);
+        return Attribute::get(fn (): string => $this->nickname ?? $this->name);
     }
 
     public function getFilamentName(): string

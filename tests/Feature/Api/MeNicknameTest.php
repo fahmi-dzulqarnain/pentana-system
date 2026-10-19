@@ -49,7 +49,30 @@ class MeNicknameTest extends TestCase
 
         $this->patchJson('/api/v1/me', ['nickname' => 'Fahmi'])
             ->assertStatus(422)
+            ->assertJsonPath('message', 'That nickname is already taken.')
             ->assertJsonValidationErrors(['nickname']);
+    }
+
+    public function test_losing_a_race_for_a_nickname_is_422_not_500(): void
+    {
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
+
+        // Another member takes the nickname after validation passed, just before our save.
+        $fired = false;
+        User::updating(function () use (&$fired) {
+            if (! $fired) {
+                $fired = true;
+                User::factory()->create(['nickname' => 'Fahmi']);
+            }
+        });
+
+        $this->patchJson('/api/v1/me', ['nickname' => 'Fahmi'])
+            ->assertStatus(422)
+            ->assertJsonPath('message', 'That nickname is already taken.')
+            ->assertJsonValidationErrors(['nickname']);
+
+        $this->assertNull($user->fresh()->nickname);
     }
 
     public function test_keeping_own_nickname_is_allowed(): void

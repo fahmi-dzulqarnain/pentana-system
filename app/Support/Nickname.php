@@ -31,7 +31,7 @@ class Nickname
                 $value = self::normalise(is_string($value) ? $value : null);
 
                 if ($value !== null && mb_strlen($value) > self::MAX_LENGTH) {
-                    $fail(__('validation.max.string', ['attribute' => 'nickname', 'max' => self::MAX_LENGTH]));
+                    $fail(__('validation.max.string', ['attribute' => mb_strtolower(__('Nickname')), 'max' => self::MAX_LENGTH]));
                 }
             },
             function (string $attribute, mixed $value, Closure $fail) use ($ignore): void {
@@ -42,7 +42,8 @@ class Nickname
                 }
 
                 $taken = User::query()
-                    ->whereRaw('lower(nickname) = ?', [mb_strtolower($value)])
+                    // The DB's own lower(), so validation folds case exactly as the unique index does.
+                    ->whereRaw('lower(nickname) = lower(?)', [$value])
                     ->when($ignore, fn ($q) => $q->whereKeyNot($ignore->id))
                     ->exists();
 

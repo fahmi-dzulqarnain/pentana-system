@@ -15,7 +15,9 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Text;
 use Filament\Schemas\Schema;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Arr;
+use Illuminate\Validation\ValidationException;
 use SensitiveParameter;
 
 class Profile extends EditProfile
@@ -28,7 +30,8 @@ class Profile extends EditProfile
                 $this->getNameFormComponent()->autofocus(false),
                 TextInput::make('nickname')
                     ->label(__('Nickname'))
-                    ->maxLength(30)
+                    // HTML attribute only: a server-side max rule would count the untrimmed value.
+                    ->extraInputAttributes(['maxlength' => Nickname::MAX_LENGTH])
                     ->rules(fn (): array => Nickname::rules($this->getUser()))
                     ->dehydrateStateUsing(fn (?string $state) => Nickname::normalise($state))
                     ->helperText(__('What people call you. Shown instead of your full name.')),
@@ -114,7 +117,16 @@ class Profile extends EditProfile
             unset($data['time_format']);
         }
 
-        return parent::handleRecordUpdate($record, $data);
+        try {
+            return parent::handleRecordUpdate($record, $data);
+        } catch (UniqueConstraintViolationException $e) {
+            // Lost a race for the same nickname between validation and save.
+            if (filled($data['nickname'] ?? null)) {
+                throw ValidationException::withMessages(['data.nickname' => __('That nickname is already taken.')]);
+            }
+
+            throw $e;
+        }
     }
 
     protected function afterSave(): void

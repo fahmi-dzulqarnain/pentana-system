@@ -20,7 +20,8 @@ class MemberName
         return TextColumn::make($path)
             ->state(fn ($record): string => self::member($record, $relationship)?->display_name ?? '')
             ->description(fn ($record): ?string => self::secondary($record, $relationship))
-            ->weight(FontWeight::Bold)
+            // Bold only marks a nickname; a plain full name looks as it always did.
+            ->weight(fn ($record): ?FontWeight => self::hasNickname($record, $relationship) ? FontWeight::Bold : null)
             ->searchable(['name', 'nickname']);
     }
 
@@ -30,6 +31,7 @@ class MemberName
 
         return TextEntry::make($path)
             ->state(fn ($record): string => self::member($record, $relationship)?->display_name ?? '')
+            ->weight(fn ($record): ?FontWeight => self::hasNickname($record, $relationship) ? FontWeight::Bold : null)
             ->helperText(fn ($record): ?string => self::secondary($record, $relationship));
     }
 
@@ -45,6 +47,11 @@ class MemberName
         $member = self::member($record, $relationship);
 
         return filled($member?->nickname) ? $member->name : null;
+    }
+
+    private static function hasNickname($record, ?string $relationship): bool
+    {
+        return filled(self::member($record, $relationship)?->nickname);
     }
 
     private static function member($record, ?string $relationship): ?User
