@@ -621,5 +621,20 @@
     "Export": "Eksport",
     "Owes (MYR)": "Hutang (MYR)",
     "Credit (MYR)": "Kredit (MYR)",
-    "Paid this month": "Dibayar bulan ini"
+    "Paid this month": "Dibayar bulan ini",
+    "Android releases": "Keluaran Android",
+    "Android release": "keluaran Android",
+    "APK file": "Fail APK",
+    "The signed release build, up to 50 MB.": "Binaan keluaran yang ditandatangani, sehingga 50 MB.",
+    "Version name": "Nama versi",
+    "Version code": "Kod versi",
+    "Must match versionCode in the build and be higher than every earlier release.": "Mesti sama dengan versionCode dalam binaan dan lebih tinggi daripada semua keluaran terdahulu.",
+    "What's new": "Apa yang baharu",
+    "Version": "Versi",
+    "Build :code": "Binaan :code",
+    "Size": "Saiz",
+    "Download the PENTANA Android app": "Muat turun aplikasi Android PENTANA",
+    "Download for": "Muat turun untuk",
+    "Android :version · :size MB. Your phone will ask you to allow installs from your browser the first time.": "Android :version · :size MB. Telefon anda akan meminta kebenaran untuk memasang aplikasi daripada pelayar anda pada kali pertama.",
+    "Get PENTANA on the App Store, or download it for Android from this page.": "Dapatkan PENTANA di App Store, atau muat turun untuk Android dari halaman ini."
 }

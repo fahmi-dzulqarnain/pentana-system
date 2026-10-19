@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\ActivityController;
+use App\Http\Controllers\Api\V1\AndroidReleaseController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\BillController;
 use App\Http\Controllers\Api\V1\DashboardController;
@@ -14,6 +15,9 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
     Route::post('login', [AuthController::class, 'login'])->middleware('throttle:5,1');
+
+    // Public: the Android app checks this for a newer sideloaded build.
+    Route::get('android/latest', [AndroidReleaseController::class, 'latest'])->middleware('throttle:30,1');
 
     // Passkey sign-in (public, discoverable).
     Route::middleware('throttle:10,1')->group(function () {

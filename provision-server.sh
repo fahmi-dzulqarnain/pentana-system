@@ -13,8 +13,8 @@ APP_USER="${APP_USER:-fahmi}"
 APP_DIR="${APP_DIR:-/var/www/pentana}"
 PHP_VER="8.4"
 NODE_MAJOR="22"
-UPLOAD_MAX="20M"
-POST_MAX="21M"
+UPLOAD_MAX="64M"   # Android APK releases (up to 50 MB) are the largest upload
+POST_MAX="65M"
 
 if [[ $EUID -ne 0 ]]; then
     echo "Run with sudo: sudo bash $0" >&2

@@ -381,13 +381,24 @@
                         <svg width="22" height="22" viewBox="0 0 384 512" fill="currentColor" aria-hidden="true"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.7-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg>
                         <span class="two"><span class="s">{{ __('Download on the') }}</span><span class="b">App Store</span></span>
                     </a>
-                    <span class="pl-storebadge is-soon" aria-hidden="true">
-                        <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path fill="#00D7FE" d="M3.9 1.6c-.55.3-.9.88-.9 1.55v17.7c0 .67.35 1.25.9 1.55L14.6 12 3.9 1.6z"/><path fill="#00F076" d="M5.3 1.06 17.5 8.1l-2.9 2.83L5.3 1.06z"/><path fill="#FF3A44" d="M5.3 22.94 14.6 13.07l2.9 2.83L5.3 22.94z"/><path fill="#FFC900" d="M17.5 8.1 14.6 11v2.07l2.9 2.83 3.3-1.9c1.2-.7 1.2-2.3 0-3L17.5 8.1z"/></svg>
-                        <span class="two"><span class="s">{{ __('GET IT ON') }}</span><span class="b">Google Play</span></span>
-                    </span>
-                    <span class="pl-soon"><span class="dot"></span> {{ __('Coming soon to Android') }}</span>
+                    @if ($androidRelease)
+                        <a class="pl-storebadge" href="{{ route('android.download') }}" download aria-label="{{ __('Download the PENTANA Android app') }}">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="#3DDC84" aria-hidden="true"><path d="M17.6 9.48 19.44 6.3a.38.38 0 0 0-.66-.38l-1.86 3.22a11.4 11.4 0 0 0-9.84 0L5.22 5.92a.38.38 0 1 0-.66.38L6.4 9.48A10.8 10.8 0 0 0 1 18h22a10.8 10.8 0 0 0-5.4-8.52ZM7 15.25a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5Zm10 0a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5Z"/></svg>
+                            <span class="two"><span class="s">{{ __('Download for') }}</span><span class="b">Android</span></span>
+                        </a>
+                    @else
+                        <span class="pl-storebadge is-soon" aria-hidden="true">
+                            <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path fill="#00D7FE" d="M3.9 1.6c-.55.3-.9.88-.9 1.55v17.7c0 .67.35 1.25.9 1.55L14.6 12 3.9 1.6z"/><path fill="#00F076" d="M5.3 1.06 17.5 8.1l-2.9 2.83L5.3 1.06z"/><path fill="#FF3A44" d="M5.3 22.94 14.6 13.07l2.9 2.83L5.3 22.94z"/><path fill="#FFC900" d="M17.5 8.1 14.6 11v2.07l2.9 2.83 3.3-1.9c1.2-.7 1.2-2.3 0-3L17.5 8.1z"/></svg>
+                            <span class="two"><span class="s">{{ __('GET IT ON') }}</span><span class="b">Google Play</span></span>
+                        </span>
+                        <span class="pl-soon"><span class="dot"></span> {{ __('Coming soon to Android') }}</span>
+                    @endif
                 </div>
-                <p class="note">{!! __('Android is on the way. :claim now and we\'ll let you know when it lands.', ['claim' => '<a href="'.e(route('claim')).'" style="color:#fff;font-weight:600;text-decoration:underline">'.e(__('Claim your account')).'</a>']) !!}</p>
+                @if ($androidRelease)
+                    <p class="note">{{ __('Android :version · :size MB. Your phone will ask you to allow installs from your browser the first time.', ['version' => $androidRelease->version_name, 'size' => $androidRelease->sizeInMegabytes()]) }}</p>
+                @else
+                    <p class="note">{!! __('Android is on the way. :claim now and we\'ll let you know when it lands.', ['claim' => '<a href="'.e(route('claim')).'" style="color:#fff;font-weight:600;text-decoration:underline">'.e(__('Claim your account')).'</a>']) !!}</p>
+                @endif
             </div>
             <div class="pl-phonecol">
                 <div class="pl-phone">
@@ -426,7 +437,7 @@
             </div>
             <div class="pl-step">
                 <span class="num">02</span>
-                <div><div class="t">{{ __('Download the app') }}</div><p>{{ __('Get PENTANA on the App Store. Android is coming soon.') }}</p></div>
+                <div><div class="t">{{ __('Download the app') }}</div><p>{{ $androidRelease ? __('Get PENTANA on the App Store, or download it for Android from this page.') : __('Get PENTANA on the App Store. Android is coming soon.') }}</p></div>
             </div>
             <div class="pl-step">
                 <span class="num">03</span>

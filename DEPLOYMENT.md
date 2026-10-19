@@ -185,7 +185,7 @@ server {
 
     index index.php;
     charset utf-8;
-    client_max_body_size 20M;         # allow payment-proof / image uploads
+    client_max_body_size 64M;         # payment proofs, images and Android APK releases
 
     location / {
         try_files $uri $uri/ /index.php?$query_string;
