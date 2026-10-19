@@ -7,9 +7,11 @@ use App\Models\Payment\PaymentProof;
 use App\Support\Locales;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
+use Filament\Models\Contracts\HasName;
 use Filament\Panel;
 use Illuminate\Contracts\Translation\HasLocalePreference;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -19,7 +21,7 @@ use Laravel\Sanctum\HasApiTokens;
 use Spatie\LaravelPasskeys\Models\Concerns\HasPasskeys;
 use Spatie\LaravelPasskeys\Models\Concerns\InteractsWithPasskeys;
 
-class User extends Authenticatable implements FilamentUser, HasLocalePreference, HasPasskeys
+class User extends Authenticatable implements FilamentUser, HasLocalePreference, HasName, HasPasskeys
 {
     /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasFactory, InteractsWithPasskeys, Notifiable;
@@ -33,6 +35,17 @@ class User extends Authenticatable implements FilamentUser, HasLocalePreference,
         return ! $this->isDisabled();
     }
 
+    /** The nickname when set, otherwise the full name. */
+    protected function displayName(): Attribute
+    {
+        return Attribute::get(fn (): string => $this->nickname ?: $this->name);
+    }
+
+    public function getFilamentName(): string
+    {
+        return $this->display_name;
+    }
+
     /**
      * The attributes that are mass assignable.
      *
@@ -40,6 +53,7 @@ class User extends Authenticatable implements FilamentUser, HasLocalePreference,
      */
     protected $fillable = [
         'name',
+        'nickname',
         'email',
         'password',
         'is_admin',
