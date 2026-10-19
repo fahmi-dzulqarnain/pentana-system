@@ -10,12 +10,14 @@ use App\Filament\Resources\Users\Pages\ViewUser;
 use App\Filament\Resources\Users\Schemas\UserForm;
 use App\Filament\Resources\Users\Schemas\UserInfolist;
 use App\Filament\Resources\Users\Tables\UsersTable;
+use App\Filament\Support\MemberName;
 use App\Models\User;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Model;
 use UnitEnum;
 
@@ -24,6 +26,16 @@ class UserResource extends Resource
     protected static ?string $model = User::class;
 
     protected static ?string $recordTitleAttribute = 'name';
+
+    public static function getRecordTitle(?Model $record): string|Htmlable|null
+    {
+        return $record instanceof User ? MemberName::optionLabel($record) : parent::getRecordTitle($record);
+    }
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['name', 'nickname'];
+    }
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::UserGroup;
 

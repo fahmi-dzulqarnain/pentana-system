@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\FeePeriods\Tables;
 
+use App\Filament\Support\MemberName;
 use App\Support\StatusLabel;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -16,9 +17,8 @@ class FeePeriodsTable
     {
         return $table
             ->columns([
-                TextColumn::make('user.name')
+                MemberName::column('user')
                     ->label(__('Member'))
-                    ->searchable()
                     ->sortable(),
                 TextColumn::make('month_date')
                     ->label(__('Billing month'))

@@ -9,6 +9,7 @@ use App\Filament\Resources\FeePayments\Pages\ListFeePayments;
 use App\Filament\Resources\FeePayments\Pages\ViewFeePayment;
 use App\Filament\Resources\FeePayments\Schemas\FeePaymentForm;
 use App\Filament\Resources\FeePayments\Tables\FeePaymentsTable;
+use App\Filament\Support\MemberName;
 use App\Models\Payment\PaymentProof;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -27,12 +28,12 @@ class FeePaymentResource extends Resource
 
     public static function getRecordTitle(?Model $record): string
     {
-        return $record?->user?->name ?? static::getModelLabel();
+        return $record?->user ? MemberName::optionLabel($record->user) : static::getModelLabel();
     }
 
     public static function getGloballySearchableAttributes(): array
     {
-        return ['user.name'];
+        return ['user.name', 'user.nickname'];
     }
 
     public static function getGlobalSearchResultTitle(Model $record): string

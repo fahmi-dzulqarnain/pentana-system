@@ -4,6 +4,7 @@ namespace App\Filament\Pages;
 
 use App\Filament\NavGroup;
 use App\Filament\Resources\FeePeriods\FeePeriodResource;
+use App\Filament\Support\MemberName;
 use App\Filament\Widgets\FinanceTotals;
 use App\Models\Payment\FeePeriod;
 use App\Models\User;
@@ -94,10 +95,12 @@ class FinanceSummary extends Page implements HasTable
             ->heading(__('Who owes'))
             ->query(fn (): Builder => Summary::members())
             ->columns([
-                TextColumn::make('name')
+                MemberName::column()
                     ->label(__('Member'))
-                    ->description(fn (User $record): ?string => $record->memberCategory?->name)
-                    ->searchable(),
+                    // The full name sits beneath a nickname, ahead of the category.
+                    ->description(fn (User $record): ?string => collect([MemberName::secondary($record), $record->memberCategory?->name])
+                        ->filter()
+                        ->implode(' · ') ?: null),
                 TextColumn::make('owes')
                     ->label(__('Owes'))
                     ->money('MYR')
