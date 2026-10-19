@@ -5,6 +5,7 @@ namespace App\Filament\Auth;
 use App\Providers\AppServiceProvider;
 use App\Support\LocaleCookie;
 use App\Support\Locales;
+use App\Support\Nickname;
 use App\Support\TimeFormat;
 use Filament\Auth\Pages\EditProfile;
 use Filament\Forms\Components\Select;
@@ -14,7 +15,9 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Text;
 use Filament\Schemas\Schema;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Arr;
+use Illuminate\Validation\ValidationException;
 use SensitiveParameter;
 
 class Profile extends EditProfile
@@ -25,6 +28,13 @@ class Profile extends EditProfile
             ->components([
                 // No autofocus: on a phone it pops the keyboard over the page on every visit.
                 $this->getNameFormComponent()->autofocus(false),
+                TextInput::make('nickname')
+                    ->label(__('Nickname'))
+                    // HTML attribute only: a server-side max rule would count the untrimmed value.
+                    ->extraInputAttributes(['maxlength' => Nickname::MAX_LENGTH])
+                    ->rules(fn (): array => Nickname::rules($this->getUser()))
+                    ->dehydrateStateUsing(fn (?string $state) => Nickname::normalise($state))
+                    ->helperText(__('What people call you. Shown instead of your full name.')),
                 $this->getEmailFormComponent(),
                 Select::make('locale')
                     ->label(__('Language'))
@@ -107,7 +117,16 @@ class Profile extends EditProfile
             unset($data['time_format']);
         }
 
-        return parent::handleRecordUpdate($record, $data);
+        try {
+            return parent::handleRecordUpdate($record, $data);
+        } catch (UniqueConstraintViolationException $e) {
+            // Lost a race for the same nickname between validation and save.
+            if (Nickname::isTakenViolation($e)) {
+                throw ValidationException::withMessages(['data.nickname' => __('That nickname is already taken.')]);
+            }
+
+            throw $e;
+        }
     }
 
     protected function afterSave(): void

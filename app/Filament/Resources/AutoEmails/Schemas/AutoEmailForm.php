@@ -34,7 +34,7 @@ class AutoEmailForm
                     ->required(fn (Get $get): bool => $get('type') !== 'birthday')
                     ->columnSpanFull()
                     ->helperText(fn (Get $get): ?string => $get('type') === 'birthday'
-                        ? __('Use {name} where the member\'s name should appear. Leave blank to send the built-in birthday message, translated into each member\'s language.')
+                        ? __('Use {name} where the member\'s name should appear. It uses their nickname if they have one. Leave blank to send the built-in birthday message, translated into each member\'s language.')
                         : null),
                 DateTimePicker::make('send_at')
                     ->label(__('Send at'))

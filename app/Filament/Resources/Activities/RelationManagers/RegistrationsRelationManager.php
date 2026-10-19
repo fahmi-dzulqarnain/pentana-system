@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Activities\RelationManagers;
 
+use App\Filament\Support\MemberName;
 use App\Models\ActivityRegistration;
 use App\Services\ActivityRegistrationService;
 use App\Support\StatusLabel;
@@ -39,9 +40,8 @@ class RegistrationsRelationManager extends RelationManager
                 ]);
             })
             ->columns([
-                TextColumn::make('user.name')
-                    ->label(__('Member'))
-                    ->searchable(),
+                MemberName::column('user')
+                    ->label(__('Member')),
                 TextColumn::make('status')
                     ->badge()
                     ->formatStateUsing(fn (string $state): string => StatusLabel::for($state))

@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\FeePeriods\Tables;
 
+use App\Filament\Support\MemberName;
+use App\Models\User;
 use App\Support\StatusLabel;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -16,9 +18,8 @@ class FeePeriodsTable
     {
         return $table
             ->columns([
-                TextColumn::make('user.name')
+                MemberName::column('user')
                     ->label(__('Member'))
-                    ->searchable()
                     ->sortable(),
                 TextColumn::make('month_date')
                     ->label(__('Billing month'))
@@ -48,7 +49,8 @@ class FeePeriodsTable
                 SelectFilter::make('user_id')
                     ->label(__('Member'))
                     ->relationship('user', 'name')
-                    ->searchable(),
+                    ->getOptionLabelFromRecordUsing(fn (User $user): string => MemberName::optionLabel($user))
+                    ->searchable(['name', 'nickname']),
             ])
             ->recordActions([
                 EditAction::make(),

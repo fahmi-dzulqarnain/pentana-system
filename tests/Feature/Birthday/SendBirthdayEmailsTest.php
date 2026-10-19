@@ -95,4 +95,54 @@ class SendBirthdayEmailsTest extends TestCase
         Notification::assertSentTo($user, BirthdayWish::class, fn (BirthdayWish $n) => $n->subject === 'Happy birthday Tom & Jerry'
             && $n->body === '<p>Hi Tom &amp; Jerry</p>');
     }
+
+    public function test_the_built_in_message_greets_the_member_by_nickname(): void
+    {
+        $user = User::factory()->create(['name' => 'Muhammad Fahmi bin Dzulqarnain', 'nickname' => 'Fahmi']);
+
+        $mail = (new BirthdayWish)->toMail($user);
+
+        $this->assertSame('Happy birthday, Fahmi! 🎂', $mail->subject);
+    }
+
+    public function test_a_custom_template_subject_uses_the_nickname_when_set(): void
+    {
+        Notification::fake();
+        AutoEmail::create(['type' => 'birthday', 'is_active' => true, 'subject' => 'Hi {name}', 'body' => '<p>Hi {name}</p>']);
+        $user = User::factory()->create([
+            'name' => 'Muhammad Fahmi bin Dzulqarnain',
+            'nickname' => 'Fahmi',
+            'birthday' => now()->subYears(30)->toDateString(),
+        ]);
+
+        $this->artisan('app:send-birthday-emails')->assertSuccessful();
+
+        Notification::assertSentTo($user, BirthdayWish::class, fn (BirthdayWish $n) => $n->subject === 'Hi Fahmi');
+    }
+
+    public function test_a_custom_template_subject_falls_back_to_the_name_without_a_nickname(): void
+    {
+        Notification::fake();
+        AutoEmail::create(['type' => 'birthday', 'is_active' => true, 'subject' => 'Hi {name}', 'body' => '<p>Hi {name}</p>']);
+        $user = User::factory()->create([
+            'name' => 'Muhammad Fahmi bin Dzulqarnain',
+            'nickname' => null,
+            'birthday' => now()->subYears(30)->toDateString(),
+        ]);
+
+        $this->artisan('app:send-birthday-emails')->assertSuccessful();
+
+        Notification::assertSentTo($user, BirthdayWish::class, fn (BirthdayWish $n) => $n->subject === 'Hi Muhammad Fahmi bin Dzulqarnain');
+    }
+
+    public function test_a_nickname_is_escaped_in_the_body(): void
+    {
+        Notification::fake();
+        AutoEmail::create(['type' => 'birthday', 'is_active' => true, 'subject' => 'Hi {name}', 'body' => '<p>Hi {name}</p>']);
+        $user = User::factory()->create(['nickname' => '<b>Al</b>', 'birthday' => now()->subYears(30)->toDateString()]);
+
+        $this->artisan('app:send-birthday-emails')->assertSuccessful();
+
+        Notification::assertSentTo($user, BirthdayWish::class, fn (BirthdayWish $n) => $n->body === '<p>Hi &lt;b&gt;Al&lt;/b&gt;</p>');
+    }
 }

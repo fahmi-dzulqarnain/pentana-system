@@ -445,7 +445,6 @@
     "Up and running in three steps": "Sedia digunakan dalam tiga langkah",
     "Updated at": "Dikemas kini pada",
     "Upload payment proof": "Muat naik bukti pembayaran",
-    "Use {name} where the member's name should appear. Leave blank to send the built-in birthday message, translated into each member's language.": "Gunakan {name} di tempat nama ahli patut muncul. Biarkan kosong untuk menghantar ucapan hari jadi terbina dalam, diterjemah ke bahasa setiap ahli.",
     "User": "Pengguna",
     "user": "pengguna",
     "users": "pengguna",
@@ -669,5 +668,12 @@
     "SHA-256 of the current file:": "SHA-256 fail semasa:",
     "Still stuck? Email us:": "Masih tersekat? E-mel kami:",
     "Android :version · :size MB. First time installing an app from a website? :guide.": "Android :version · :size MB. Kali pertama memasang aplikasi dari laman web? :guide.",
-    "Follow the install guide": "Ikuti panduan pemasangan"
+    "Follow the install guide": "Ikuti panduan pemasangan",
+    "Use {name} where the member's name should appear. It uses their nickname if they have one. Leave blank to send the built-in birthday message, translated into each member's language.": "Gunakan {name} di tempat nama ahli patut muncul. Nama panggilan mereka digunakan jika ada. Biarkan kosong untuk menghantar ucapan hari jadi terbina dalam, diterjemah ke bahasa setiap ahli.",
+    "That nickname is already taken.": "Nama panggilan itu sudah digunakan.",
+    "Nickname": "Nama panggilan",
+    "What people call you. Shown instead of your full name.": "Apa yang orang panggil anda. Dipaparkan menggantikan nama penuh anda.",
+    "Clear nickname": "Kosongkan nama panggilan",
+    "Clear nickname for :name?": "Kosongkan nama panggilan untuk :name?",
+    "Nickname cleared": "Nama panggilan dikosongkan"
 }

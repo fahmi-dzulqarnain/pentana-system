@@ -5,6 +5,7 @@ namespace App\Filament\Resources\FeePayments\Pages;
 use App\Filament\Resources\FeePayments\Actions\PaymentReviewActions;
 use App\Filament\Resources\FeePayments\FeePaymentResource;
 use App\Filament\Resources\FeePayments\Tables\FeePaymentsTable;
+use App\Filament\Support\MemberName;
 use App\Support\StatusLabel;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
@@ -26,7 +27,7 @@ class ViewFeePayment extends ViewRecord
             ->schema([
                 Section::make(__('Payment details'))
                     ->schema([
-                        TextEntry::make('user.name')->label(__('Member name')),
+                        MemberName::entry('user')->label(__('Member name')),
                         TextEntry::make('amount_claimed')->money('MYR'),
                         TextEntry::make('created_at')
                             ->label(__('Submitted'))

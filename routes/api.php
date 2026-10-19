@@ -28,6 +28,7 @@ Route::prefix('v1')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('logout', [AuthController::class, 'logout']);
         Route::get('me', [MeController::class, 'show']);
+        Route::patch('me', [MeController::class, 'update']);
 
         // Passkey management (register on device + list/remove).
         Route::post('passkeys/register/options', [PasskeyController::class, 'registerOptions']);

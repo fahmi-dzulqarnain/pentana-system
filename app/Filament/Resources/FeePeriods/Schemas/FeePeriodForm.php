@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\FeePeriods\Schemas;
 
+use App\Filament\Support\MemberName;
 use App\Models\Payment\FeePeriod;
 use App\Models\User;
 use App\Support\StatusLabel;
@@ -23,7 +24,8 @@ class FeePeriodForm
                     // Disabled members are hidden, except the one an existing bill already belongs to.
                     ->relationship('user', 'name', fn (Builder $query, ?FeePeriod $record) => $query
                         ->where(fn (Builder $q) => $q->enabled()->when($record, fn (Builder $q) => $q->orWhere('id', $record->user_id))))
-                    ->searchable()
+                    ->getOptionLabelFromRecordUsing(fn (User $user): string => MemberName::optionLabel($user))
+                    ->searchable(['name', 'nickname'])
                     ->required()
                     ->live()
                     // Pre-fill with what this member actually owes (custom fee, else category rate).

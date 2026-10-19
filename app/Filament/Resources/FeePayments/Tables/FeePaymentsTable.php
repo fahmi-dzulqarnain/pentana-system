@@ -4,6 +4,7 @@ namespace App\Filament\Resources\FeePayments\Tables;
 
 use App\Filament\Resources\FeePayments\Actions\PaymentReviewActions;
 use App\Filament\Resources\FeePayments\FeePaymentResource;
+use App\Filament\Support\MemberName;
 use App\Support\StatusLabel;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
@@ -22,7 +23,7 @@ class FeePaymentsTable
 
         return $table
             ->columns([
-                TextColumn::make('user.name')->searchable(),
+                MemberName::column('user'),
                 TextColumn::make('amount_claimed')->money('MYR'),
                 TextColumn::make('status')
                     ->badge()
