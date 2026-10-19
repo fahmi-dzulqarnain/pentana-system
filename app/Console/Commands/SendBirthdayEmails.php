@@ -28,8 +28,8 @@ class SendBirthdayEmails extends Command
             ->reject(fn (User $user) => $user->birthday_email_sent_at?->year === now()->year)
             ->each(function (User $user) use ($template) {
                 // Blank subject/body fall back to the built-in, translated birthday message.
-                $subject = filled($template->subject) ? str_replace('{name}', $user->name, $template->subject) : null;
-                $body = filled(strip_tags((string) $template->body)) ? str_replace('{name}', e($user->name), $template->body) : null;
+                $subject = filled($template->subject) ? str_replace('{name}', $user->display_name, $template->subject) : null;
+                $body = filled(strip_tags((string) $template->body)) ? str_replace('{name}', e($user->display_name), $template->body) : null;
                 $user->notify(new BirthdayWish($subject, $body));
                 $user->forceFill(['birthday_email_sent_at' => now()])->save();
             })

@@ -445,7 +445,7 @@
     "Up and running in three steps": "Sedia digunakan dalam tiga langkah",
     "Updated at": "Dikemas kini pada",
     "Upload payment proof": "Muat naik bukti pembayaran",
-    "Use {name} where the member's name should appear. Leave blank to send the built-in birthday message, translated into each member's language.": "Gunakan {name} di tempat nama ahli patut muncul. Biarkan kosong untuk menghantar ucapan hari jadi terbina dalam, diterjemah ke bahasa setiap ahli.",
+    "Use {name} where the member's name should appear. It uses their nickname if they have one. Leave blank to send the built-in birthday message, translated into each member's language.": "Gunakan {name} di tempat nama ahli patut muncul. Nama panggilan mereka digunakan jika ada. Biarkan kosong untuk menghantar ucapan hari jadi terbina dalam, diterjemah ke bahasa setiap ahli.",
     "User": "Pengguna",
     "user": "pengguna",
     "users": "pengguna",

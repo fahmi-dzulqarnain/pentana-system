@@ -22,12 +22,12 @@ class BirthdayWish extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         $mail = (new MailMessage)
-            ->subject($this->subject ?: __('Happy birthday, :name! 🎂', ['name' => $notifiable->name]));
+            ->subject($this->subject ?: __('Happy birthday, :name! 🎂', ['name' => $notifiable->display_name]));
 
         if (blank($this->body)) {
             return $mail->view(
                 ['html' => 'mail.birthday', 'text' => 'mail.birthday-text'],
-                ['name' => $notifiable->name, 'url' => url('/account')],
+                ['name' => $notifiable->display_name, 'url' => url('/account')],
             );
         }
 
