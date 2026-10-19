@@ -15,7 +15,8 @@ class MemberAccess
 
     public function disable(User $user): void
     {
-        $user->forceFill(['disabled_at' => now()])->save();
+        // The nickname goes too, so a departed member's name frees up for someone else.
+        $user->forceFill(['disabled_at' => now(), 'nickname' => null])->save();
 
         // Sign them out of the mobile app and stop pushes. The web session ends on its
         // next request, because canAccessPanel() refuses disabled members.
