@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -29,6 +30,12 @@ class Lunch extends Model
     public function responses(): HasMany
     {
         return $this->hasMany(LunchResponse::class);
+    }
+
+    /** Enabled members who have no response row for this lunch: who the vote nudge and the admin reminder target. */
+    public function nonResponders(): Builder
+    {
+        return User::enabled()->whereNotIn('id', $this->responses()->select('user_id'));
     }
 
     /** Members may vote only while a lunch is published and the deadline instant has not yet passed. */
