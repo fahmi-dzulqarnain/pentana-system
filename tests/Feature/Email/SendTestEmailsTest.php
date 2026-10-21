@@ -33,7 +33,7 @@ class SendTestEmailsTest extends TestCase
         $this->artisan('app:send-test-emails', ['email' => 'me@example.com'])->assertSuccessful();
 
         $sent = $this->sent();
-        $this->assertCount(12, $sent);
+        $this->assertCount(13, $sent);
         foreach ($sent as $email) {
             $this->assertStringStartsWith('[Test] ', $email->getSubject());
             $this->assertSame('me@example.com', $email->getTo()[0]->getAddress());
@@ -76,7 +76,7 @@ class SendTestEmailsTest extends TestCase
             ->assertNotified();
 
         $sent = $this->sent();
-        $this->assertCount(12, $sent);
+        $this->assertCount(13, $sent);
         $this->assertSame('admin@example.com', $sent[0]->getTo()[0]->getAddress());
     }
 

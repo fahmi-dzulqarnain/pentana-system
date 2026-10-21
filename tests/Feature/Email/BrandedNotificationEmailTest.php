@@ -11,6 +11,7 @@ use App\Notifications\ActivityCancelled;
 use App\Notifications\ActivityPublished;
 use App\Notifications\ActivityReminder;
 use App\Notifications\BillReminder;
+use App\Notifications\LunchesPublished;
 use App\Notifications\LunchPickRemoved;
 use App\Notifications\LunchPublished;
 use App\Notifications\LunchVoteNudge;
@@ -41,6 +42,7 @@ class BrandedNotificationEmailTest extends TestCase
             'activity cancelled' => [new ActivityCancelled($activity), 'alert'],
             'waitlist promoted' => [new WaitlistPromoted($activity), 'activity'],
             'lunch published' => [new LunchPublished($lunch), 'lunch'],
+            'lunches published' => [new LunchesPublished(collect([$lunch])), 'lunch'],
             'lunch vote nudge' => [new LunchVoteNudge($lunch), 'lunch'],
             'lunch pick removed' => [new LunchPickRemoved($lunch), 'alert'],
             'payment verified' => [new PaymentVerified($proof), 'payment'],
