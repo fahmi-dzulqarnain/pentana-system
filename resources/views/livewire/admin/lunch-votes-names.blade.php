@@ -26,6 +26,10 @@
                     {{ $member['name'] }}
                 @endif
 
+                @if ($member['full_name'])
+                    <span class="lv-muted">({{ $member['full_name'] }})</span>
+                @endif
+
                 @if ($member['disabled'])
                     <x-filament::badge color="gray" size="sm">{{ __('disabled') }}</x-filament::badge>
                 @endif

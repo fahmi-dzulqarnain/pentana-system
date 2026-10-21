@@ -12,7 +12,9 @@ class LunchPrintController extends Controller
 {
     public function __invoke(Request $request, Lunch $lunch): View
     {
-        abort_unless($request->user()->is_admin, 403);
+        $user = $request->user();
+
+        abort_unless($user->is_admin && ! $user->isDisabled(), 403);
 
         return view('lunches.print', [
             'lunch' => $lunch,

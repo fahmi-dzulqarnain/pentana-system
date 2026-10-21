@@ -32,7 +32,7 @@ class LunchMenu extends Model
 
     public function options(): HasMany
     {
-        return $this->hasMany(LunchOption::class);
+        return $this->hasMany(LunchOption::class)->orderBy('id');
     }
 
     public function label(): string

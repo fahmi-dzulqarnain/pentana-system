@@ -32,7 +32,7 @@
             'ordering' => $breakdown['counts']['ordering'],
             'not_attending' => $breakdown['counts']['not_attending'],
             'not_responded' => $breakdown['counts']['not_responded'],
-            'time' => now()->translatedFormat('j M Y, H:i'),
+            'time' => now()->translatedFormat('j M Y, '.\App\Support\TimeFormat::time()),
         ]) }}
     </p>
 

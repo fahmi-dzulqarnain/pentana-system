@@ -138,7 +138,7 @@ class LunchVoteBreakdownTest extends TestCase
         $result = $this->breakdown();
 
         $chicken = collect($result['menus'][0]['options'])->firstWhere('name', 'Chicken');
-        $this->assertSame([['id' => $user->id, 'name' => 'Leaver', 'disabled' => true]], $chicken['members']);
+        $this->assertSame([['id' => $user->id, 'name' => 'Leaver', 'full_name' => null, 'disabled' => true]], $chicken['members']);
         $this->assertSame(1, $result['counts']['ordering']);
         $this->assertSame([], $result['not_responded']);
     }
@@ -191,5 +191,32 @@ class LunchVoteBreakdownTest extends TestCase
         foreach ($expected as $id) {
             Notification::assertSentTo(User::find($id), LunchVoteNudge::class);
         }
+    }
+
+    public function test_nickname_is_shown_with_full_name_and_sorts_by_display_name(): void
+    {
+        $this->vote(User::factory()->create(['name' => 'Aaron Zulkifli', 'nickname' => 'Zul']), $this->chicken);
+        $this->vote(User::factory()->create(['name' => 'Mary', 'nickname' => null]), $this->chicken);
+        User::factory()->create(['name' => 'Bartholomew Lim', 'nickname' => 'Bart']);
+
+        $result = $this->breakdown();
+        $members = collect($result['menus'][0]['options'])->keyBy('name')['Chicken']['members'];
+
+        $this->assertSame(['Mary', 'Zul'], $this->names($members));
+        $this->assertNull($members[0]['full_name']);
+        $this->assertSame('Aaron Zulkifli', $members[1]['full_name']);
+        $this->assertSame('Bart', $result['not_responded'][0]['name']);
+        $this->assertSame('Bartholomew Lim', $result['not_responded'][0]['full_name']);
+    }
+
+    public function test_options_are_in_id_order(): void
+    {
+        $names = array_column($this->breakdown()['menus'][0]['options'], 'name');
+
+        $this->assertSame(['Chicken', 'Fish'], $names);
+        $this->assertSame(
+            LunchOption::where('lunch_id', $this->lunch->id)->orderBy('id')->pluck('id')->all(),
+            array_column($this->breakdown()['menus'][0]['options'], 'lunch_option_id'),
+        );
     }
 }

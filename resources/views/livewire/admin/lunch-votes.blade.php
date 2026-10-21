@@ -49,7 +49,7 @@
             <p class="lv-muted">
                 {{ __('Last reminder sent: :time by :name', [
                     'time' => $lunch->manual_reminder_sent_at->translatedFormat('D j M, '.\App\Support\TimeFormat::time()),
-                    'name' => $lunch->manualReminderSender?->name ?? __('a deleted admin'),
+                    'name' => $lunch->manualReminderSender?->display_name ?? __('a deleted admin'),
                 ]) }}
             </p>
         @endif

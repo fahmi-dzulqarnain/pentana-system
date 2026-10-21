@@ -9,6 +9,7 @@ use App\Services\LunchVoteBreakdown;
 use App\Services\LunchVotingService;
 use Filament\Notifications\Notification;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\QueryException;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 use RuntimeException;
@@ -42,6 +43,9 @@ class LunchVotes extends Component
 
         try {
             app(LunchVotingService::class)->setPickAsAdmin($lunch, $member, $lunchOptionId);
+        } catch (QueryException $e) {
+            // A database fault is not a user-facing rule; never put its SQL in a toast.
+            throw $e;
         } catch (RuntimeException $e) {
             Notification::make()->title(__($e->getMessage()))->danger()->send();
 
@@ -59,6 +63,9 @@ class LunchVotes extends Component
 
         try {
             $count = app(LunchReminderService::class)->remindNonResponders($lunch, auth()->user());
+        } catch (QueryException $e) {
+            // A database fault is not a user-facing rule; never put its SQL in a toast.
+            throw $e;
         } catch (RuntimeException $e) {
             Notification::make()->title(__($e->getMessage()))->danger()->send();
 
@@ -82,7 +89,7 @@ class LunchVotes extends Component
         // The click-a-name menu offers enabled options only; a disabled one shows in the breakdown just because someone picked it.
         $choices = $lunch->menus->flatMap(fn ($menu) => $menu->options->where('enabled', true)->map(fn ($option) => [
             'id' => $option->id,
-            'label' => trim(($menu->catererMeal?->name ?? '').' · '.($option->mealOption?->name ?? ''), ' ·'),
+            'label' => $menu->catererMeal?->name.' · '.$option->mealOption?->name,
         ]))->values()->all();
 
         return view('livewire.admin.lunch-votes', [

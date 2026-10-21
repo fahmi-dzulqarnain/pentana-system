@@ -12,8 +12,10 @@ use App\Models\LunchResponse;
 use App\Models\MealOption;
 use App\Models\User;
 use App\Notifications\LunchVoteNudge;
+use App\Services\LunchVotingService;
 use Filament\Facades\Filament;
 use Filament\Notifications\Notification as FilamentNotification;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException;
@@ -309,5 +311,35 @@ class LunchVotesComponentTest extends TestCase
             ->assertDontSeeHtml('wire:click="setPick')
             ->callAction('publish')
             ->assertSeeHtml('wire:click="setPick');
+    }
+
+    public function test_shows_nickname_with_full_name(): void
+    {
+        $lunch = $this->lunch();
+        $this->vote($lunch, User::factory()->create(['name' => 'Aaron Zulkifli', 'nickname' => 'Zul']), $this->chicken);
+
+        $this->votes($lunch)->assertSeeInOrder(['Zul', '(Aaron Zulkifli)']);
+    }
+
+    public function test_last_reminder_uses_sender_display_name(): void
+    {
+        $lunch = $this->lunch();
+        $this->admin->update(['nickname' => 'Boss']);
+        $lunch->update(['manual_reminder_sent_at' => now(), 'manual_reminder_sent_by' => $this->admin->id]);
+
+        $this->votes($lunch)->assertSee('Boss');
+    }
+
+    public function test_database_errors_are_not_shown_in_a_toast(): void
+    {
+        $lunch = $this->lunch();
+        $ben = User::factory()->create();
+        $this->mock(LunchVotingService::class)
+            ->shouldReceive('setPickAsAdmin')
+            ->andThrow(new QueryException('sqlite', 'select secret_sql', [], new \PDOException('boom')));
+
+        $this->expectException(QueryException::class);
+
+        $this->votes($lunch)->call('setPick', $ben->id, null);
     }
 }

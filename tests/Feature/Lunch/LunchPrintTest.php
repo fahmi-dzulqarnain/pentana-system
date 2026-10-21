@@ -80,4 +80,21 @@ class LunchPrintTest extends TestCase
             ->get(route('lunches.print', $this->lunch))
             ->assertOk();
     }
+
+    public function test_disabled_admin_gets_403(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+        $admin->forceFill(['disabled_at' => now()])->save();
+
+        $this->actingAs($admin)->get(route('lunches.print', $this->lunch))->assertForbidden();
+    }
+
+    public function test_shows_nickname_with_full_name(): void
+    {
+        User::factory()->create(['name' => 'Dina Binti Omar', 'nickname' => 'Didi']);
+
+        $this->actingAs(User::factory()->create(['is_admin' => true]))
+            ->get(route('lunches.print', $this->lunch))
+            ->assertSeeInOrder(['Didi', '(Dina Binti Omar)']);
+    }
 }

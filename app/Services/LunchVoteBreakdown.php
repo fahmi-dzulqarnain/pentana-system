@@ -12,9 +12,9 @@ class LunchVoteBreakdown
 {
     /**
      * @return array{
-     *   menus: array<int, array{meal: ?string, caterer: ?string, options: array<int, array{lunch_option_id: int, name: ?string, enabled: bool, members: array<int, array{id: int, name: string, disabled: bool}>}>}>,
-     *   not_attending: array<int, array{id: int, name: string, disabled: bool}>,
-     *   not_responded: array<int, array{id: int, name: string, disabled: bool}>,
+     *   menus: array<int, array{meal: ?string, caterer: ?string, options: array<int, array{lunch_option_id: int, name: ?string, enabled: bool, members: array<int, array{id: int, name: string, full_name: ?string, disabled: bool}>}>}>,
+     *   not_attending: array<int, array{id: int, name: string, full_name: ?string, disabled: bool}>,
+     *   not_responded: array<int, array{id: int, name: string, full_name: ?string, disabled: bool}>,
      *   counts: array{ordering: int, not_attending: int, not_responded: int}
      * }
      */
@@ -26,7 +26,8 @@ class LunchVoteBreakdown
 
         $member = fn ($response) => [
             'id' => (int) $response->user_id,
-            'name' => (string) $response->user?->name,
+            'name' => (string) $response->user?->display_name,
+            'full_name' => self::fullName($response->user),
             'disabled' => ! in_array($response->user_id, $enabledIds),
         ];
 
@@ -61,7 +62,7 @@ class LunchVoteBreakdown
         $notAttending = self::sorted($lunch->responses->whereNull('lunch_option_id')->map($member));
 
         $notResponded = self::sorted(
-            $lunch->nonResponders()->get(['id', 'name'])->map(fn (User $u) => ['id' => $u->id, 'name' => (string) $u->name, 'disabled' => false])
+            $lunch->nonResponders()->get(['id', 'name', 'nickname'])->map(fn (User $u) => ['id' => $u->id, 'name' => $u->display_name, 'full_name' => self::fullName($u), 'disabled' => false])
         );
 
         return [
@@ -76,7 +77,13 @@ class LunchVoteBreakdown
         ];
     }
 
-    /** @return array<int, array{id: int, name: string, disabled: bool}> */
+    /** The full name, shown beside the nickname; null when there is no nickname to explain. */
+    private static function fullName(?User $user): ?string
+    {
+        return filled($user?->nickname) ? $user->name : null;
+    }
+
+    /** @return array<int, array{id: int, name: string, full_name: ?string, disabled: bool}> */
     private static function sorted(Collection $members): array
     {
         return $members->sortBy(fn ($m) => mb_strtolower($m['name']))->values()->all();
