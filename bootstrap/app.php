@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Middleware\SetLocale;
+use Filament\Facades\Filament;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -17,11 +19,14 @@ return Application::configure(basePath: dirname(__DIR__))
         // requests are HTTPS - required for passkeys (WebAuthn rejects non-HTTPS in
         // production) and for correct https URL/asset generation. nginx listens on
         // 127.0.0.1 only, so the tunnel is the sole path in.
+        // There is no app-level login route; send guests to the account panel's.
+        $middleware->redirectGuestsTo(fn () => Filament::getPanel('account')->getLoginUrl());
+
         $middleware->trustProxies(at: '*');
 
         // The locale cookie is read by the client-side sync script, so it must stay plain.
-        $middleware->encryptCookies(except: [\App\Http\Middleware\SetLocale::COOKIE]);
-        $middleware->web(append: [\App\Http\Middleware\SetLocale::class]);
+        $middleware->encryptCookies(except: [SetLocale::COOKIE]);
+        $middleware->web(append: [SetLocale::class]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

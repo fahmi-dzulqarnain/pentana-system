@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\AndroidDownloadController;
+use App\Http\Controllers\LocaleController;
+use App\Http\Controllers\LunchPrintController;
 use App\Livewire\ClaimAccount;
 use App\Models\AndroidRelease;
 use Illuminate\Support\Facades\Route;
@@ -11,12 +14,16 @@ Route::get('/', function () {
 Route::view('/privacy', 'privacy')->name('privacy');
 
 // Sideloaded Android build while there is no Play Store listing; always the newest release.
-Route::get('/android/download', \App\Http\Controllers\AndroidDownloadController::class)
+Route::get('/android/download', AndroidDownloadController::class)
     ->middleware('throttle:30,1')
     ->name('android.download');
 
+Route::get('/lunches/{lunch}/print', LunchPrintController::class)
+    ->middleware('auth')
+    ->name('lunches.print');
+
 Route::get('/claim', ClaimAccount::class)->name('claim');
-Route::post('/locale', [\App\Http\Controllers\LocaleController::class, 'update'])->name('locale.update');
+Route::post('/locale', [LocaleController::class, 'update'])->name('locale.update');
 
 // spatie/laravel-passkeys route macro. NOT auto-registered by the package -
 // the host app must opt in. Registers:

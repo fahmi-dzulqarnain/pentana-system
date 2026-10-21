@@ -639,5 +639,10 @@
     "Download the PENTANA Android app": "Unduh aplikasi Android PENTANA",
     "Download for": "Unduh untuk",
     "Android :version · :size MB. Your phone will ask you to allow installs from your browser the first time.": "Android :version · :size MB. Ponsel Anda akan meminta izin untuk memasang aplikasi dari browser saat pertama kali.",
-    "Get PENTANA on the App Store, or download it for Android from this page.": "Dapatkan PENTANA di App Store, atau unduh untuk Android dari halaman ini."
+    "Get PENTANA on the App Store, or download it for Android from this page.": "Dapatkan PENTANA di App Store, atau unduh untuk Android dari halaman ini.",
+    "Print": "Cetak",
+    ":ordering ordering · :not_attending not attending · :not_responded not responded · printed :time": ":ordering memesan · :not_attending tidak hadir · :not_responded belum membalas · dicetak :time",
+    "Not responded: :count": "Belum membalas: :count",
+    "Nobody": "Tidak ada",
+    "(disabled)": "(dinonaktifkan)"
 }
