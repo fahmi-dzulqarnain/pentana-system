@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Filament\Resources\FeePayments\Pages\ViewFeePayment;
 use App\Models\Payment\PaymentProof;
 use App\Models\User;
+use Filament\Actions\Testing\TestAction;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
@@ -36,7 +37,9 @@ class ViewFeePaymentTest extends TestCase
             ->assertSuccessful()
             ->assertSee('receipts/test.jpg')                            // thumbnail rendered
             ->assertSee('object-fit:contain', false)                    // whole receipt visible, not cropped (inline style)
-            ->assertInfolistActionExists('proof_image_path', 'viewReceipt'); // click opens the modal action
+            ->assertInfolistActionExists('proof_image_path', 'viewReceipt') // click opens the modal action
+            // "View proof", not "View receipt": this opens the member's bank slip, not the issued receipt PDF.
+            ->assertActionHasLabel(TestAction::make('viewReceipt')->schemaComponent('proof_image_path', 'infolist'), 'View proof');
     }
 
     public function test_receipt_modal_renders_the_full_image_and_zoom_link(): void

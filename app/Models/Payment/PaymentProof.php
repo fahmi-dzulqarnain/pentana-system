@@ -4,8 +4,11 @@ namespace App\Models\Payment;
 
 use App\Models\User;
 use App\Services\FinanceService;
+use App\Services\ReceiptService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Facades\DB;
 
 class PaymentProof extends Model
 {
@@ -22,7 +25,19 @@ class PaymentProof extends Model
     protected static function booted(): void
     {
         // Covers every delete path (admin action, bulk delete, code), not just one page.
-        static::deleting(fn (PaymentProof $payment) => app(FinanceService::class)->releasePayment($payment));
+        static::deleting(function (PaymentProof $payment) {
+            app(ReceiptService::class)->voidFor($payment);
+            app(FinanceService::class)->releasePayment($payment);
+        });
+    }
+
+    /**
+     * One transaction around the deleting hook and the row delete, so a failure in
+     * releasePayment() (or the delete itself) also rolls back the receipt's void.
+     */
+    public function delete()
+    {
+        return DB::transaction(fn () => parent::delete());
     }
 
     public function user()
@@ -34,6 +49,11 @@ class PaymentProof extends Model
     public function allocations(): HasMany
     {
         return $this->hasMany(PaymentAllocation::class);
+    }
+
+    public function receipt(): HasOne
+    {
+        return $this->hasOne(PaymentReceipt::class);
     }
 
     // Helper to see which months this proof paid for

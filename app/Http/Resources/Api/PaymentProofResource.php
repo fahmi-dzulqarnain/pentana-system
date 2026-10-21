@@ -25,6 +25,8 @@ class PaymentProofResource extends JsonResource
             'proof_image_url' => $this->proof_image_path
                 ? Storage::disk('public')->url($this->proof_image_path)
                 : null,
+            'receipt_number' => $this->receipt?->number,
+            'has_receipt' => $this->receipt !== null,
             'submitted_at' => $this->created_at?->toIso8601String(),
         ];
     }

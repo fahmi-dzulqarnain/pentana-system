@@ -81,4 +81,67 @@ class PaymentProofsTest extends TestCase
             ->assertJsonCount(1, 'data')
             ->assertJsonPath('data.0.amount_claimed', '10.00');
     }
+
+    private function verifiedProof(User $member): PaymentProof
+    {
+        \App\Models\Payment\FeePeriod::create([
+            'user_id' => $member->id,
+            'month_date' => now()->startOfMonth()->toDateString(),
+            'amount_due' => 50,
+            'status' => 'unpaid',
+        ]);
+        $proof = PaymentProof::create(['user_id' => $member->id, 'proof_image_path' => 'p/v.jpg', 'amount_claimed' => 50, 'status' => 'pending']);
+        app(\App\Services\FinanceService::class)->verifyAndAllocate($proof, 50);
+
+        return $proof->fresh();
+    }
+
+    public function test_index_exposes_receipt_number(): void
+    {
+        $member = User::factory()->create(['activated_at' => now()]);
+        $verified = $this->verifiedProof($member);
+        $pending = PaymentProof::create(['user_id' => $member->id, 'proof_image_path' => 'p/p.jpg', 'amount_claimed' => 10, 'status' => 'pending']);
+        Sanctum::actingAs($member);
+
+        $data = collect($this->getJson('/api/v1/payment-proofs')->assertOk()->json('data'))->keyBy('id');
+
+        $this->assertSame($verified->receipt->number, $data[$verified->id]['receipt_number']);
+        $this->assertMatchesRegularExpression('/^PEN-\d{4}-\d{4}$/', $data[$verified->id]['receipt_number']);
+        $this->assertTrue($data[$verified->id]['has_receipt']);
+        $this->assertNull($data[$pending->id]['receipt_number']);
+        $this->assertFalse($data[$pending->id]['has_receipt']);
+    }
+
+    public function test_owner_downloads_receipt_pdf(): void
+    {
+        $member = User::factory()->create(['activated_at' => now()]);
+        $proof = $this->verifiedProof($member);
+        Sanctum::actingAs($member);
+
+        $response = $this->get("/api/v1/payment-proofs/{$proof->id}/receipt");
+
+        $response->assertOk()->assertHeader('Content-Type', 'application/pdf');
+        $this->assertStringContainsString(
+            'attachment; filename="'.$proof->receipt->filename().'"',
+            $response->headers->get('Content-Disposition')
+        );
+        $this->assertStringStartsWith('%PDF', $response->getContent());
+    }
+
+    public function test_other_member_gets_404(): void
+    {
+        $proof = $this->verifiedProof(User::factory()->create(['activated_at' => now()]));
+        Sanctum::actingAs(User::factory()->create(['activated_at' => now()]));
+
+        $this->getJson("/api/v1/payment-proofs/{$proof->id}/receipt")->assertNotFound();
+    }
+
+    public function test_proof_without_receipt_gets_404(): void
+    {
+        $member = User::factory()->create(['activated_at' => now()]);
+        $proof = PaymentProof::create(['user_id' => $member->id, 'proof_image_path' => 'p/n.jpg', 'amount_claimed' => 10, 'status' => 'pending']);
+        Sanctum::actingAs($member);
+
+        $this->getJson("/api/v1/payment-proofs/{$proof->id}/receipt")->assertNotFound();
+    }
 }

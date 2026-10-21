@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Exceptions\PaymentNotPendingException;
 use App\Models\Payment\FeePeriod;
 use App\Models\Payment\PaymentAllocation;
 use App\Models\Payment\PaymentProof;
@@ -12,11 +13,24 @@ use Illuminate\Support\Facades\DB;
 class FinanceService
 {
     /**
-     * Verify a submitted payment proof, then (re)allocate the member's funds.
+     * Verify a submitted payment proof, (re)allocate the member's funds, and issue
+     * the receipt. All in one transaction, so a failure anywhere releases the number.
      */
     public function verifyAndAllocate(PaymentProof $payment, float $verifiedAmount): void
     {
         DB::transaction(function () use ($payment, $verifiedAmount) {
+            // Serialise all fund moves for this member, so another verify's allocations
+            // can't land between reading $allocationIdBefore and issuing the receipt.
+            $this->lockMember($payment->user_id);
+
+            // The lock makes a double-click or a second admin wait, then see it is no longer pending.
+            $status = PaymentProof::whereKey($payment->id)->lockForUpdate()->value('status');
+            if ($status !== 'pending') {
+                throw new PaymentNotPendingException("Payment proof {$payment->id} is not pending.");
+            }
+
+            $allocationIdBefore = (int) PaymentAllocation::max('id');
+
             $payment->update([
                 'amount_verified' => $verifiedAmount,
                 'status' => 'verified',
@@ -24,6 +38,8 @@ class FinanceService
             ]);
 
             $this->applyAvailableFunds($payment->user);
+
+            app(ReceiptService::class)->issueFor($payment->fresh(), $allocationIdBefore);
         });
     }
 
@@ -38,6 +54,9 @@ class FinanceService
     public function applyAvailableFunds(User $user, ?int $exceptProofId = null): void
     {
         DB::transaction(function () use ($user, $exceptProofId) {
+            // Same member lock as verifyAndAllocate(); re-taking it in one transaction is a no-op.
+            $this->lockMember($user->id);
+
             $periods = FeePeriod::where('user_id', $user->id)
                 ->where('status', '!=', 'paid')
                 ->orderBy('month_date')
@@ -94,6 +113,12 @@ class FinanceService
     public function releasePayment(PaymentProof $payment): void
     {
         DB::transaction(function () use ($payment) {
+            // Member lock first, the same order verifyAndAllocate() takes it, so a delete
+            // racing a verify for the same member waits instead of deadlocking.
+            if ($payment->user_id) {
+                $this->lockMember($payment->user_id);
+            }
+
             $periodIds = $payment->allocations()->pluck('fee_period_id');
             $payment->allocations()->delete();
 
@@ -103,6 +128,11 @@ class FinanceService
                 $this->applyAvailableFunds($payment->user, exceptProofId: $payment->id);
             }
         });
+    }
+
+    private function lockMember(int $userId): void
+    {
+        User::whereKey($userId)->lockForUpdate()->first();
     }
 
     private function refreshStatus(FeePeriod $period): void
@@ -126,7 +156,7 @@ class FinanceService
         ), 2);
     }
 
-    private function toCents($amount): int
+    public static function toCents($amount): int
     {
         return (int) round(((float) $amount) * 100);
     }

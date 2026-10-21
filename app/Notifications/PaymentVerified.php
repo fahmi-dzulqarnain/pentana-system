@@ -9,6 +9,7 @@ use App\Models\Payment\PaymentProof;
 use App\Models\QueuedEmail;
 use App\Notifications\Concerns\PushesViaApn;
 use App\Services\FinanceService;
+use App\Services\ReceiptPdf;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification as FilamentNotification;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -67,11 +68,27 @@ class PaymentVerified extends Notification
             ? __('MYR :amount is still outstanding.', ['amount' => $this->money($outstanding)])
             : __('You have no outstanding dues.'));
 
+        $this->attachReceipt($mail);
+
         return $mail
             ->action(__('View my payment'), $this->url())
             ->withSymfonyMessage(function (SymfonyEmail $message) {
                 $message->getHeaders()->addTextHeader(QueuedEmail::PRIORITY_HEADER, '60');
             });
+    }
+
+    /** Attach the receipt PDF when one exists; a rendering failure is reported but never stops the email. */
+    private function attachReceipt(MailMessage $mail): void
+    {
+        $receipt = $this->payment->receipt;
+        if (! $receipt) {
+            return;
+        }
+
+        $pdf = rescue(fn () => app(ReceiptPdf::class)->render($receipt), null, report: true);
+        if ($pdf !== null) {
+            $mail->attachData($pdf, $receipt->filename(), ['mime' => 'application/pdf']);
+        }
     }
 
     /** @return array<string, mixed> */
