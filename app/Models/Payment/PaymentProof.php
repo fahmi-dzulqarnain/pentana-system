@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Services\FinanceService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class PaymentProof extends Model
 {
@@ -34,6 +35,11 @@ class PaymentProof extends Model
     public function allocations(): HasMany
     {
         return $this->hasMany(PaymentAllocation::class);
+    }
+
+    public function receipt(): HasOne
+    {
+        return $this->hasOne(PaymentReceipt::class);
     }
 
     // Helper to see which months this proof paid for
