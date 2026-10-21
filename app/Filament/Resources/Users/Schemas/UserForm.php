@@ -28,6 +28,12 @@ class UserForm
             ->components([
                 TextInput::make('name')
                     ->required(),
+                // Set by the member on their own profile; admins clear it from the Users table.
+                TextInput::make('nickname')
+                    ->label(__('Nickname'))
+                    ->hiddenOn('create')
+                    ->disabled()
+                    ->dehydrated(false),
                 TextInput::make('email')
                     ->label(__('Email address'))
                     ->email()

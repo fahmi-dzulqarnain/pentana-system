@@ -8,6 +8,7 @@ use App\Filament\Resources\FeePeriods\Pages\EditFeePeriod;
 use App\Filament\Resources\FeePeriods\Pages\ListFeePeriods;
 use App\Filament\Resources\FeePeriods\Schemas\FeePeriodForm;
 use App\Filament\Resources\FeePeriods\Tables\FeePeriodsTable;
+use App\Filament\Support\MemberName;
 use App\Models\Payment\FeePeriod;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -31,12 +32,12 @@ class FeePeriodResource extends Resource
             return static::getModelLabel();
         }
 
-        return trim(($record->user?->name ?? '').' · '.$record->month_date?->translatedFormat('F Y'), ' ·');
+        return trim(($record->user ? MemberName::optionLabel($record->user) : '').' · '.$record->month_date?->translatedFormat('F Y'), ' ·');
     }
 
     public static function getGloballySearchableAttributes(): array
     {
-        return ['user.name'];
+        return ['user.name', 'user.nickname'];
     }
 
     public static function getNavigationGroup(): string|UnitEnum|null

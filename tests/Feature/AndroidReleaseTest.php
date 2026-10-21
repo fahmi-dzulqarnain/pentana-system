@@ -83,6 +83,42 @@ class AndroidReleaseTest extends TestCase
             ->assertDontSee('Coming soon to Android');
     }
 
+    public function test_install_guide_walks_through_every_step(): void
+    {
+        $this->get(route('android.install'))
+            ->assertOk()
+            ->assertSeeInOrder(['Download the app', 'Open the file', 'Allow installs from your browser', 'Install', 'Open and sign in'])
+            ->assertSee('The Android app is not available to download yet.')
+            ->assertDontSee(route('android.download'), false);
+    }
+
+    public function test_install_guide_offers_the_current_release_and_its_checksum(): void
+    {
+        $release = $this->publish('1.0.1', 2, 'apk');
+
+        $this->get(route('android.install'))
+            ->assertSee('href="'.route('android.download').'"', false)
+            ->assertSee('Version 1.0.1')
+            ->assertSee($release->sha256);
+    }
+
+    public function test_landing_page_links_to_the_install_guide_once_a_release_exists(): void
+    {
+        $this->get('/')->assertDontSee(route('android.install'), false);
+
+        $this->publish('1.0.0', 1);
+
+        $this->get('/')->assertSee('href="'.route('android.install').'"', false);
+    }
+
+    public function test_install_guide_is_translated(): void
+    {
+        config(['app.locales' => 'en,ms,id']);
+
+        $this->withUnencryptedCookie('locale', 'ms')->get(route('android.install'))
+            ->assertSee('Pasang PENTANA di Android');
+    }
+
     public function test_admin_upload_records_size_and_checksum(): void
     {
         $this->actingAs(User::factory()->admin()->create(['activated_at' => now()]));
@@ -119,6 +155,17 @@ class AndroidReleaseTest extends TestCase
             ])
             ->call('create')
             ->assertHasFormErrors(['apk_path', 'version_code']);
+    }
+
+    public function test_upload_field_leaves_type_checking_to_the_server(): void
+    {
+        // FilePond reads the input's accept attribute as MIME types; ".apk" made it reject
+        // every APK in the browser ("File of invalid type"). The server checks the extension.
+        $this->actingAs(User::factory()->admin()->create(['activated_at' => now()]));
+        Filament::setCurrentPanel(Filament::getPanel('account'));
+
+        Livewire::test(CreateAndroidRelease::class)
+            ->assertDontSeeHtml('accept=".apk"');
     }
 
     public function test_deleting_a_release_removes_its_file(): void

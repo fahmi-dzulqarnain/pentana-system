@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Users\Schemas;
 
+use App\Filament\Support\MemberName;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Schema;
 
@@ -11,7 +12,7 @@ class UserInfolist
     {
         return $schema
             ->components([
-                TextEntry::make('name'),
+                MemberName::entry(),
                 TextEntry::make('email')
                     ->label(__('Email address')),
                 TextEntry::make('email_verified_at')

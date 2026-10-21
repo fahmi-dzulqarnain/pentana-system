@@ -18,6 +18,9 @@ Route::get('/android/download', AndroidDownloadController::class)
     ->middleware('throttle:30,1')
     ->name('android.download');
 
+Route::get('/android', fn () => view('android-install', ['androidRelease' => AndroidRelease::current()]))
+    ->name('android.install');
+
 Route::get('/lunches/{lunch}/print', LunchPrintController::class)
     ->middleware('auth')
     ->name('lunches.print');

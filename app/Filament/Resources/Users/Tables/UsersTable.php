@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Users\Tables;
 
 use App\Filament\Imports\UserImporter;
 use App\Filament\Resources\Users\UserResource;
+use App\Filament\Support\MemberName;
 use App\Models\User;
 use App\Services\MemberAccess;
 use App\Services\MemberInviter;
@@ -26,8 +27,7 @@ class UsersTable
     {
         return $table
             ->columns([
-                TextColumn::make('name')
-                    ->searchable()
+                MemberName::column()
                     ->sortable(),
                 TextColumn::make('email')
                     ->label(__('Email address'))
@@ -141,6 +141,20 @@ class UsersTable
                     ->action(function (User $record, MemberInviter $inviter) {
                         $inviter->invite($record);
                         Notification::make()->title(__('Invitation sent to :email', ['email' => $record->email]))->success()->send();
+                    }),
+                // Nicknames are the member's own to choose, so an admin can only remove an unsuitable one.
+                Action::make('clearNickname')
+                    ->label(__('Clear nickname'))
+                    ->iconButton()
+                    ->tooltip(__('Clear nickname'))
+                    ->icon('heroicon-o-backspace')
+                    ->color('gray')
+                    ->visible(fn (User $record): bool => $record->nickname !== null)
+                    ->requiresConfirmation()
+                    ->modalHeading(fn (User $record): string => __('Clear nickname for :name?', ['name' => $record->name]))
+                    ->action(function (User $record) {
+                        $record->update(['nickname' => null]);
+                        Notification::make()->title(__('Nickname cleared'))->success()->send();
                     }),
                 Action::make('disable')
                     ->label(__('Disable'))

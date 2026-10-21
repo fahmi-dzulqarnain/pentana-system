@@ -395,7 +395,7 @@
                     @endif
                 </div>
                 @if ($androidRelease)
-                    <p class="note">{{ __('Android :version · :size MB. Your phone will ask you to allow installs from your browser the first time.', ['version' => $androidRelease->version_name, 'size' => $androidRelease->sizeInMegabytes()]) }}</p>
+                    <p class="note">{!! __('Android :version · :size MB. First time installing an app from a website? :guide.', ['version' => e($androidRelease->version_name), 'size' => $androidRelease->sizeInMegabytes(), 'guide' => '<a href="'.e(route('android.install')).'" style="color:#fff;font-weight:600;text-decoration:underline">'.e(__('Follow the install guide')).'</a>']) !!}</p>
                 @else
                     <p class="note">{!! __('Android is on the way. :claim now and we\'ll let you know when it lands.', ['claim' => '<a href="'.e(route('claim')).'" style="color:#fff;font-weight:600;text-decoration:underline">'.e(__('Claim your account')).'</a>']) !!}</p>
                 @endif
