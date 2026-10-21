@@ -5,7 +5,9 @@ namespace App\Filament\Resources\FeePayments\Pages;
 use App\Filament\Resources\FeePayments\Actions\PaymentReviewActions;
 use App\Filament\Resources\FeePayments\FeePaymentResource;
 use App\Filament\Resources\FeePayments\Tables\FeePaymentsTable;
+use App\Filament\Resources\PaymentReceipts\Actions\DownloadReceiptAction;
 use App\Filament\Support\MemberName;
+use App\Models\Payment\PaymentProof;
 use App\Support\StatusLabel;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
@@ -88,6 +90,7 @@ class ViewFeePayment extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
+            DownloadReceiptAction::make(fn (PaymentProof $record) => $record->receipt),
             PaymentReviewActions::verify(),
             PaymentReviewActions::reject(),
             EditAction::make(),

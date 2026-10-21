@@ -705,5 +705,15 @@
     "Lunch published for :count days": "Menu makan tengah hari diterbitkan untuk :count hari",
     ":first to :last. Order each day before its deadline.": ":first hingga :last. Pesan setiap hari sebelum tarikh akhirnya.",
     "Menus are published for these days:": "Menu telah diterbitkan untuk hari-hari ini:",
-    ":date: :menu (order by :deadline)": ":date: :menu (pesan sebelum :deadline)"
+    ":date: :menu (order by :deadline)": ":date: :menu (pesan sebelum :deadline)",
+    "Download receipt": "Muat turun resit",
+    "Receipt no.": "No. resit",
+    "Amount received": "Jumlah diterima",
+    "Void": "Terbatal",
+    "Valid": "Sah",
+    "All": "Semua",
+    "Void only": "Terbatal sahaja",
+    "Valid only": "Sah sahaja",
+    "receipt": "resit",
+    "receipts": "resit"
 }
