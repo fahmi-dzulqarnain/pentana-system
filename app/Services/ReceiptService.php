@@ -59,6 +59,20 @@ class ReceiptService
     }
 
     /**
+     * The payment is being deleted, so the receipt no longer stands. Keep the row
+     * (and its number, which is never reused) and mark it void; the FK nulls
+     * payment_proof_id once the proof row is gone.
+     */
+    public function voidFor(PaymentProof $proof): void
+    {
+        $receipt = $proof->receipt;
+
+        if ($receipt && ! $receipt->isVoid()) {
+            $receipt->forceFill(['voided_at' => now()])->save();
+        }
+    }
+
+    /**
      * Take the next number for the year. Called inside the verify transaction, so the
      * row lock serialises concurrent approvals and a rollback hands the number back.
      *

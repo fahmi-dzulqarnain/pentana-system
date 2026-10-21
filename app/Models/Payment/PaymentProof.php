@@ -4,6 +4,7 @@ namespace App\Models\Payment;
 
 use App\Models\User;
 use App\Services\FinanceService;
+use App\Services\ReceiptService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -23,7 +24,10 @@ class PaymentProof extends Model
     protected static function booted(): void
     {
         // Covers every delete path (admin action, bulk delete, code), not just one page.
-        static::deleting(fn (PaymentProof $payment) => app(FinanceService::class)->releasePayment($payment));
+        static::deleting(function (PaymentProof $payment) {
+            app(ReceiptService::class)->voidFor($payment);
+            app(FinanceService::class)->releasePayment($payment);
+        });
     }
 
     public function user()
