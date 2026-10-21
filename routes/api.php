@@ -49,6 +49,7 @@ Route::prefix('v1')->group(function () {
 
         Route::get('payment-proofs', [PaymentProofController::class, 'index']);
         Route::post('payment-proofs', [PaymentProofController::class, 'store']);
+        Route::get('payment-proofs/{paymentProof}/receipt', [PaymentProofController::class, 'receipt']);
 
         Route::get('lunches', [LunchController::class, 'index']);
         Route::post('lunches/{lunch}/respond', [LunchController::class, 'respond']);
