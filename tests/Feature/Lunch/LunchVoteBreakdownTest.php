@@ -143,6 +143,23 @@ class LunchVoteBreakdownTest extends TestCase
         $this->assertSame([], $result['not_responded']);
     }
 
+    public function test_response_without_lunch_option_counts_as_not_attending(): void
+    {
+        $user = User::factory()->create(['name' => 'Legacy']);
+        LunchResponse::create([
+            'lunch_id' => $this->lunch->id,
+            'user_id' => $user->id,
+            'meal_option_id' => $this->chicken->id,
+            'lunch_option_id' => null,
+        ]);
+
+        $result = $this->breakdown();
+
+        $this->assertSame(['Legacy'], $this->names($result['not_attending']));
+        $this->assertSame(1, $result['counts']['not_attending']);
+        $this->assertSame([], $result['not_responded']);
+    }
+
     public function test_counts(): void
     {
         $this->vote(User::factory()->create(), $this->chicken);

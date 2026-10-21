@@ -20,7 +20,7 @@ class LunchVoteBreakdown
      */
     public static function for(Lunch $lunch): array
     {
-        $lunch->load(['menus.caterer', 'menus.catererMeal', 'menus.options.mealOption', 'responses.user']);
+        $lunch->loadMissing(['menus.caterer', 'menus.catererMeal', 'menus.options.mealOption', 'responses.user']);
 
         $enabledIds = User::enabled()->whereIn('id', $lunch->responses->pluck('user_id'))->pluck('id')->all();
 
@@ -57,7 +57,8 @@ class LunchVoteBreakdown
             ];
         })->all();
 
-        $notAttending = self::sorted($lunch->responses->whereNull('meal_option_id')->map($member));
+        // lunch_option_id is the single predicate: a response without one is not attending, so no member is lost.
+        $notAttending = self::sorted($lunch->responses->whereNull('lunch_option_id')->map($member));
 
         $notResponded = self::sorted(
             $lunch->nonResponders()->get(['id', 'name'])->map(fn (User $u) => ['id' => $u->id, 'name' => (string) $u->name, 'disabled' => false])
