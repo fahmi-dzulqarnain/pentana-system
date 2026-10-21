@@ -3,10 +3,9 @@
 namespace App\Filament\Resources\Lunches\Pages;
 
 use App\Filament\Resources\Lunches\LunchResource;
-use App\Models\User;
 use App\Notifications\LunchPickRemoved;
-use App\Notifications\LunchPublished;
 use App\Services\LunchMenuChanges;
+use App\Services\LunchPublisher;
 use App\Services\MemberNotifier;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
@@ -164,16 +163,12 @@ class EditLunch extends EditRecord
                 ->color('success')
                 ->icon('heroicon-o-check-circle')
                 ->action(function () {
-                    // Only a genuine draft -> published transition should fan out notifications.
-                    if ($this->record->status !== 'draft') {
+                    if (app(LunchPublisher::class)->publish(collect([$this->record]))->isEmpty()) {
                         return;
                     }
 
-                    $this->record->update(['status' => 'published']);
                     // Keep the form state in sync so a later Save doesn't write the stale 'draft' back.
                     $this->refreshFormData(['status']);
-
-                    app(MemberNotifier::class)->sendAfterResponse(User::enabled()->get(), new LunchPublished($this->record->fresh()));
 
                     FilamentNotification::make()
                         ->title(__('Published: members notified'))

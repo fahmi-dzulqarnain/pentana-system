@@ -3,14 +3,18 @@
 namespace App\Filament\Resources\Lunches\Tables;
 
 use App\Models\Lunch;
+use App\Services\LunchPublisher;
 use App\Support\StatusLabel;
+use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Collection;
 
 class LunchesTable
 {
@@ -52,6 +56,24 @@ class LunchesTable
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
+                    // Publish a week in one go: members get one notification listing every day.
+                    BulkAction::make('publish')
+                        ->label(__('Publish'))
+                        ->icon('heroicon-o-check-circle')
+                        ->color('success')
+                        ->requiresConfirmation()
+                        ->modalDescription(__('Selected draft days are published and members get one notification listing them. Days already published are skipped.'))
+                        ->deselectRecordsAfterCompletion()
+                        ->action(function (Collection $records): void {
+                            $published = app(LunchPublisher::class)->publish($records);
+
+                            $published->isEmpty()
+                                ? Notification::make()->title(__('No draft days selected'))->warning()->send()
+                                : Notification::make()
+                                    ->title(trans_choice('Published :count day: members notified|Published :count days: members notified', $published->count()))
+                                    ->success()
+                                    ->send();
+                        }),
                     DeleteBulkAction::make(),
                 ]),
             ]);

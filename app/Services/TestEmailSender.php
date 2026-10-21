@@ -13,6 +13,7 @@ use App\Notifications\ActivityPublished;
 use App\Notifications\ActivityReminder;
 use App\Notifications\BillReminder;
 use App\Notifications\BirthdayWish;
+use App\Notifications\LunchesPublished;
 use App\Notifications\LunchPickRemoved;
 use App\Notifications\LunchPublished;
 use App\Notifications\LunchVoteNudge;
@@ -62,6 +63,7 @@ class TestEmailSender
         $menu = new LunchMenu;
         $menu->setRelation('catererMeal', new CatererMeal(['name' => 'Nasi Lemak Ayam Berempah']));
         $lunch->setRelation('menus', collect([$menu]));
+        $nextLunch = (new Lunch(['date' => now()->addDays(2), 'deadline' => now()->addDays(1)->addHours(20)]))->setRelation('menus', collect([$menu]));
 
         // id 0: nothing has it, so allocation lookups stay empty and the link still builds.
         $payment = new PaymentProof([
@@ -78,6 +80,7 @@ class TestEmailSender
             'birthday' => new BirthdayWish,
             'invitation' => new MemberInvitation,
             'lunch-published' => new LunchPublished($lunch),
+            'lunches-published' => new LunchesPublished(collect([$lunch, $nextLunch])),
             'lunch-vote-nudge' => new LunchVoteNudge($lunch),
             'lunch-pick-removed' => new LunchPickRemoved($lunch),
             'activity-published' => new ActivityPublished($activity),

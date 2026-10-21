@@ -697,5 +697,12 @@
     "Reminder sent to :count members.": "Pengingat dikirim ke :count anggota.",
     "Everyone has already responded.": "Semua orang sudah membalas.",
     "This lunch is not published.": "Makan siang ini belum diterbitkan.",
-    "This lunch is not open for voting.": "Makan siang ini tidak dibuka untuk pemilihan."
+    "This lunch is not open for voting.": "Makan siang ini tidak dibuka untuk pemilihan.",
+    "Selected draft days are published and members get one notification listing them. Days already published are skipped.": "Hari draf yang dipilih akan diterbitkan dan anggota menerima satu notifikasi yang mencantumkan semuanya. Hari yang sudah diterbitkan dilewati.",
+    "No draft days selected": "Tidak ada hari draf yang dipilih",
+    "Published :count day: members notified|Published :count days: members notified": ":count hari diterbitkan: anggota telah diberi tahu",
+    "Lunch published for :count days": "Menu makan siang diterbitkan untuk :count hari",
+    ":first to :last. Order each day before its deadline.": ":first sampai :last. Pesan setiap hari sebelum batas waktunya.",
+    "Menus are published for these days:": "Menu sudah diterbitkan untuk hari-hari berikut:",
+    ":date: :menu (order by :deadline)": ":date: :menu (pesan sebelum :deadline)"
 }
