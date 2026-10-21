@@ -6,9 +6,13 @@ use App\Filament\Resources\FeePayments\Pages\ViewFeePayment;
 use App\Models\Payment\FeePeriod;
 use App\Models\Payment\PaymentProof;
 use App\Models\User;
+use App\Models\Payment\PaymentReceipt;
 use App\Notifications\PaymentVerified;
+use App\Services\FinanceService;
+use App\Services\ReceiptPdf;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Exceptions;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Traits\Localizable;
 use Livewire\Livewire;
@@ -119,5 +123,50 @@ class PaymentVerifiedNotificationTest extends TestCase
         $bell = $this->withLocale('id', fn () => (new PaymentVerified($proof->fresh()))->toDatabase($this->member));
 
         $this->assertSame('MYR 30.00, untuk Oktober 2026.', $bell['body']);
+    }
+
+    private function verifiedWithReceipt(): PaymentProof
+    {
+        $this->bill('2026-10-01');
+        $proof = $this->proof(30);
+        app(FinanceService::class)->verifyAndAllocate($proof, 30);
+
+        return $proof->fresh();
+    }
+
+    public function test_verified_email_attaches_the_receipt(): void
+    {
+        $proof = $this->verifiedWithReceipt();
+        $this->mock(ReceiptPdf::class, fn ($m) => $m->shouldReceive('render')->once()->with(\Mockery::type(PaymentReceipt::class))->andReturn('%PDF-fake'));
+
+        $mail = (new PaymentVerified($proof))->toMail($this->member);
+
+        $this->assertCount(1, $mail->rawAttachments);
+        $this->assertSame($proof->receipt->filename(), $mail->rawAttachments[0]['name']);
+        $this->assertSame('application/pdf', $mail->rawAttachments[0]['options']['mime']);
+        $this->assertSame('%PDF-fake', $mail->rawAttachments[0]['data']);
+    }
+
+    public function test_email_still_builds_when_rendering_fails(): void
+    {
+        $proof = $this->verifiedWithReceipt();
+        Exceptions::fake();
+        $this->mock(ReceiptPdf::class, fn ($m) => $m->shouldReceive('render')->andThrow(new \RuntimeException('dompdf blew up')));
+
+        $mail = (new PaymentVerified($proof))->toMail($this->member);
+
+        $this->assertSame('Your payment has been verified', $mail->subject);
+        $this->assertCount(0, $mail->rawAttachments);
+        Exceptions::assertReported(fn (\RuntimeException $e) => $e->getMessage() === 'dompdf blew up');
+    }
+
+    public function test_no_attachment_without_a_receipt(): void
+    {
+        $proof = $this->proof(30);
+        $proof->update(['status' => 'verified', 'amount_verified' => 30]);
+
+        $mail = (new PaymentVerified($proof->fresh()))->toMail($this->member);
+
+        $this->assertCount(0, $mail->rawAttachments);
     }
 }
