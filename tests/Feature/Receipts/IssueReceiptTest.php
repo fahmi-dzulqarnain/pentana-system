@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Receipts;
 
+use App\Exceptions\PaymentNotPendingException;
 use App\Models\Payment\FeePeriod;
 use App\Models\Payment\PaymentProof;
 use App\Models\Payment\PaymentReceipt;
@@ -214,7 +215,7 @@ class IssueReceiptTest extends TestCase
         try {
             app(FinanceService::class)->verifyAndAllocate($proof->fresh(), 30);
             $this->fail('Expected the second verification to throw.');
-        } catch (RuntimeException) {
+        } catch (PaymentNotPendingException) {
         }
 
         $this->assertSame(1, PaymentReceipt::count());

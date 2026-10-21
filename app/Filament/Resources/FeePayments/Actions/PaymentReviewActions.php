@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\FeePayments\Actions;
 
+use App\Exceptions\PaymentNotPendingException;
 use App\Models\Payment\PaymentProof;
 use App\Notifications\PaymentRejected;
 use App\Notifications\PaymentVerified;
@@ -38,8 +39,13 @@ class PaymentReviewActions
                     ->default(fn (PaymentProof $record) => $record->amount_claimed)
                     ->required(),
             ])
-            ->action(function (PaymentProof $record, array $data, FinanceService $service) {
-                $service->verifyAndAllocate($record, (float) $data['actual_amount']);
+            ->action(function (Action $action, PaymentProof $record, array $data, FinanceService $service) {
+                try {
+                    $service->verifyAndAllocate($record, (float) $data['actual_amount']);
+                } catch (PaymentNotPendingException) {
+                    Notification::make()->warning()->title(__('This payment was already reviewed.'))->send();
+                    $action->halt();
+                }
 
                 self::reportOutcome(__('Payment verified'), self::notifyMember($record, new PaymentVerified($record->fresh())));
             })

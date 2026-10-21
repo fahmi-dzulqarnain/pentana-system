@@ -2,13 +2,13 @@
 
 namespace App\Services;
 
+use App\Exceptions\PaymentNotPendingException;
 use App\Models\Payment\FeePeriod;
 use App\Models\Payment\PaymentAllocation;
 use App\Models\Payment\PaymentProof;
 use App\Models\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use RuntimeException;
 
 class FinanceService
 {
@@ -19,10 +19,14 @@ class FinanceService
     public function verifyAndAllocate(PaymentProof $payment, float $verifiedAmount): void
     {
         DB::transaction(function () use ($payment, $verifiedAmount) {
+            // Serialise all fund moves for this member, so another verify's allocations
+            // can't land between reading $allocationIdBefore and issuing the receipt.
+            $this->lockMember($payment->user_id);
+
             // The lock makes a double-click or a second admin wait, then see it is no longer pending.
             $status = PaymentProof::whereKey($payment->id)->lockForUpdate()->value('status');
             if ($status !== 'pending') {
-                throw new RuntimeException("Payment proof {$payment->id} is not pending.");
+                throw new PaymentNotPendingException("Payment proof {$payment->id} is not pending.");
             }
 
             $allocationIdBefore = (int) PaymentAllocation::max('id');
@@ -50,6 +54,9 @@ class FinanceService
     public function applyAvailableFunds(User $user, ?int $exceptProofId = null): void
     {
         DB::transaction(function () use ($user, $exceptProofId) {
+            // Same member lock as verifyAndAllocate(); re-taking it in one transaction is a no-op.
+            $this->lockMember($user->id);
+
             $periods = FeePeriod::where('user_id', $user->id)
                 ->where('status', '!=', 'paid')
                 ->orderBy('month_date')
@@ -115,6 +122,11 @@ class FinanceService
                 $this->applyAvailableFunds($payment->user, exceptProofId: $payment->id);
             }
         });
+    }
+
+    private function lockMember(int $userId): void
+    {
+        User::whereKey($userId)->lockForUpdate()->first();
     }
 
     private function refreshStatus(FeePeriod $period): void

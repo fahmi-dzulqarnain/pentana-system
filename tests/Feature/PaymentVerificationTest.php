@@ -5,9 +5,13 @@ namespace Tests\Feature;
 use App\Filament\Resources\FeePayments\Pages\ListFeePayments;
 use App\Filament\Resources\FeePayments\Pages\ViewFeePayment;
 use App\Models\Payment\PaymentProof;
+use App\Models\Payment\PaymentReceipt;
 use App\Models\User;
+use App\Notifications\PaymentVerified;
+use App\Services\FinanceService;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -49,6 +53,33 @@ class PaymentVerificationTest extends TestCase
 
         $this->assertSame('verified', $proof->fresh()->status);
         $this->assertEquals(25, $proof->fresh()->amount_verified);
+    }
+
+    public function test_verifying_a_proof_someone_else_already_reviewed_warns_instead_of_failing(): void
+    {
+        Notification::fake();
+        $proof = $this->proof();
+        $this->actingAs(User::factory()->treasurer()->create());
+
+        $page = Livewire::test(ViewFeePayment::class, ['record' => $proof->getKey()])
+            ->assertActionVisible('verifyPayment');
+
+        // Another admin verifies it mid-request, after this action passed its visibility check
+        // (each Livewire request reloads the record, so flipping it earlier just hides the action).
+        $this->partialMock(FinanceService::class, function ($mock) use ($proof) {
+            $mock->shouldReceive('verifyAndAllocate')->once()->andReturnUsing(function (...$args) use ($proof) {
+                PaymentProof::whereKey($proof->id)->update(['status' => 'verified', 'amount_verified' => 30]);
+
+                return (new FinanceService)->verifyAndAllocate(...$args);
+            });
+        });
+
+        $page->callAction('verifyPayment', data: ['actual_amount' => 30])
+            ->assertNotified('This payment was already reviewed.')
+            ->assertNotNotified('Payment verified');
+
+        $this->assertSame(0, PaymentReceipt::count());
+        Notification::assertNotSentTo($this->member, PaymentVerified::class);
     }
 
     public function test_admin_rejects_with_a_reason_that_is_shown_afterwards(): void
