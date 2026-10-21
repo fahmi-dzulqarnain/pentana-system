@@ -3,6 +3,7 @@
 namespace Tests\Feature\Lunch;
 
 use App\Filament\Resources\Lunches\Pages\EditLunch;
+use App\Livewire\Admin\LunchVotes;
 use App\Models\CatererMeal;
 use App\Models\Lunch;
 use App\Models\LunchOption;
@@ -77,8 +78,11 @@ class LunchOrderStatsTest extends TestCase
         Livewire::test(EditLunch::class, ['record' => $lunch->getRouteKey()])
             ->assertSuccessful()
             ->assertSee('Current orders')
-            ->assertSee('Not attending: 1')
-            ->assertSee('Total ordering: 0');
+            ->assertSeeLivewire(LunchVotes::class);
+
+        Livewire::test(LunchVotes::class, ['lunchId' => $lunch->id])
+            ->assertSee('Current orders')
+            ->assertSee('Ordering 0 · Not attending 1 · Not responded 1');
     }
 
     public function test_orders_summary_groups_counts_per_menu(): void
@@ -108,19 +112,14 @@ class LunchOrderStatsTest extends TestCase
         $this->assertSame([$optA->id => 1, $optBRegular->id => 2, $optBLarge->id => 1], $lunch->fresh('responses')->optionCountsByLunchOption());
 
         $this->actingAs(User::factory()->admin()->create());
-        Filament::setCurrentPanel(Filament::getPanel('account'));
 
-        $html = Livewire::test(EditLunch::class, ['record' => $lunch->getRouteKey()])->html();
+        $html = Livewire::test(LunchVotes::class, ['lunchId' => $lunch->id])->html();
         $this->assertStringContainsString('&lt;b&gt;x&lt;/b&gt;', $html);
         $this->assertStringNotContainsString('<b>x</b>', $html);
-        $this->assertStringNotContainsString('&lt;br&gt;', $html);
-        $this->assertStringContainsString('<br>', $html);
 
-        Livewire::test(EditLunch::class, ['record' => $lunch->getRouteKey()])
-            ->assertSee($menuA->fresh(['caterer', 'catererMeal'])->label().': Regular: 1')
-            ->assertSee($menuB->fresh(['caterer', 'catererMeal'])->label().': Regular: 2')
-            ->assertSee('Large: 1')
-            ->assertSee('Not attending: 1')
-            ->assertSee('Total ordering: 4');
+        Livewire::test(LunchVotes::class, ['lunchId' => $lunch->id])
+            ->assertSeeInOrder([$mealA->name, 'Regular (1)', $mealB->name, 'Regular (2)', 'Large (1)'])
+            ->assertSee('Not attending (1)')
+            ->assertSee('Ordering 4 · Not attending 1');
     }
 }

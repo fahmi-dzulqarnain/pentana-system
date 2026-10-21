@@ -644,5 +644,20 @@
     ":ordering ordering · :not_attending not attending · :not_responded not responded · printed :time": ":ordering memesan · :not_attending tidak hadir · :not_responded belum membalas · dicetak :time",
     "Not responded: :count": "Belum membalas: :count",
     "Nobody": "Tidak ada",
-    "(disabled)": "(dinonaktifkan)"
+    "(disabled)": "(dinonaktifkan)",
+    "Ordering :ordering · Not attending :not_attending · Not responded :not_responded": "Memesan :ordering · Tidak hadir :not_attending · Belum membalas :not_responded",
+    "Deadline :time": "Batas waktu :time",
+    "Print list": "Cetak daftar",
+    "Remind :count non-voters": "Ingatkan :count yang belum memilih",
+    "Send the last-call reminder to :count members who haven't responded?": "Kirim pengingat terakhir ke :count anggota yang belum membalas?",
+    "Last reminder sent: :time by :name": "Pengingat terakhir dikirim: :time oleh :name",
+    "a deleted admin": "admin yang sudah dihapus",
+    "Not attending (:count)": "Tidak hadir (:count)",
+    "Not responded (:count)": "Belum membalas (:count)",
+    "disabled": "dinonaktifkan",
+    "Pick saved.": "Pilihan disimpan.",
+    "Reminder sent to :count members.": "Pengingat dikirim ke :count anggota.",
+    "Everyone has already responded.": "Semua orang sudah membalas.",
+    "This lunch is not published.": "Makan siang ini belum diterbitkan.",
+    "This lunch is not open for voting.": "Makan siang ini tidak dibuka untuk pemilihan."
 }
