@@ -3,7 +3,6 @@
 namespace App\Console\Commands;
 
 use App\Models\Lunch;
-use App\Models\User;
 use App\Notifications\LunchVoteNudge;
 use Illuminate\Console\Command;
 use Throwable;
@@ -22,7 +21,7 @@ class SendLunchVoteNudges extends Command
             ->get();
 
         foreach ($lunches as $lunch) {
-            $nonResponders = User::enabled()->whereNotIn('id', $lunch->responses()->pluck('user_id'))->get();
+            $nonResponders = $lunch->nonResponders()->get();
 
             foreach ($nonResponders as $user) {
                 try {

@@ -2,22 +2,22 @@
 
 namespace App\Filament\Resources\Lunches\Schemas;
 
+use App\Livewire\Admin\LunchVotes;
 use App\Models\Caterer;
 use App\Models\CatererMeal;
 use App\Models\Lunch;
 use App\Support\StatusLabel;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
-use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\Pages\EditRecord;
+use Filament\Schemas\Components\Livewire;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
-use Illuminate\Support\HtmlString;
 
 class LunchForm
 {
@@ -82,34 +82,27 @@ class LunchForm
                             ->hiddenOn('create'),
                     ])
                     ->columns(2),
-                Placeholder::make('orders_summary')
-                    ->label(__('Current orders'))
+                // Who voted what, with click-a-name pick changes and Remind now (see LunchVotes).
+                // The key carries what a save or Publish can change, so the component remounts with fresh data after either.
+                Livewire::make(LunchVotes::class, fn (?Lunch $record): array => ['lunchId' => $record?->id])
+                    ->key(fn (?Lunch $record): string => 'lunch-votes-'.self::votesFingerprint($record))
                     ->visibleOn('edit')
-                    ->columnSpanFull()
-                    ->content(function (?Lunch $record): string|HtmlString {
-                        if (! $record) {
-                            return '-';
-                        }
-
-                        $record->loadMissing('responses', 'menus.caterer', 'menus.catererMeal', 'menus.options.mealOption');
-                        $counts = $record->optionCountsByLunchOption();
-                        $lines = $record->menus
-                            ->map(function ($menu) use ($counts) {
-                                $perOption = $menu->options
-                                    ->map(fn ($o) => ($o->mealOption?->name ?? __('Option')).': '.($counts[$o->id] ?? 0))
-                                    ->implode(' · ');
-
-                                return trim($menu->label().': '.$perOption);
-                            })
-                            ->push(
-                                __('Not attending: :count', ['count' => $record->notAttendingCount()])
-                                .' · '.__('Total ordering: :count', ['count' => $record->attendingCount()])
-                            )
-                            ->map(fn (string $line) => e($line))
-                            ->implode('<br>');
-
-                        return new HtmlString($lines);
-                    }),
+                    ->columnSpanFull(),
             ]);
+    }
+
+    private static function votesFingerprint(?Lunch $record): string
+    {
+        if (! $record) {
+            return 'new';
+        }
+
+        return md5(json_encode([
+            $record->getKey(),
+            $record->status,
+            $record->deadline?->toIso8601String(),
+            $record->menus()->get(['id', 'caterer_id', 'caterer_meal_id', 'sort']),
+            $record->options()->orderBy('id')->get(['id', 'lunch_menu_id', 'meal_option_id', 'enabled']),
+        ]));
     }
 }

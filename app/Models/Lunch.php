@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Lunch extends Model
@@ -14,7 +16,13 @@ class Lunch extends Model
 
     protected $fillable = ['date', 'deadline', 'status', 'vote_nudge_sent_at'];
 
-    protected $casts = ['date' => 'date', 'deadline' => 'datetime', 'vote_nudge_sent_at' => 'datetime'];
+    protected $casts = [
+        'date' => 'date',
+        'deadline' => 'datetime',
+        'vote_nudge_sent_at' => 'datetime',
+        'manual_reminder_sent_at' => 'datetime',
+        'manual_reminder_sent_by' => 'integer',
+    ];
 
     public function menus(): HasMany
     {
@@ -29,6 +37,18 @@ class Lunch extends Model
     public function responses(): HasMany
     {
         return $this->hasMany(LunchResponse::class);
+    }
+
+    /** The admin who last pressed "Remind now"; null when nobody has, or that admin was deleted. */
+    public function manualReminderSender(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'manual_reminder_sent_by');
+    }
+
+    /** Enabled members who have no response row for this lunch: who the vote nudge and the admin reminder target. */
+    public function nonResponders(): Builder
+    {
+        return User::enabled()->whereNotIn('id', $this->responses()->select('user_id'));
     }
 
     /** Members may vote only while a lunch is published and the deadline instant has not yet passed. */
