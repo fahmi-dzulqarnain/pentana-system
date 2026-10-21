@@ -458,6 +458,7 @@
     "View bills": "Lihat tagihan",
     "View my bills": "Lihat tagihan saya",
     "View my payment": "Lihat pembayaran saya",
+    "View proof": "Lihat bukti",
     "View receipt": "Lihat kuitansi",
     "Vote": "Pilih",
     "Vote now": "Pilih sekarang",
@@ -706,14 +707,14 @@
     ":first to :last. Order each day before its deadline.": ":first sampai :last. Pesan setiap hari sebelum batas waktunya.",
     "Menus are published for these days:": "Menu sudah diterbitkan untuk hari-hari berikut:",
     ":date: :menu (order by :deadline)": ":date: :menu (pesan sebelum :deadline)",
-    "Download receipt": "Unduh kwitansi",
-    "Receipt no.": "No. kwitansi",
+    "Download receipt": "Unduh kuitansi",
+    "Receipt no.": "No. kuitansi",
     "Amount received": "Jumlah diterima",
     "Void": "Dibatalkan",
     "Valid": "Sah",
     "All": "Semua",
     "Void only": "Hanya yang dibatalkan",
     "Valid only": "Hanya yang sah",
-    "receipt": "kwitansi",
-    "receipts": "kwitansi"
+    "receipt": "kuitansi",
+    "receipts": "kuitansi"
 }

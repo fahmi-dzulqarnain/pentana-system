@@ -44,8 +44,8 @@ class PaymentReceiptModelTest extends TestCase
             'member_email' => $this->member->email,
             'amount_received' => 60,
             'lines' => [
-                ['label' => 'Monthly fee', 'month' => '2026-09-01', 'amount' => '30.00'],
-                ['label' => 'Monthly fee', 'month' => '2026-10-01', 'amount' => '30.00'],
+                ['label' => 'Monthly fee: September 2026', 'month' => '2026-09-01', 'amount' => '30.00'],
+                ['label' => 'Monthly fee: October 2026', 'month' => '2026-10-01', 'amount' => '30.00'],
             ],
             'verified_at' => now(),
             'voided_at' => null,

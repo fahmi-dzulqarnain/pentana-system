@@ -233,5 +233,14 @@ class IssueReceiptTest extends TestCase
             $service->lineLabel($period(['type' => 'adjustment', 'remarks' => 'Back-dated rate change'])),
         );
         $this->assertSame('Special Levy: September 2026', $service->lineLabel($period(['type' => 'special_levy'])));
+        // A regular month's remarks are internal notes; only non-regular lines explain themselves.
+        $this->assertSame(
+            'Monthly fee: September 2026',
+            $service->lineLabel($period(['type' => 'regular', 'remarks' => 'Paid late, waived penalty'])),
+        );
+        $this->assertSame(
+            'Special Levy: September 2026 — Hall repairs',
+            $service->lineLabel($period(['type' => 'special_levy', 'remarks' => 'Hall repairs'])),
+        );
     }
 }

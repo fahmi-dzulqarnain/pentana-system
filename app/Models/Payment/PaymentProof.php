@@ -8,6 +8,7 @@ use App\Services\ReceiptService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Facades\DB;
 
 class PaymentProof extends Model
 {
@@ -28,6 +29,15 @@ class PaymentProof extends Model
             app(ReceiptService::class)->voidFor($payment);
             app(FinanceService::class)->releasePayment($payment);
         });
+    }
+
+    /**
+     * One transaction around the deleting hook and the row delete, so a failure in
+     * releasePayment() (or the delete itself) also rolls back the receipt's void.
+     */
+    public function delete()
+    {
+        return DB::transaction(fn () => parent::delete());
     }
 
     public function user()

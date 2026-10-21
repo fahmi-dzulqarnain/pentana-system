@@ -15,10 +15,11 @@
     .paid { display: inline-block; border: 2px solid #15803d; color: #15803d; font-weight: bold; padding: 1px 10px; letter-spacing: 1px; margin-top: 4px; }
     .items { width: 100%; margin-top: 12px; }
     .items th { font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: #6b6b6b; border-bottom: 1px solid #dddddd; text-align: left; padding: 7px 4px; }
+    .items th.right { text-align: right; }
     .items td { padding: 7px 4px; }
     .items .total td { border-top: 1px solid #dddddd; font-weight: bold; }
     .foot { margin-top: 24px; font-size: 9px; color: #6b6b6b; border-top: 1px solid #eeeeee; padding-top: 10px; }
-    .void { position: absolute; top: 250px; left: 130px; width: 340px; line-height: 80px; height: 100px; text-align: center; font-size: 90px; font-weight: bold; color: #f0c4c4; border: 6px solid #f0c4c4; transform: rotate(-18deg); }
+    .void { position: absolute; top: 250px; left: 130px; width: 340px; line-height: 80px; height: 100px; text-align: center; font-size: 90px; font-weight: bold; color: rgba(185,28,28,.22); border: 6px solid rgba(185,28,28,.22); transform: rotate(-18deg); }
     .void-note { color: #b91c1c; font-weight: bold; margin-top: 4px; }
 </style>
 </head>
@@ -61,7 +62,7 @@
 <table class="items">
     <tr><th>Description</th><th class="right">Amount (MYR)</th></tr>
     @foreach ($receipt->lines as $line)
-        <tr><td>{{ $line['label'] }}: {{ $line['month'] }}</td><td class="right">{{ $line['amount'] }}</td></tr>
+        <tr><td>{{ $line['label'] }}</td><td class="right">{{ $line['amount'] }}</td></tr>
     @endforeach
     @if ((float) $receipt->credit_used > 0)
         <tr><td>Less: existing credit applied</td><td class="right">-{{ $receipt->credit_used }}</td></tr>

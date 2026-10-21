@@ -113,6 +113,12 @@ class FinanceService
     public function releasePayment(PaymentProof $payment): void
     {
         DB::transaction(function () use ($payment) {
+            // Member lock first, the same order verifyAndAllocate() takes it, so a delete
+            // racing a verify for the same member waits instead of deadlocking.
+            if ($payment->user_id) {
+                $this->lockMember($payment->user_id);
+            }
+
             $periodIds = $payment->allocations()->pluck('fee_period_id');
             $payment->allocations()->delete();
 

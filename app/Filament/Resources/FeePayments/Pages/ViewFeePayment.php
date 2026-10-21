@@ -51,7 +51,7 @@ class ViewFeePayment extends ViewRecord
                             ])
                             ->action(
                                 Action::make('viewReceipt')
-                                    ->label(__('View receipt'))
+                                    ->label(__('View proof'))
                                     ->modalHeading(__('Payment proof'))
                                     ->modalContent(fn ($record) => view('filament.infolists.receipt-modal', [
                                         'url' => Storage::disk('public')->url($record->proof_image_path),

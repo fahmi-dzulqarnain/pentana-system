@@ -108,7 +108,8 @@ class ReceiptService
 
         $label = "{$kind}: {$period->month_date->format('F Y')}";
 
-        return filled($period->remarks) ? "{$label} — {$period->remarks}" : $label;
+        // Regular months' remarks are admin notes; only adjustments and levies need explaining.
+        return $period->type !== 'regular' && filled($period->remarks) ? "{$label} — {$period->remarks}" : $label;
     }
 
     private function money(int $cents): string

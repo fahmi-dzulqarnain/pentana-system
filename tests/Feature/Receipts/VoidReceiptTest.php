@@ -8,6 +8,7 @@ use App\Models\Payment\PaymentReceipt;
 use App\Models\User;
 use App\Services\FinanceService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use RuntimeException;
 use Tests\TestCase;
 
 class VoidReceiptTest extends TestCase
@@ -71,5 +72,27 @@ class VoidReceiptTest extends TestCase
         $this->assertNull($receipt->voided_at);
         $this->assertNull($receipt->user_id);
         $this->assertSame('Banmathi', $receipt->member_name);
+    }
+
+    public function test_a_failed_release_keeps_the_payment_and_its_receipt_valid(): void
+    {
+        $proof = $this->verified();
+        $receiptId = $proof->receipt->id;
+
+        $this->partialMock(FinanceService::class, function ($mock) {
+            $mock->shouldReceive('releasePayment')->andThrow(new RuntimeException('release failed'));
+        });
+
+        try {
+            $proof->delete();
+            $this->fail('Expected the delete to throw.');
+        } catch (RuntimeException $e) {
+            $this->assertSame('release failed', $e->getMessage());
+        }
+
+        $this->assertNotNull(PaymentProof::find($proof->id));
+        $receipt = PaymentReceipt::findOrFail($receiptId);
+        $this->assertNull($receipt->voided_at);
+        $this->assertSame($proof->id, $receipt->payment_proof_id);
     }
 }
