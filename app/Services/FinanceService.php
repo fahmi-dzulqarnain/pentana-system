@@ -8,15 +8,25 @@ use App\Models\Payment\PaymentProof;
 use App\Models\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use RuntimeException;
 
 class FinanceService
 {
     /**
-     * Verify a submitted payment proof, then (re)allocate the member's funds.
+     * Verify a submitted payment proof, (re)allocate the member's funds, and issue
+     * the receipt. All in one transaction, so a failure anywhere releases the number.
      */
     public function verifyAndAllocate(PaymentProof $payment, float $verifiedAmount): void
     {
         DB::transaction(function () use ($payment, $verifiedAmount) {
+            // The lock makes a double-click or a second admin wait, then see it is no longer pending.
+            $status = PaymentProof::whereKey($payment->id)->lockForUpdate()->value('status');
+            if ($status !== 'pending') {
+                throw new RuntimeException("Payment proof {$payment->id} is not pending.");
+            }
+
+            $allocationIdBefore = (int) PaymentAllocation::max('id');
+
             $payment->update([
                 'amount_verified' => $verifiedAmount,
                 'status' => 'verified',
@@ -24,6 +34,8 @@ class FinanceService
             ]);
 
             $this->applyAvailableFunds($payment->user);
+
+            app(ReceiptService::class)->issueFor($payment->fresh(), $allocationIdBefore);
         });
     }
 
@@ -126,7 +138,7 @@ class FinanceService
         ), 2);
     }
 
-    private function toCents($amount): int
+    public static function toCents($amount): int
     {
         return (int) round(((float) $amount) * 100);
     }
