@@ -13,7 +13,6 @@ use App\Models\User;
 use App\Services\FinanceService;
 use Carbon\Carbon;
 use Filament\Facades\Filament;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -81,8 +80,8 @@ class ReceiptDownloadTest extends TestCase
         $this->actingAs($other);
 
         // The resource query scopes the record away, so the action is never reachable.
-        $this->expectException(ModelNotFoundException::class);
-        Livewire::test(ViewFeePayment::class, ['record' => $proof->getKey()]);
+        Livewire::test(ViewFeePayment::class, ['record' => $proof->getKey()])
+            ->assertNotFound();
     }
 
     public function test_no_action_without_a_receipt(): void

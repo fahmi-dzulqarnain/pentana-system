@@ -15,6 +15,9 @@ use App\Models\MealOption;
 use App\Models\User;
 use Filament\Actions\DeleteAction;
 use Filament\Facades\Filament;
+use Filament\Notifications\Livewire\Notifications;
+use Filament\Notifications\Notification;
+use Filament\Notifications\NotificationMailbox;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -44,8 +47,16 @@ class LunchDayDeleteGuardsTest extends TestCase
     /** The plain-text bodies of the notifications the last call sent. */
     private function notificationBodies(): array
     {
-        return collect(session('filament.claimed_notifications', []))
-            ->pluck('body')->filter()->map(fn (string $body) => trim(strip_tags($body)))->values()->all();
+        // Filament 5.10+ delivers notifications through its mailbox rather than the session;
+        // read them the way Notification::assertNotified() does.
+        app(NotificationMailbox::class)->flush();
+        $component = new Notifications;
+        $component->mount();
+        $component->pullNotificationsFromSession();
+
+        return $component->notifications
+            ->map(fn (Notification $notification) => $notification->getBody())
+            ->filter()->map(fn (string $body) => trim(strip_tags($body)))->values()->all();
     }
 
     public function test_a_caterer_used_by_lunch_days_is_not_deleted(): void
