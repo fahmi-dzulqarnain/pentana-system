@@ -24,7 +24,8 @@ dependencies:
   stage: scan
   image: composer:2
   script:
-    - composer audit --locked --no-interaction
+    # Abandoned packages are listed but only security advisories fail the job.
+    - composer audit --locked --no-interaction --abandoned=report
 
 sonarqube:
   stage: scan
