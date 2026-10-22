@@ -4,10 +4,13 @@ namespace App\Providers\Filament;
 
 use App\Filament\Auth\Login;
 use App\Filament\Auth\Profile;
+use App\Http\Middleware\EnsureAdminMultiFactorAuthentication;
 use App\Http\Middleware\SetLocale;
+use App\Models\User;
 use App\Support\LocaleCookie;
 use App\Support\Locales;
 use Filament\Actions\Action;
+use Filament\Auth\MultiFactor\App\AppAuthentication;
 use Filament\Enums\UserMenuPosition;
 use Filament\Forms\Components\Radio;
 use Filament\Http\Middleware\Authenticate;
@@ -38,6 +41,15 @@ class AccountPanelProvider extends PanelProvider
             ->path('account')
             ->login(Login::class)
             ->profile(Profile::class, isSimple: false)
+            // Required panel-wide so Filament registers the set-up page; the middleware narrows it
+            // to admins past config('auth.admin_mfa_enforced_from'). Passkey sign-in skips the
+            // challenge: a passkey is already a second factor.
+            ->multiFactorAuthentication(
+                AppAuthentication::make()->recoverable()->brandName('PENTANA'),
+                isRequired: true,
+            )
+            ->multiFactorAuthenticationRequiredMiddlewareName(EnsureAdminMultiFactorAuthentication::class)
+            ->renderHook(PanelsRenderHook::CONTENT_START, fn (): string => self::adminMultiFactorReminder())
             ->userMenu(position: UserMenuPosition::Sidebar)
             ->databaseNotifications()
             // English-only (production today) renders none of these, so the pages stay byte-for-byte as before.
@@ -131,5 +143,29 @@ class AccountPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ]);
+    }
+
+    /** During the grace period, tells an admin without an authenticator app when it becomes required. */
+    private static function adminMultiFactorReminder(): string
+    {
+        $user = auth()->user();
+        $enforcedFrom = User::adminMultiFactorAuthenticationEnforcedFrom();
+
+        if (! $user instanceof User || ! $user->is_admin || $enforcedFrom === null || ! $enforcedFrom->isFuture()
+            || filled($user->getAppAuthenticationSecret())) {
+            return '';
+        }
+
+        return Blade::render(<<<'BLADE'
+            <x-filament::callout icon="heroicon-o-shield-exclamation" color="warning" :heading="__('Set up two-factor authentication')"
+                :description="__('Admin accounts need an authenticator app from :date. Set it up now so you are not locked out.', ['date' => $date])">
+                <x-slot name="footer">
+                    <x-filament::button tag="a" :href="$url" size="sm">{{ __('Set up now') }}</x-filament::button>
+                </x-slot>
+            </x-filament::callout>
+            BLADE, [
+            'date' => $enforcedFrom->translatedFormat('j F Y'),
+            'url' => filament()->getProfileUrl(),
+        ]);
     }
 }

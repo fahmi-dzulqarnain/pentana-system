@@ -114,4 +114,17 @@ return [
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Admin Multi-Factor Authentication Cutoff
+    |--------------------------------------------------------------------------
+    |
+    | Admins must set up an authenticator app to use the panel. Until this date
+    | (Y-m-d, Malaysia time) an admin without one gets a reminder banner; from
+    | it on they're sent to the set-up page. Unset means enforced already.
+    |
+    */
+
+    'admin_mfa_enforced_from' => env('ADMIN_MFA_ENFORCED_FROM'),
+
 ];

@@ -6,6 +6,8 @@ namespace App\Models;
 use App\Models\Payment\PaymentProof;
 use App\Support\Locales;
 use Database\Factories\UserFactory;
+use Filament\Auth\MultiFactor\App\Contracts\HasAppAuthentication;
+use Filament\Auth\MultiFactor\App\Contracts\HasAppAuthenticationRecovery;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Models\Contracts\HasName;
 use Filament\Panel;
@@ -18,10 +20,11 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
 use Laravel\Sanctum\HasApiTokens;
+use SensitiveParameter;
 use Spatie\LaravelPasskeys\Models\Concerns\HasPasskeys;
 use Spatie\LaravelPasskeys\Models\Concerns\InteractsWithPasskeys;
 
-class User extends Authenticatable implements FilamentUser, HasLocalePreference, HasName, HasPasskeys
+class User extends Authenticatable implements FilamentUser, HasAppAuthentication, HasAppAuthenticationRecovery, HasLocalePreference, HasName, HasPasskeys
 {
     /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasFactory, InteractsWithPasskeys, Notifiable;
@@ -84,6 +87,8 @@ class User extends Authenticatable implements FilamentUser, HasLocalePreference,
     protected $hidden = [
         'password',
         'remember_token',
+        'app_authentication_secret',
+        'app_authentication_recovery_codes',
     ];
 
     /**
@@ -105,6 +110,8 @@ class User extends Authenticatable implements FilamentUser, HasLocalePreference,
             'activated_at' => 'datetime',
             'invited_at' => 'datetime',
             'disabled_at' => 'datetime',
+            'app_authentication_secret' => 'encrypted',
+            'app_authentication_recovery_codes' => 'encrypted:array',
         ];
     }
 
@@ -117,6 +124,57 @@ class User extends Authenticatable implements FilamentUser, HasLocalePreference,
     public function getAuthPassword(): string
     {
         return $this->password ?? '';
+    }
+
+    public function getAppAuthenticationSecret(): ?string
+    {
+        return $this->app_authentication_secret;
+    }
+
+    public function saveAppAuthenticationSecret(#[SensitiveParameter] ?string $secret): void
+    {
+        $this->forceFill(['app_authentication_secret' => $secret])->save();
+    }
+
+    /** The account name shown in the member's authenticator app. */
+    public function getAppAuthenticationHolderName(): string
+    {
+        return $this->email;
+    }
+
+    /** @return ?array<string> Hashed by Filament before they get here. */
+    public function getAppAuthenticationRecoveryCodes(): ?array
+    {
+        return $this->app_authentication_recovery_codes;
+    }
+
+    /** @param  ?array<string>  $codes */
+    public function saveAppAuthenticationRecoveryCodes(#[SensitiveParameter] ?array $codes): void
+    {
+        $this->forceFill(['app_authentication_recovery_codes' => $codes])->save();
+    }
+
+    /**
+     * Admins must have an authenticator app from config('auth.admin_mfa_enforced_from') on;
+     * members may turn one on but never have to.
+     */
+    public function mustSetUpMultiFactorAuthentication(): bool
+    {
+        if (! $this->is_admin || filled($this->getAppAuthenticationSecret())) {
+            return false;
+        }
+
+        $enforcedFrom = self::adminMultiFactorAuthenticationEnforcedFrom();
+
+        return $enforcedFrom === null || ! $enforcedFrom->isFuture();
+    }
+
+    /** The cutoff for admins, or null when unset (enforced already). */
+    public static function adminMultiFactorAuthenticationEnforcedFrom(): ?Carbon
+    {
+        $date = config('auth.admin_mfa_enforced_from');
+
+        return filled($date) ? Carbon::parse($date)->startOfDay() : null;
     }
 
     public function isSuperAdmin(): bool
