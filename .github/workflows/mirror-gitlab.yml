@@ -1,0 +1,40 @@
+# Mirrors every branch and tag to the company GitLab, where the
+# security scans in .gitlab-ci.yml run.
+#
+# Repo settings (Settings > Secrets and variables > Actions):
+#   variable GITLAB_MIRROR_URL    https://gitlab.example.com/group/pentana-system.git
+#   secret   GITLAB_MIRROR_TOKEN  GitLab project access token,
+#                                 role Maintainer, scope write_repository
+
+name: Mirror to GitLab
+
+on:
+  push:
+    branches: ['**']
+    tags: ['**']
+  delete:
+
+# One mirror push at a time so an older run can't overwrite a newer one.
+concurrency:
+  group: gitlab-mirror
+  cancel-in-progress: false
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Push to GitLab
+        env:
+          GITLAB_URL: ${{ vars.GITLAB_MIRROR_URL }}
+          GITLAB_TOKEN: ${{ secrets.GITLAB_MIRROR_TOKEN }}
+        run: |
+          # origin/HEAD is a symref; left in, it would become a branch named HEAD.
+          git remote set-head origin --delete
+          git remote add gitlab "https://oauth2:${GITLAB_TOKEN}@${GITLAB_URL#https://}"
+          git push gitlab --force --prune \
+            'refs/remotes/origin/*:refs/heads/*' \
+            'refs/tags/*:refs/tags/*'

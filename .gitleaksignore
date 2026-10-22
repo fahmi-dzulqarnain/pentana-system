@@ -1,0 +1,2 @@
+# Fake password in an account-hijack test, not a real credential.
+074f62c48f01f1032b7f70a0a45ab186a182d310:tests/Feature/Finance/UserRoleManagementTest.php:generic-api-key:97
