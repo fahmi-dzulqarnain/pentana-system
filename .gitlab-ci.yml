@@ -1,0 +1,49 @@
+# Security scanning only. The repo is mirrored here from GitHub, so
+# development (PRs, reviews) still happens there.
+#
+# Required CI/CD variables (Settings > CI/CD > Variables, masked):
+#   SONAR_HOST_URL  e.g. https://sonarqube.example.internal
+#   SONAR_TOKEN     project analysis token from SonarQube
+
+stages:
+  - scan
+
+# Full history so gitleaks checks every commit and Sonar can attribute blame.
+variables:
+  GIT_DEPTH: "0"
+
+secrets:
+  stage: scan
+  image:
+    name: zricethezav/gitleaks:v8.30.1
+    entrypoint: [""]
+  script:
+    - gitleaks git --redact --verbose .
+
+dependencies:
+  stage: scan
+  image: composer:2
+  script:
+    # Abandoned packages are listed but only security advisories fail the job.
+    - composer audit --locked --no-interaction --abandoned=report
+
+sonarqube:
+  stage: scan
+  image:
+    name: sonarsource/sonar-scanner-cli:11
+    entrypoint: [""]
+  variables:
+    SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"
+  cache:
+    key: sonar
+    paths:
+      - .sonar/cache
+  script:
+    - sonar-scanner -Dsonar.qualitygate.wait=true
+  # Report-only until the first baseline is reviewed; flip to false to
+  # make a failing quality gate fail the pipeline.
+  allow_failure: true
+  rules:
+    # Community Build only keeps one branch; analysing other branches
+    # would overwrite main's results.
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
