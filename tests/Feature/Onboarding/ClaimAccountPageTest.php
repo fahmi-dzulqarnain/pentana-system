@@ -51,13 +51,13 @@ class ClaimAccountPageTest extends TestCase
             ->assertSet('stage', 'claim')
             ->assertSet('userId', $user->id)
             ->assertSet('memberName', 'Aisyah Rahman')
-            ->assertSet('memberGrade', 'Senior')
             ->assertSet('lookupMessage', null)
             ->assertSchemaExists('claimForm')
             ->assertWizardStepExists(1)
             ->assertWizardStepExists(2)
             ->assertSee('Aisyah Rahman')
-            ->assertSee('Senior');
+            // The grade is confidential and this page is public: anyone can type an email here.
+            ->assertDontSee('Senior');
     }
 
     public function test_lookup_reports_an_unknown_email(): void
