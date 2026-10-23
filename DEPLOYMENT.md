@@ -334,6 +334,34 @@ php artisan tinker --execute="echo \App\Models\DeviceToken::count();"   # expect
 tail -f storage/logs/laravel.log
 ```
 
+### 2j. Two-factor authentication (MFA) for admins
+
+Admins must use an authenticator app (Google Authenticator, 1Password, Authy…) on `/account`. Members can turn it on from their profile but never have to. Passkey sign-in skips the code; password sign-in asks for it.
+
+**1. Pick the cutoff date and set it in `.env` *before* deploying.** Until that date, admins without MFA can still get in and see a reminder banner; from it on, they're sent to the set-up page. **Empty means enforced immediately**, which locks every admin into set-up on their next page load.
+
+```dotenv
+ADMIN_MFA_ENFORCED_FROM=2026-11-06   # Y-m-d, Malaysia time; e.g. deploy day + 14
+```
+
+**2. Deploy as usual** (section 3). The migration adds two nullable, encrypted columns to `users`, so there's no data change.
+
+**3. Set yours up first.** Sign in → profile → *Authenticator app* → *Set up*: scan the QR code, enter your current password and the 6-digit code, then **save the recovery codes** somewhere safe (a password manager). Each one works once if the phone is lost.
+
+**4. Tell the other admins** the cutoff date and the same steps.
+
+**Locked out (lost phone and no recovery codes)?** A super-admin clears it so the admin can set it up again:
+
+```bash
+php artisan tinker --execute="\App\Models\User::where('email', 'them@example.com')->first()->forceFill(['app_authentication_secret' => null, 'app_authentication_recovery_codes' => null])->save();"
+```
+
+Check who still hasn't set it up:
+
+```bash
+php artisan tinker --execute="echo \App\Models\User::where('is_admin', true)->whereNull('app_authentication_secret')->pluck('email')->implode(PHP_EOL);"
+```
+
 ---
 
 ## 3. Redeploy / update workflow
@@ -420,6 +448,7 @@ php artisan about                              # env, cache, DB connection summa
 - [ ] nginx listens on `127.0.0.1` only — the Mac is reachable from the internet **only** through the tunnel
 - [ ] `APP_URL` is the `https://` hostname and `trustProxies` is configured (step 2e)
 - [ ] Strong password on the admin account; rotate the Tinker-set one after first login
+- [ ] `ADMIN_MFA_ENFORCED_FROM` set, and every admin has an authenticator app before that date (step 2j)
 - [ ] macOS kept updated; FileVault on; the machine physically secured / on a trusted network
 - [ ] (Optional) Put **Cloudflare Access** in front of `/admin`-style routes for an extra auth layer
 - [ ] Supabase database password is strong and not shared with non-prod environments long-term

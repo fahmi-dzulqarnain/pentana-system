@@ -131,12 +131,15 @@ class MultiFactorAuthenticationTest extends TestCase
             ->mountAction(TestAction::make('setUpAppAuthentication')->schemaComponent('app', schema: 'content'));
         $secret = decrypt($page->instance()->mountedActions[0]['arguments']['encrypted'])['secret'];
 
-        $page->setActionData(['code' => '000000'])
+        $page->setActionData(['code' => '000000', 'password' => 'secret-password'])
             ->callMountedAction()
             ->assertHasFormErrors(['code']);
+        $page->setActionData(['code' => $this->codeFor($secret), 'password' => 'wrong-password'])
+            ->callMountedAction()
+            ->assertHasFormErrors(['password']);
         $this->assertNull($admin->refresh()->getAppAuthenticationSecret());
 
-        $page->setActionData(['code' => $this->codeFor($secret)])
+        $page->setActionData(['code' => $this->codeFor($secret), 'password' => 'secret-password'])
             ->callMountedAction()
             ->assertHasNoFormErrors();
 
