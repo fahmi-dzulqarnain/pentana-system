@@ -112,6 +112,7 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
             'disabled_at' => 'datetime',
             'app_authentication_secret' => 'encrypted',
             'app_authentication_recovery_codes' => 'encrypted:array',
+            'passkey_prompt_dismissed_at' => 'datetime',
         ];
     }
 
@@ -167,6 +168,25 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
         $enforcedFrom = self::adminMultiFactorAuthenticationEnforcedFrom();
 
         return $enforcedFrom === null || ! $enforcedFrom->isFuture();
+    }
+
+    /** An admin still inside the grace period without an authenticator app: they get the MFA banner. */
+    public function shouldBeRemindedAboutMultiFactorAuthentication(): bool
+    {
+        $enforcedFrom = self::adminMultiFactorAuthenticationEnforcedFrom();
+
+        return $this->is_admin && $enforcedFrom?->isFuture() && blank($this->getAppAuthenticationSecret());
+    }
+
+    /**
+     * The "add a passkey" banner: anyone without one who hasn't dismissed it. The MFA banner
+     * outranks it, so an admin who has to act on MFA sees only that.
+     */
+    public function shouldBeOfferedAPasskey(): bool
+    {
+        return $this->passkey_prompt_dismissed_at === null
+            && ! $this->shouldBeRemindedAboutMultiFactorAuthentication()
+            && ! $this->passkeys()->exists();
     }
 
     /** The cutoff for admins, or null when unset (enforced already). */

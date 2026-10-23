@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Onboarding;
 
-use App\Filament\Auth\Profile;
+use App\Filament\Pages\Welcome;
 use App\Livewire\ClaimAccount;
 use App\Models\MemberCategory;
 use App\Models\User;
@@ -98,7 +98,7 @@ class ClaimAccountPageTest extends TestCase
                 'password_confirmation' => 'sup3r-secret-pw',
             ])
             ->call('submit')
-            ->assertRedirect(Profile::getUrl(panel: 'account'));
+            ->assertRedirect(Welcome::getUrl(panel: 'account'));
 
         $user->refresh();
         $this->assertNotNull($user->activated_at);

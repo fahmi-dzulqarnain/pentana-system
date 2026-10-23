@@ -6,6 +6,7 @@ use App\Providers\AppServiceProvider;
 use App\Support\LocaleCookie;
 use App\Support\Locales;
 use App\Support\Nickname;
+use App\Support\PasswordStrengthMeter;
 use App\Support\TimeFormat;
 use Filament\Auth\Pages\EditProfile;
 use Filament\Forms\Components\Select;
@@ -14,6 +15,7 @@ use Filament\Schemas\Components\Livewire;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Text;
 use Filament\Schemas\Schema;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Arr;
@@ -67,7 +69,8 @@ class Profile extends EditProfile
                     ->disabled()
                     ->dehydrated(false)
                     ->helperText(__('Contact an admin to update your birthday.')),
-                $this->getPasswordFormComponent(),
+                $this->getPasswordFormComponent()
+                    ->belowContent(fn (): Htmlable => PasswordStrengthMeter::make([$this->getUser()->email, $this->getUser()->name, $this->getUser()->nickname])),
                 $this->getPasswordConfirmationFormComponent(),
                 $this->getCurrentPasswordFormComponent(),
             ]);
