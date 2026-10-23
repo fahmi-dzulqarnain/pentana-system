@@ -2,9 +2,10 @@
 
 namespace App\Livewire;
 
-use App\Filament\Auth\Profile;
+use App\Filament\Pages\Welcome;
 use App\Models\User;
 use App\Services\AccountClaimService;
+use App\Support\PasswordStrengthMeter;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Wizard;
@@ -12,6 +13,7 @@ use Filament\Schemas\Components\Wizard\Step;
 use Filament\Schemas\Concerns\InteractsWithSchemas;
 use Filament\Schemas\Contracts\HasSchemas;
 use Filament\Schemas\Schema;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rules\Password;
 use Livewire\Attributes\Layout;
@@ -96,6 +98,7 @@ class ClaimAccount extends Component implements HasSchemas
                                 ->password()
                                 ->required()
                                 ->rule(Password::defaults())
+                                ->belowContent(fn (): Htmlable => PasswordStrengthMeter::make([$this->email, $this->memberName]))
                                 ->confirmed(),
                             TextInput::make('password_confirmation')
                                 ->password()
@@ -123,9 +126,8 @@ class ClaimAccount extends Component implements HasSchemas
 
         Auth::login($user);
 
-        // Freshly-activated members land on the profile page, where they can set up
-        // password-free sign-in (passkeys) right away.
-        $this->redirect(Profile::getUrl(panel: 'account'), navigate: true);
+        // Freshly-activated members are offered a passkey before anything else.
+        $this->redirect(Welcome::getUrl(panel: 'account'), navigate: true);
     }
 
     #[Layout('components.layouts.guest')]

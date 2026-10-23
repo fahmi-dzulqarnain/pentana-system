@@ -24,6 +24,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Validation\Rules\Password;
 use Livewire\Livewire;
 
 class AppServiceProvider extends ServiceProvider
@@ -64,7 +65,15 @@ class AppServiceProvider extends ServiceProvider
         // globals stay undefined ("startAuthentication is not defined").
         FilamentAsset::register([
             Js::make('passkeys-webauthn', Vite::asset('resources/js/passkeys.js'))->module(),
+            // Same reasons; backs the password meter on the claim and profile pages.
+            Js::make('password-strength', Vite::asset('resources/js/password-strength.js'))->module(),
         ]);
+
+        // NIST SP 800-63B: length plus a breach check, no forced digits or symbols (they push
+        // people to "Pentana2026!"). Only the first 5 characters of the SHA-1 hash leave the
+        // server, and an unreachable Have I Been Pwned lets the password through. Every
+        // Password::defaults() caller gets this: the claim wizard and the profile's new password.
+        Password::defaults(fn () => Password::min(self::PASSWORD_MIN_LENGTH)->uncompromised());
 
         // Safeguard: Livewire's update route already runs the `web` group (which appends
         // SetLocale), but persistent middleware also re-applies it to routes that get it
@@ -116,6 +125,8 @@ class AppServiceProvider extends ServiceProvider
             ->emptyStateIcon('heroicon-o-inbox')
             ->emptyStateHeading(fn (Table $table): string => __('No :items yet', ['items' => $table->getPluralModelLabel()])));
     }
+
+    public const PASSWORD_MIN_LENGTH = 12;
 
     public const DATE_FORMAT = 'j M Y';
 

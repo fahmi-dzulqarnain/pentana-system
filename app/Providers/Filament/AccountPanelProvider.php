@@ -50,6 +50,9 @@ class AccountPanelProvider extends PanelProvider
             )
             ->multiFactorAuthenticationRequiredMiddlewareName(EnsureAdminMultiFactorAuthentication::class)
             ->renderHook(PanelsRenderHook::CONTENT_START, fn (): string => self::adminMultiFactorReminder())
+            ->renderHook(PanelsRenderHook::CONTENT_START, fn (): string => auth()->user()?->shouldBeOfferedAPasskey() && ! request()->routeIs('filament.account.pages.welcome', 'filament.account.auth.profile')
+                ? Blade::render('<livewire:passkey-nudge />')
+                : '')
             ->userMenu(position: UserMenuPosition::Sidebar)
             ->databaseNotifications()
             // English-only (production today) renders none of these, so the pages stay byte-for-byte as before.
@@ -149,12 +152,12 @@ class AccountPanelProvider extends PanelProvider
     private static function adminMultiFactorReminder(): string
     {
         $user = auth()->user();
-        $enforcedFrom = User::adminMultiFactorAuthenticationEnforcedFrom();
 
-        if (! $user instanceof User || ! $user->is_admin || $enforcedFrom === null || ! $enforcedFrom->isFuture()
-            || filled($user->getAppAuthenticationSecret())) {
+        if (! $user instanceof User || ! $user->shouldBeRemindedAboutMultiFactorAuthentication()) {
             return '';
         }
+
+        $enforcedFrom = User::adminMultiFactorAuthenticationEnforcedFrom();
 
         return Blade::render(<<<'BLADE'
             <x-filament::callout icon="heroicon-o-shield-exclamation" color="warning" :heading="__('Set up two-factor authentication')"
