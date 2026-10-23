@@ -25,6 +25,8 @@
         <env name="APP_NAME" value="PENTANA" force="true"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
+        <!-- Admin tests act inside the MFA grace period; MultiFactorAuthenticationTest sets its own cutoff. -->
+        <env name="ADMIN_MFA_ENFORCED_FROM" value="2999-01-01"/>
         <env name="BROADCAST_CONNECTION" value="null"/>
         <env name="CACHE_STORE" value="array"/>
         <env name="DB_CONNECTION" value="sqlite"/>

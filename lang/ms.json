@@ -716,5 +716,8 @@
     "Void only": "Terbatal sahaja",
     "Valid only": "Sah sahaja",
     "receipt": "resit",
-    "receipts": "resit"
+    "receipts": "resit",
+    "Set up two-factor authentication": "Sediakan pengesahan dua faktor",
+    "Admin accounts need an authenticator app from :date. Set it up now so you are not locked out.": "Akaun pentadbir memerlukan aplikasi pengesah mulai :date. Sediakan sekarang supaya anda tidak terkunci di luar.",
+    "Set up now": "Sediakan sekarang"
 }

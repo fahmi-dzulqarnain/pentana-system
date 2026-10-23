@@ -716,5 +716,8 @@
     "Void only": "Hanya yang dibatalkan",
     "Valid only": "Hanya yang sah",
     "receipt": "kuitansi",
-    "receipts": "kuitansi"
+    "receipts": "kuitansi",
+    "Set up two-factor authentication": "Siapkan autentikasi dua faktor",
+    "Admin accounts need an authenticator app from :date. Set it up now so you are not locked out.": "Akun admin memerlukan aplikasi autentikator mulai :date. Siapkan sekarang agar Anda tidak terkunci.",
+    "Set up now": "Siapkan sekarang"
 }
