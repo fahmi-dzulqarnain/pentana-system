@@ -112,7 +112,7 @@
                 </h1>
 
                 <p style="margin:0;color:#6b7280;">
-                    {!! __('Welcome, :name.', ['name' => '<strong style="color:#111827;">'.e($memberName).'</strong>'.($memberGrade !== '' ? ' ('.e($memberGrade).')' : '')]) !!}
+                    {!! __('Welcome, :name.', ['name' => '<strong style="color:#111827;">'.e($memberName).'</strong>']) !!}
                     {{ __('Just two quick steps to finish setting up.') }}
                 </p>
             </header>

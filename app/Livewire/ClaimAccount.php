@@ -34,8 +34,6 @@ class ClaimAccount extends Component implements HasSchemas
 
     public string $memberName = '';
 
-    public string $memberGrade = '';
-
     /** @var array<string, mixed> */
     public array $data = [];
 
@@ -57,7 +55,6 @@ class ClaimAccount extends Component implements HasSchemas
         if ($user) {
             $this->userId = $user->id;
             $this->memberName = $user->name;
-            $this->memberGrade = $user->memberCategory?->name ?? '';
             $this->stage = 'claim';
             $this->lookupMessage = null;
 
