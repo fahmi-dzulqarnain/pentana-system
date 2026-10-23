@@ -8,6 +8,7 @@ use App\Models\CatererMeal;
 use App\Models\CatererMealOption;
 use App\Models\Lunch;
 use App\Models\LunchOption;
+use App\Models\LunchResponse;
 use App\Models\MealOption;
 use App\Models\User;
 use App\Services\LunchPlanningService;
@@ -83,7 +84,7 @@ class LunchCalendarTest extends TestCase
             'date' => $date->toDateString(), 'status' => 'published', 'deadline' => now()->addDay(),
         ]);
         $option = LunchOption::where('lunch_id', $lunch->id)->first();
-        \App\Models\LunchResponse::create([
+        LunchResponse::create([
             'lunch_id' => $lunch->id, 'user_id' => User::factory()->create()->id,
             'lunch_option_id' => $option->id, 'meal_option_id' => $regular->id,
         ]);
