@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Symfony\Component\Mailer\Envelope;
@@ -86,6 +87,15 @@ class QueuedEmail extends Model
             'last_error' => $error,
             'expires_at' => $expiresAt,
         ]);
+    }
+
+    /**
+     * Mail the provider refused on every attempt - actually lost. Rows marked failed on
+     * purpose (expired, or cancelled by an admin) never used an attempt, so they don't count.
+     */
+    public function scopeLost(Builder $query): Builder
+    {
+        return $query->whereNotNull('failed_at')->where('attempts', '>=', self::MAX_ATTEMPTS);
     }
 
     /**
