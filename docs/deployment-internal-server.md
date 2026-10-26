@@ -559,7 +559,25 @@ Until step 3 is done, every current admin loses access to Finance (Fee Payments 
 Fee Periods, Finance summary). Do not announce the change before then. Plain admins now see
 Fee Payments as "My Payments" (their own payments only).
 
-## 12. Open items before go-live
+## 12. Bank statement import
+
+The treasurer uploads CIMB statement PDFs and the app auto-verifies matching fee payment
+proofs. Text is extracted by shelling out to `pdftotext`, so the server needs poppler:
+
+```bash
+sudo apt-get install -y poppler-utils
+sudo -u www-data pdftotext -v   # must print a version (it writes to stderr), run as www-data
+```
+
+Without it, every statement upload fails at extraction. Uploaded PDFs are written to the
+`bank-statements` directory on the `local` disk (`storage/app/private/bank-statements`) and
+removed after import. php-fpm must be able to write there; the `storage/app/private` ACLs
+in section 7 already cover it (the default ACL makes new subdirectories inherit write).
+
+Migrations are additive (new tables and unique constraints) and run via auto-deploy as usual.
+On the first real statement, spot-check every auto-verified line.
+
+## 13. Open items before go-live
 
 - [x] TLS — Cloudflare edge certificate (trusted) via the tunnel; origin keeps a self-signed cert for the loopback hop
 - [x] Email — Resend SMTP, sending as `noreply@pentana.silentmode.net`, verified end to end
