@@ -22,7 +22,7 @@ abstract class ActivityNotification extends Notification
     /** @return array<int, string> */
     public function via(object $notifiable): array
     {
-        return $this->withApn($notifiable, ['database', 'mail']);
+        return $this->withApnOrMail($notifiable, ['database']);
     }
 
     public function toApn(object $notifiable): ApnMessage

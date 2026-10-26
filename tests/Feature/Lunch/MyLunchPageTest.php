@@ -165,6 +165,24 @@ class MyLunchPageTest extends TestCase
         $this->assertStringNotContainsString($menuA->label(), html_entity_decode($locked));
     }
 
+    public function test_earlier_days_this_week_stay_visible_but_last_week_does_not(): void
+    {
+        $this->travelTo(now()->next('Wednesday')->setTime(9, 0));
+        [$lunch, , $optB] = $this->twoMenuLunch();
+        $user = $this->actAsPanelUser();
+        LunchResponse::create([
+            'lunch_id' => $lunch->id, 'user_id' => $user->id,
+            'lunch_option_id' => $optB->id, 'meal_option_id' => $optB->meal_option_id,
+        ]);
+        $monday = today()->startOfWeek();
+        $lunch->update(['date' => $monday->toDateString(), 'deadline' => $monday->copy()->subDay()->setTime(18, 0)]);
+        Lunch::factory()->create(['date' => $monday->copy()->subDays(3)->toDateString(), 'status' => 'published', 'deadline' => now()->subWeek()]);
+
+        $page = Livewire::test(MyLunch::class)->assertSee('You ordered:');
+
+        $this->assertSame([$lunch->id], $page->instance()->upcomingLunches()->pluck('id')->all());
+    }
+
     public function test_my_lunch_choosing_on_menu_b_after_a_keeps_one_response(): void
     {
         [$lunch, $optA, $optB] = $this->twoMenuLunch();

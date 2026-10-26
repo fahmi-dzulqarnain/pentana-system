@@ -26,6 +26,7 @@ class ActivityPublished extends ActivityNotification
         return $mail->action(__('View activities'), $this->url())
             ->withSymfonyMessage(function (SymfonyEmail $message) {
                 $message->getHeaders()->addTextHeader(QueuedEmail::PRIORITY_HEADER, '10');
+                $message->getHeaders()->addTextHeader(QueuedEmail::EXPIRES_HEADER, $this->activity->starts_at->toIso8601String());
             });
     }
 

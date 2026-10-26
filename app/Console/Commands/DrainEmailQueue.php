@@ -43,6 +43,8 @@ class DrainEmailQueue extends Command
 
         $transport = Mail::mailer($innerName)->getSymfonyTransport();
 
+        $expired = QueuedEmail::failExpired();
+
         $sent = 0;
         $attempted = [];
 
@@ -77,7 +79,7 @@ class DrainEmailQueue extends Command
             }
         }
 
-        $this->info("Sent {$sent} queued email(s).");
+        $this->info("Sent {$sent} queued email(s); dropped {$expired} expired.");
 
         return self::SUCCESS;
     }

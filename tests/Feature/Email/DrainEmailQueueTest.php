@@ -67,6 +67,25 @@ class DrainEmailQueueTest extends TestCase
         $this->assertSame(0, EmailBudget::usedToday(), 'an empty drain must not claim a slot');
     }
 
+    public function test_expired_mail_is_dropped_without_spending_a_slot(): void
+    {
+        $inner = $this->fakeInner();
+
+        $stale = $this->queue('last call');
+        $stale->forceFill(['expires_at' => now()->subMinute()])->save();
+        $this->queue('still fine')->forceFill(['expires_at' => now()->addHour()])->save();
+
+        $this->artisan('app:drain-email-queue')->assertSuccessful();
+
+        $this->assertCount(1, $inner->sent);
+        $this->assertStringContainsString('still fine', $inner->sent[0]);
+        $this->assertSame(1, EmailBudget::usedToday());
+        $stale->refresh();
+        $this->assertNotNull($stale->failed_at);
+        $this->assertNull($stale->sent_at);
+        $this->assertSame(QueuedEmail::EXPIRED_ERROR, $stale->last_error);
+    }
+
     public function test_it_sends_pending_mail_oldest_first_within_priority(): void
     {
         $inner = $this->fakeInner();

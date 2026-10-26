@@ -28,7 +28,7 @@ class LunchPickSetByAdmin extends Notification
     /** @return array<int, string> */
     public function via(object $notifiable): array
     {
-        return $this->withApn($notifiable, ['database', 'mail']);
+        return $this->withApnOrMail($notifiable, ['database']);
     }
 
     public function toApn(object $notifiable): ApnMessage
@@ -60,6 +60,7 @@ class LunchPickSetByAdmin extends Notification
             ->action(__('Place your order'), MyLunch::getUrl(panel: 'account'))
             ->withSymfonyMessage(function (SymfonyEmail $message) {
                 $message->getHeaders()->addTextHeader(QueuedEmail::PRIORITY_HEADER, '10');
+                $message->getHeaders()->addTextHeader(QueuedEmail::EXPIRES_HEADER, $this->lunch->date->copy()->endOfDay()->toIso8601String());
             });
     }
 
