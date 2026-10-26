@@ -185,6 +185,46 @@ class SupportServiceTest extends TestCase
         $this->assertSame(0, SupportTicket::count());
     }
 
+    public function test_closing_an_already_closed_ticket_changes_nothing_and_notifies_nobody(): void
+    {
+        $ticket = $this->openTicket();
+        $this->travelTo(now()->subDay());
+        $this->support->close($ticket, $this->adminA);
+        $this->travelBack();
+        Notification::fake();
+
+        $this->support->close($ticket->fresh(), $this->adminB);
+
+        $ticket->refresh();
+        $this->assertSame($this->adminA->id, $ticket->closed_by_id);
+        $this->assertTrue($ticket->closed_at->isBefore(now()->subHours(12)));
+        Notification::assertNothingSent();
+    }
+
+    public function test_a_committee_reply_on_a_closed_ticket_reopens_it_as_waiting_on_member(): void
+    {
+        $ticket = $this->openTicket();
+        $this->support->close($ticket, $this->adminA);
+        Notification::fake();
+
+        $this->support->reply($ticket->fresh(), $this->adminB, 'One more thing.');
+
+        $ticket->refresh();
+        $this->assertSame(SupportTicketStatus::WaitingOnMember, $ticket->status);
+        $this->assertNull($ticket->closed_at);
+        Notification::assertSentTo($this->member, SupportReplyFromCommittee::class);
+    }
+
+    public function test_the_push_carries_the_subject_and_a_shortened_message(): void
+    {
+        $ticket = $this->support->open($this->member, SupportTicketType::Question, 'Paid twice?', str_repeat('a', 300));
+        $push = (new SupportTicketOpened($ticket, $ticket->messages->first()))->toApn($this->adminA);
+
+        $this->assertSame(__('New support ticket'), $push->title);
+        $this->assertStringStartsWith('Paid twice?: aaa', $push->body);
+        $this->assertLessThan(200, mb_strlen($push->body));
+    }
+
     public function test_the_bell_entry_shows_user_text_escaped_and_never_offers_email(): void
     {
         $ticket = $this->support->open($this->member, SupportTicketType::Question, '<script>x</script>', 'Body');

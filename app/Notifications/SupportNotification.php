@@ -43,7 +43,9 @@ abstract class SupportNotification extends Notification
     {
         return ApnMessage::create()
             ->title($this->title())
-            ->body(Str::limit($this->message?->body ?? $this->ticket->subject, 120));
+            ->body($this->message
+                ? $this->ticket->subject.': '.Str::limit($this->message->body, 120)
+                : $this->ticket->subject);
     }
 
     /** @return array<string, mixed> */

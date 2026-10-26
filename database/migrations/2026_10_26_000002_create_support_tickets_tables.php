@@ -11,7 +11,8 @@ return new class extends Migration
         // Plain strings, not DB enums: the same schema must run on SQLite (tests) and Postgres (prod).
         Schema::create('support_tickets', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            // Explicit indexes: Postgres doesn't index foreign keys on its own.
+            $table->foreignId('user_id')->index()->constrained()->cascadeOnDelete();
             $table->string('type', 20);
             $table->string('subject', 150);
             $table->string('status', 20)->index();
@@ -23,7 +24,7 @@ return new class extends Migration
 
         Schema::create('support_messages', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('support_ticket_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('support_ticket_id')->index()->constrained()->cascadeOnDelete();
             $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
             $table->text('body');
             $table->string('attachment_path')->nullable();

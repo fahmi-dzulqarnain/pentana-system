@@ -7,6 +7,7 @@ use App\Enums\SupportTicketType;
 use App\Models\SupportMessage;
 use App\Models\SupportTicket;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
 class SupportTicketModelTest extends TestCase
@@ -31,6 +32,16 @@ class SupportTicketModelTest extends TestCase
         SupportTicket::factory()->create(['status' => SupportTicketStatus::Closed]);
 
         $this->assertSame(1, SupportTicket::needsReply()->count());
+    }
+
+    public function test_the_lookups_every_screen_makes_are_indexed(): void
+    {
+        // Postgres doesn't index foreign keys on its own; the member list and the thread filter on these.
+        $indexed = fn (string $table, string $column): bool => collect(Schema::getIndexes($table))
+            ->contains(fn (array $index): bool => ($index['columns'][0] ?? null) === $column);
+
+        $this->assertTrue($indexed('support_tickets', 'user_id'));
+        $this->assertTrue($indexed('support_messages', 'support_ticket_id'));
     }
 
     public function test_a_member_has_their_support_tickets(): void

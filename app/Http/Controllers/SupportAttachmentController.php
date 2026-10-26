@@ -21,6 +21,7 @@ class SupportAttachmentController extends Controller
         abort_unless($allowed && filled($message->attachment_path), 404);
         abort_unless(Storage::disk('local')->exists($message->attachment_path), 404);
 
-        return Storage::disk('local')->response($message->attachment_path);
+        // nosniff: the browser must treat it as the stored image type, never sniff it into HTML.
+        return Storage::disk('local')->response($message->attachment_path, headers: ['X-Content-Type-Options' => 'nosniff']);
     }
 }

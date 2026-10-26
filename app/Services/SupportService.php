@@ -93,6 +93,11 @@ class SupportService
     {
         $this->ensure((bool) $by->is_admin);
 
+        // Already closed: keep who closed it and when, and don't tell the member twice.
+        if ($ticket->status === SupportTicketStatus::Closed) {
+            return;
+        }
+
         $ticket->update($this->closedState($by));
 
         $this->notifyOwner($ticket, new SupportTicketClosed($ticket));

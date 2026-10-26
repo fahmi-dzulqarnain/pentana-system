@@ -36,7 +36,9 @@ class SupportAttachmentTest extends TestCase
 
     public function test_the_owner_can_view_their_screenshot(): void
     {
-        $this->actingAs($this->owner)->get($this->url())->assertOk();
+        $this->actingAs($this->owner)->get($this->url())
+            ->assertOk()
+            ->assertHeader('X-Content-Type-Options', 'nosniff');
     }
 
     public function test_an_admin_can_view_any_screenshot(): void
