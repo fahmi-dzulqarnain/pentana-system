@@ -34,13 +34,13 @@ Current Account-i Transaction Details / Butir-butir Transaksi Akaun Semasa-i
 
 06/09/2024       IBG CREDIT                                2001000000000000                                 15.00         1,135.00
                  CLUB FEE                                  186
-                 ptn 0142 0 sept
+                 ptn 0142 8 sept
 
 03/09/2024       I-FUNDS TR FROM SA                        900000002                                        15.00         1,120.00
                  Fund Transfer
 
 01/09/2024       DUITNOW TO ACCOUNT                        800000001                                       105.00         1,105.00
-                 PTN01420 Yuran Jul-Jan
+                 PTN01428 Yuran Jul-Jan
 
          No of Withdrawal                      No of Deposits                     Total Withdrawal                     Total Deposits
           Bil Pengeluaran                        Bil Deposit                     Jumlah Pengeluaran                    Jumlah Deposit

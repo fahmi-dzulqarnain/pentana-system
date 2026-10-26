@@ -4,7 +4,7 @@
 
 **Goal:** Every member gets a fixed payment reference code, and the treasurer uploads a CIMB BizChannel statement PDF that auto-verifies pending proofs it can tie to a bank line with certainty.
 
-**Architecture:** `ReferenceCode` encodes/decodes `PTN` + 4-digit user id + Luhn digit (derived from the id, no column). `pdftotext -layout` feeds `CimbStatementParser`, which refuses any statement whose balances or totals don't reconcile. `StatementImporter` stores credit lines (deduplicated by a unique key) and hands every unmatched line to `StatementMatcher`, which auto-verifies through the existing `FinanceService::verifyAndAllocate()`. A treasurer-only Filament resource shows imports and their lines; the proof page shows possible bank matches.
+**Architecture:** `ReferenceCode` encodes/decodes `PTN` + 4-digit user id + Damm digit (derived from the id, no column). `pdftotext -layout` feeds `CimbStatementParser`, which refuses any statement whose balances or totals don't reconcile. `StatementImporter` stores credit lines (deduplicated by a unique key) and hands every unmatched line to `StatementMatcher`, which auto-verifies through the existing `FinanceService::verifyAndAllocate()`. A treasurer-only Filament resource shows imports and their lines; the proof page shows possible bank matches.
 
 **Tech Stack:** Laravel 12, Filament 5, Livewire, PHPUnit (SQLite in tests, Postgres in prod), poppler-utils `pdftotext`.
 
@@ -12,9 +12,9 @@
 
 ## Global Constraints
 
-- Code format: `PTN` + user id zero-padded to 4 digits + 1 Luhn check digit, no hyphen. User 142 → `PTN01420`. `ReferenceCode::for()` throws `InvalidArgumentException` for ids > 9999. (Plan decision: the spec's "widens above 9999" is dropped — YAGNI at ~108 members, and a fixed 5-digit run keeps extraction unambiguous.)
+- Code format: `PTN` + user id zero-padded to 4 digits + 1 Damm check digit, no hyphen. User 142 → `PTN01428`. `ReferenceCode::for()` throws `InvalidArgumentException` for ids > 9999. (Plan decision: the spec's "widens above 9999" is dropped — YAGNI at ~108 members, and a fixed 5-digit run keeps extraction unambiguous.)
 - The code is **derived from the id**, not stored (plan decision replacing the spec's `users.payment_reference` column: the id never changes and is already unique). Exposed as the `payment_reference` accessor.
-- Extraction is case-insensitive and allows whitespace between `PTN` and the digits and between digits (`ptn 0142 0`). Invalid check digit, unknown user, or two different valid codes in one line → no code.
+- Extraction is case-insensitive and allows whitespace between `PTN` and the digits and between digits (`ptn 0142 8`). Invalid check digit, unknown user, or two different valid codes in one line → no code.
 - Import access: `User::canImportBankStatements()` = `is_admin && is_treasurer`. Manual verify keeps `canManageFinance()`.
 - Windows: pending proof `created_at >= txn_date − 7 days` (start of day); confirmable verified proof `verified_at` within `[txn_date, txn_date + 30 days]`. Constants `StatementMatcher::PROOF_LOOKBACK_DAYS = 7`, `CONFIRM_WINDOW_DAYS = 30`.
 - Amounts compare in integer cents via `FinanceService::toCents()`.
@@ -27,7 +27,7 @@
 
 ## Review Focus
 
-1. **A typo'd code that happens to be another member's valid code** → must not verify. Luhn rejects every single-digit change and adjacent swap; test in Task 1.
+1. **A typo'd code that happens to be another member's valid code** → must not verify. Damm rejects every single-digit change and adjacent swap; test in Task 1.
 2. **Same statement uploaded twice, or two overlapping statements** → no proof verified twice, no duplicate lines. Tests in Task 5.
 3. **A proof verified by hand between matching and auto-verify** (`PaymentNotPendingException`) → line falls back to `needs_review`, import completes. Test in Task 4.
 4. **Proof deleted after auto-verify** → line unlinked and back to `needs_review`. Test in Task 3.
@@ -48,7 +48,7 @@
 
 **Interfaces:**
 - Produces:
-  - `ReferenceCode::for(int $userId): string` — `PTN01420` for 142.
+  - `ReferenceCode::for(int $userId): string` — `PTN01428` for 142.
   - `ReferenceCode::isValid(string $code): bool`
   - `ReferenceCode::extractUserId(string $text): ?int` — the single user id whose valid code appears in `$text`; `null` for none, invalid, or two different codes. Does **not** check the user exists (the matcher does).
   - `User::$payment_reference` accessor (string), `User::canImportBankStatements(): bool`.
@@ -58,8 +58,8 @@
 ```php
 public function test_code_is_prefix_padded_id_and_luhn_digit(): void
 {
-    $this->assertSame('PTN01420', ReferenceCode::for(142));
-    $this->assertSame('PTN00018', ReferenceCode::for(1));
+    $this->assertSame('PTN01428', ReferenceCode::for(142));
+    $this->assertSame('PTN00013', ReferenceCode::for(1));
     $this->expectException(InvalidArgumentException::class);
     ReferenceCode::for(10000);
 }
@@ -84,11 +84,11 @@ public function test_every_single_digit_typo_and_adjacent_swap_is_invalid(): voi
 
 public function test_extracts_the_user_id_from_free_text(): void
 {
-    $this->assertSame(142, ReferenceCode::extractUserId('CLUB FEE ptn 0142 0 sept'));
-    $this->assertSame(142, ReferenceCode::extractUserId('PTN01420 2024'));
-    $this->assertSame(142, ReferenceCode::extractUserId('PTN01420 again PTN01420'));
+    $this->assertSame(142, ReferenceCode::extractUserId('CLUB FEE ptn 0142 8 sept'));
+    $this->assertSame(142, ReferenceCode::extractUserId('PTN01428 2024'));
+    $this->assertSame(142, ReferenceCode::extractUserId('PTN01428 again PTN01428'));
     $this->assertNull(ReferenceCode::extractUserId('PTN01421'));              // bad check digit
-    $this->assertNull(ReferenceCode::extractUserId('PTN01420 PTN00018'));     // two members
+    $this->assertNull(ReferenceCode::extractUserId('PTN01428 PTN00013'));     // two members
     $this->assertNull(ReferenceCode::extractUserId('Pentana fee Aug Sep'));
 }
 ```
@@ -97,7 +97,7 @@ public function test_extracts_the_user_id_from_free_text(): void
 
 - [ ] **Step 3: Implement `App\Support\ReferenceCode`**
 
-Luhn check digit over the 4-digit payload (double every second digit starting from the rightmost payload digit, subtract 9 if > 9, check = `(10 − sum % 10) % 10`). Extraction regex: `/PTN\s*((?:\d\s*){4}\d)(?!\d)/i`, strip whitespace from the capture, keep valid ones, return the id if exactly one distinct id remains.
+Damm check digit over the 4-digit payload (standard 10x10 quasigroup table; check digit = the interim digit after processing the 4 payload digits, so a full 5-digit code is valid when processing all 5 digits gives 0). Extraction regex: `/PTN\s*((?:\d\s*){4}\d)(?!\d)/i`, strip whitespace from the capture, keep valid ones, return the id if exactly one distinct id remains.
 
 - [ ] **Step 4: Run the unit tests** — Expected: PASS.
 
@@ -173,8 +173,8 @@ public function test_parses_only_credits_with_reference_text(): void
     $ibg = $s->credits[2];
     $this->assertSame('IBG CREDIT', $ibg->type);
     $this->assertSame('2001000000000000186', $ibg->bankRefNo);
-    $this->assertSame('CLUB FEE ptn 0142 0 sept', $ibg->referenceText);
-    $this->assertSame('PTN01420 Yuran Jul-Jan', $s->credits[4]->referenceText);
+    $this->assertSame('CLUB FEE ptn 0142 8 sept', $ibg->referenceText);
+    $this->assertSame('PTN01428 Yuran Jul-Jan', $s->credits[4]->referenceText);
 }
 
 public function test_continuation_after_a_page_break_stays_with_its_row(): void

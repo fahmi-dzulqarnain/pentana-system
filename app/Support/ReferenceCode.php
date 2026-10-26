@@ -5,9 +5,9 @@ namespace App\Support;
 use InvalidArgumentException;
 
 /**
- * Per-member payment reference: "PTN" + user id zero-padded to 4 digits + a Luhn check
- * digit (user 142 -> PTN01420). Derived from the id, never stored. The check digit lets
- * the statement matcher reject mistyped references instead of crediting the wrong member.
+ * Per-member payment reference: "PTN" + user id zero-padded to 4 digits + a Damm check
+ * digit (user 142 -> PTN01420). Derived from the id, never stored. The check digit catches every
+ * single-digit typo and every adjacent swap, so the statement matcher never credits the wrong member.
  */
 class ReferenceCode
 {
@@ -48,21 +48,27 @@ class ReferenceCode
         return count($ids) === 1 ? array_key_first($ids) : null;
     }
 
-    /** Luhn check digit for a 4-digit payload: double every second digit from the right. */
+    private const DAMM = [
+        [0, 3, 1, 7, 5, 9, 8, 6, 4, 2],
+        [7, 0, 9, 2, 1, 5, 4, 8, 6, 3],
+        [4, 2, 0, 6, 8, 7, 1, 3, 5, 9],
+        [1, 7, 5, 0, 9, 8, 3, 4, 2, 6],
+        [6, 1, 2, 3, 0, 4, 5, 9, 7, 8],
+        [3, 6, 7, 4, 2, 0, 9, 5, 8, 1],
+        [5, 8, 6, 9, 7, 2, 0, 1, 3, 4],
+        [8, 9, 4, 5, 3, 6, 2, 0, 1, 7],
+        [9, 4, 3, 8, 6, 1, 7, 2, 0, 5],
+        [2, 5, 8, 1, 4, 3, 6, 7, 9, 0],
+    ];
+
+    /** Damm check digit: the interim digit after running the payload through the quasigroup table. */
     private static function checkDigit(string $payload): int
     {
-        $sum = 0;
-        foreach (array_reverse(str_split($payload)) as $i => $digit) {
-            $d = (int) $digit;
-            if ($i % 2 === 0) {
-                $d *= 2;
-                if ($d > 9) {
-                    $d -= 9;
-                }
-            }
-            $sum += $d;
+        $interim = 0;
+        foreach (str_split($payload) as $digit) {
+            $interim = self::DAMM[$interim][(int) $digit];
         }
 
-        return (10 - $sum % 10) % 10;
+        return $interim;
     }
 }

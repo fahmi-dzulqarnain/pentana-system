@@ -13,7 +13,7 @@ We want the treasurer to **upload the monthly CIMB BizChannel statement PDF** an
 verify the proofs it can tie to a bank line with certainty. Everything it can't tie with
 certainty stays in the existing manual queue, as today.
 
-What makes certainty possible is a **fixed reference code per member** (e.g. `PTN01420`) that the
+What makes certainty possible is a **fixed reference code per member** (e.g. `PTN01428`) that the
 member types into the transfer's reference field. Today's references are free text ("CLUB FEE",
 "Feb24 - Sept24", sometimes empty), and amount + date alone collides: on 06/09 there were two
 separate RM15 transfers, and RM105 appeared four times in one month.
@@ -66,24 +66,24 @@ separate RM15 transfers, and RM105 appeared four times in one month.
 
 ## Reference code
 
-Format: `PTN` + 4-digit member number + 1 check digit, e.g. `PTN01420` (member 142, check digit 0).
+Format: `PTN` + 4-digit member number + 1 check digit, e.g. `PTN01428` (member 142, check digit 8).
 
 - **No hyphen or spaces.** Some banking apps strip punctuation from the DuitNow reference field,
   and a plain alphanumeric code survives every app.
-- **Check digit (Luhn mod 10 over the 4 digits).** A one-digit typo or swapped pair produces an
+- **Check digit (Damm mod 10 over the 4 digits).** A one-digit typo or swapped pair produces an
   invalid code instead of another member's valid code. Invalid codes are treated as "no code".
 - The member number is the user id, zero-padded. Above 9999 members the number widens; the regex
   allows 4–6 digits.
 - Stored in a new unique column `users.payment_reference`, filled for every existing member by a
   migration and for new members on creation. It never changes.
-- Matching is case-insensitive and tolerant of whitespace between characters (`ptn 0142 7`),
+- Matching is case-insensitive and tolerant of whitespace between characters (`ptn 0142 8`),
   because people retype it.
 
 Where members see it:
 
 - Web: the "Submit payment" page (above the bank details, with a copy button) and the member's
   profile.
-- Fee reminder and payment-related emails: one line, "Use reference PTN01420 when you transfer."
+- Fee reminder and payment-related emails: one line, "Use reference PTN01428 when you transfer."
 - API: `payment_reference` on the authenticated user resource, for the iOS and Android apps.
 
 ## Parsing the statement

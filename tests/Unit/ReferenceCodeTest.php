@@ -10,8 +10,8 @@ class ReferenceCodeTest extends TestCase
 {
     public function test_code_is_prefix_padded_id_and_luhn_digit(): void
     {
-        $this->assertSame('PTN01420', ReferenceCode::for(142));
-        $this->assertSame('PTN00018', ReferenceCode::for(1));
+        $this->assertSame('PTN01428', ReferenceCode::for(142));
+        $this->assertSame('PTN00013', ReferenceCode::for(1));
         $this->expectException(InvalidArgumentException::class);
         ReferenceCode::for(10000);
     }
@@ -28,8 +28,7 @@ class ReferenceCodeTest extends TestCase
                     $typo = substr_replace($digits, (string) $d, $i, 1);
                     $this->assertFalse(ReferenceCode::isValid('PTN'.$typo), "PTN$typo");
                 }
-                // Luhn's one blind spot: swapping adjacent 0 and 9 keeps the sum, so that pair is excluded.
-                if ($i < 4 && $digits[$i] !== $digits[$i + 1] && ! in_array($digits[$i].$digits[$i + 1], ['09', '90'], true)) {
+                if ($i < 4 && $digits[$i] !== $digits[$i + 1]) {
                     $swap = $digits;
                     [$swap[$i], $swap[$i + 1]] = [$swap[$i + 1], $swap[$i]];
                     $this->assertFalse(ReferenceCode::isValid('PTN'.$swap), "PTN$swap");
@@ -40,11 +39,11 @@ class ReferenceCodeTest extends TestCase
 
     public function test_extracts_the_user_id_from_free_text(): void
     {
-        $this->assertSame(142, ReferenceCode::extractUserId('CLUB FEE ptn 0142 0 sept'));
-        $this->assertSame(142, ReferenceCode::extractUserId('PTN01420 2024'));
-        $this->assertSame(142, ReferenceCode::extractUserId('PTN01420 again PTN01420'));
+        $this->assertSame(142, ReferenceCode::extractUserId('CLUB FEE ptn 0142 8 sept'));
+        $this->assertSame(142, ReferenceCode::extractUserId('PTN01428 2024'));
+        $this->assertSame(142, ReferenceCode::extractUserId('PTN01428 again PTN01428'));
         $this->assertNull(ReferenceCode::extractUserId('PTN01421'));
-        $this->assertNull(ReferenceCode::extractUserId('PTN01420 PTN00018'));
+        $this->assertNull(ReferenceCode::extractUserId('PTN01428 PTN00013'));
         $this->assertNull(ReferenceCode::extractUserId('Pentana fee Aug Sep'));
     }
 }
