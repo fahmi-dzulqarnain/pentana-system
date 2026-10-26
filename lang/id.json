@@ -776,5 +776,11 @@
     "Use reference :code when you transfer, then enter the total amount and upload your bank receipt.": "Gunakan referensi :code saat Anda mentransfer, lalu masukkan total jumlah dan unggah bukti transfer bank Anda.",
     "Use reference :code when you transfer.": "Gunakan referensi :code saat Anda mentransfer.",
     "Payment reference": "Referensi pembayaran",
-    "Use this reference when you transfer your fees.": "Gunakan referensi ini saat Anda mentransfer iuran Anda."
+    "Use this reference when you transfer your fees.": "Gunakan referensi ini saat Anda mentransfer iuran Anda.",
+    "This PDF has no readable text. Upload the statement downloaded from BizChannel, not a scan.": "PDF ini tidak memiliki teks yang dapat dibaca. Unggah rekening koran yang diunduh dari BizChannel, bukan hasil pindaian.",
+    "Not a CIMB BizChannel statement": "Ini bukan rekening koran CIMB BizChannel",
+    "No transactions found": "Tidak ada transaksi dalam rekening koran ini",
+    "Balance does not reconcile on :date": "Saldo tidak cocok pada :date",
+    "The statement totals do not match its transactions.": "Total rekening koran tidak cocok dengan transaksinya.",
+    "Could not read the transaction on :date.": "Transaksi pada :date tidak dapat dibaca."
 }
