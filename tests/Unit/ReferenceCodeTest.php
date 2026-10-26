@@ -8,12 +8,18 @@ use PHPUnit\Framework\TestCase;
 
 class ReferenceCodeTest extends TestCase
 {
-    public function test_code_is_prefix_padded_id_and_luhn_digit(): void
+    public function test_code_is_prefix_padded_id_and_damm_digit(): void
     {
         $this->assertSame('PTN01428', ReferenceCode::for(142));
         $this->assertSame('PTN00013', ReferenceCode::for(1));
         $this->expectException(InvalidArgumentException::class);
         ReferenceCode::for(10000);
+    }
+
+    public function test_a_trailing_newline_is_not_a_valid_code(): void
+    {
+        $this->assertTrue(ReferenceCode::isValid('PTN01428'));
+        $this->assertFalse(ReferenceCode::isValid("PTN01428\n"));
     }
 
     public function test_every_single_digit_typo_and_adjacent_swap_is_invalid(): void

@@ -51,6 +51,7 @@ class PaymentRejected extends Notification
                 'date' => $this->payment->created_at->translatedFormat(AppServiceProvider::DATE_FORMAT),
             ]))
             ->line(__('Reason: :reason', ['reason' => $this->reason()]))
+            ->line(__('Use reference :code when you transfer.', ['code' => $notifiable->payment_reference]))
             ->line(__('Please upload a new payment proof, or contact the committee if you think this is a mistake.'))
             ->action(__('View my payment'), $this->url())
             ->withSymfonyMessage(function (SymfonyEmail $message) {

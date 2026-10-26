@@ -391,3 +391,22 @@ Flow: hash the file → refuse a known hash → extract + parse (any exception: 
 ## Rollout (from the spec, not code)
 
 Ship Task 1 first if you want members using codes before the import exists; Tasks 2–8 can follow in a later deploy. On the first real statement the treasurer spot-checks every auto-verified line.
+
+## Changes after final review
+
+- **Matching windows (C1):** pending candidates are now two-sided (7 days before to 14 days after
+  the credit); the confirm window gained 3 days of slack before the credit; a credit with both a
+  pending candidate and a confirmable verified proof is ambiguous and left for review.
+- **Temporary upload (I2):** the upload uses `storeFiles(false)`; the importer reads Livewire's
+  temporary file and the action deletes it in `finally`. No `bank-statements/` directory, no
+  form-state path validation.
+- **Per-line isolation (I3):** each line is matched in its own try/catch (reported, left
+  `needs_review`, run continues); notifications for committed auto-verifies go out from a
+  `finally`; a private `LineAlreadyLinkedException` replaces the reused
+  `RecordsNotFoundException` rollback signal.
+- **Occurrence key (I4):** `bank_statement_lines.occurrence` joins the unique key, so identical
+  same-day credits stay separate lines; the view page shows "Already imported".
+- **Live counts, NoCode terminal (I5):** stored `auto_verified`/`confirmed`/`unmatched` columns
+  dropped in favour of live per-outcome counts per import; earlier `no_code` lines are not retried.
+- **Minors:** `ReferenceCode` doc example and `\z` anchor fixed; the rejection email repeats the
+  member's reference; spec updated to match.

@@ -28,7 +28,8 @@ separate RM15 transfers, and RM105 appeared four times in one month.
   identical to a manual verify.
 - Re-uploading a statement, or uploading two overlapping statements, never verifies anything twice.
 - Credit lines that matched nothing are kept and retried on every later import, so a member who
-  uploads their proof after the statement was imported still gets matched next time.
+  uploads their proof after the statement was imported still gets matched next time. A line with
+  no valid code (`no_code`) is final and is not retried.
 
 ## Non-goals
 
@@ -70,12 +71,14 @@ Format: `PTN` + 4-digit member number + 1 check digit, e.g. `PTN01428` (member 1
 
 - **No hyphen or spaces.** Some banking apps strip punctuation from the DuitNow reference field,
   and a plain alphanumeric code survives every app.
-- **Check digit (Damm mod 10 over the 4 digits).** A one-digit typo or swapped pair produces an
+- **Check digit (Damm over the 4 digits).** A one-digit typo or swapped pair produces an
   invalid code instead of another member's valid code. Invalid codes are treated as "no code".
-- The member number is the user id, zero-padded. Above 9999 members the number widens; the regex
-  allows 4–6 digits.
-- Stored in a new unique column `users.payment_reference`, filled for every existing member by a
-  migration and for new members on creation. It never changes.
+- The member number is the user id, zero-padded to a fixed 4 digits. There is no widening: ids
+  above 9999 cannot be encoded (`ReferenceCode::for()` throws), and the parser reads exactly
+  4 digits + 1 check digit.
+- Derived from the id on the fly (`ReferenceCode::for($user->id)`, exposed as the
+  `payment_reference` attribute). There is no `users.payment_reference` column; it never changes
+  because the id never does.
 - Matching is case-insensitive and tolerant of whitespace between characters (`ptn 0142 8`),
   because people retype it.
 
@@ -108,36 +111,54 @@ fallback (`smalot/pdfparser`) can replace it if installing packages on the serve
 ## Data
 
 `bank_statement_imports`: id, uploaded_by, file_sha256 (unique: the same file twice is refused
-up front), statement_from, statement_to, counts per outcome, created_at. The PDF itself is
-deleted after parsing.
+up front), statement_from, statement_to, lines_new, lines_duplicate ("Already imported"),
+timestamps. Outcome counts are **not stored**: the list and view pages count each import's own
+lines per outcome live (`withOutcomeCounts()`), so an import's figures follow lines that a later
+import resolved.
 
-`bank_statement_lines`: id, import_id, txn_date, bank_ref_no, amount, reference_text,
-extracted_code (nullable), user_id (nullable, the code's owner), payment_proof_id (nullable),
-outcome, timestamps. **Unique on (txn_date, bank_ref_no, amount)**, so an overlapping statement
-re-imports the same line as a no-op.
+The PDF is never stored. The upload field uses `storeFiles(false)`; the importer reads Livewire's
+temporary upload and the action deletes it on success, refusal and error alike.
 
-`payment_proofs.bank_statement_line_id` (nullable, unique): the line that confirmed this proof.
+`bank_statement_lines`: id, bank_statement_import_id, txn_date, type, bank_ref_no, amount,
+occurrence, reference_text, user_id (nullable, the code's owner), payment_proof_id (nullable,
+unique: the proof this line verified or confirmed), outcome, timestamps.
+**Unique on (txn_date, bank_ref_no, amount, occurrence)**. `occurrence` is the credit's 1-based
+position among the credits in the same statement that share date, ref and amount, so two real
+identical transfers on one day are both stored, while an overlapping statement re-imports the
+same lines as a no-op.
 
 Only credit lines are stored. Debits, balances and the other account-holder details never reach
 the database.
 
 ## Matching rules
 
-For each stored credit line without a proof (new lines plus unmatched lines from earlier imports):
+For each stored credit line without a proof (new lines plus unmatched lines from earlier imports,
+except earlier `no_code` lines, which are final):
 
 1. **Extract the code.** Exactly one valid code in the reference text → that member. None, an
    invalid check digit, or two different codes → outcome `no_code`. Stop.
 2. **Find candidate proofs:** that member's `pending` proofs whose `amount_claimed` equals the line
-   amount to the cent, uploaded no earlier than 7 days before the transfer date.
-3. **Exactly one candidate, and that proof is not also the only candidate of another line in this
-   run** → auto-verify (below), outcome `auto_verified`.
-4. **No pending candidate, but a `verified` proof of the same member and amount with no linked
-   line, verified within 30 days of the transfer** → link it, outcome `confirmed`. Nothing changes
-   for the member; it just closes the loop for the treasurer.
-5. **Anything else** (several candidates, amount differs from every pending proof, no proof yet)
-   → outcome `needs_review` or `no_proof`. Nothing is verified.
+   amount to the cent, uploaded from the start of the day 7 days before the transfer to the end of
+   the day 14 days after it. The window is two-sided so an old credit can never claim a proof
+   uploaded for a later payment.
+3. **Find confirmable proofs:** that member's `verified` proofs of the same amount with no linked
+   line, verified from the start of the day 3 days before the transfer to the end of the day
+   30 days after it.
+4. **Exactly one candidate, no other line in this run claims it, and no confirmable proof** →
+   auto-verify (below), outcome `auto_verified`. A credit that has both a pending candidate and a
+   confirmable proof is ambiguous (it may be the payment already verified by hand) and goes to
+   review.
+5. **No pending candidate and exactly one confirmable proof** → link it, outcome `confirmed`.
+   Nothing changes for the member; it just closes the loop for the treasurer.
+6. **Anything else** (several candidates, the ambiguity above, amount differs from every pending
+   proof, no proof yet) → outcome `needs_review` or `no_proof`. Nothing is verified.
 
-The 7-day and 30-day windows are constants, easy to adjust after the first real month.
+The windows are constants on `StatementMatcher` (`PROOF_LOOKBACK_DAYS` 7, `PROOF_LOOKAHEAD_DAYS`
+14, `CONFIRM_SLACK_DAYS` 3, `CONFIRM_WINDOW_DAYS` 30), easy to adjust after the first real month.
+
+Each line is matched in isolation: if anything throws for one line, the failure is reported
+(naming the line), the line is left `needs_review`, and the run continues. Members of every
+auto-verify that committed are notified even if the run fails later.
 
 ## Auto-verify
 

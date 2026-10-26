@@ -71,6 +71,20 @@ class PaymentRejectedNotificationTest extends TestCase
         Notification::assertSentTo($this->member, PaymentVerified::class);
     }
 
+    public function test_the_email_reminds_the_member_of_their_reference_before_asking_for_a_new_proof(): void
+    {
+        $this->proof->update(['status' => 'rejected', 'admin_note' => 'Amount does not match the receipt']);
+
+        $mail = (new PaymentRejected($this->proof->fresh()))->toMail($this->member);
+        $lines = [...$mail->introLines, ...$mail->outroLines];
+        $reference = array_search(__('Use reference :code when you transfer.', ['code' => $this->member->payment_reference]), $lines, true);
+        $uploadAgain = array_search(__('Please upload a new payment proof, or contact the committee if you think this is a mistake.'), $lines, true);
+
+        $this->assertIsInt($reference);
+        $this->assertIsInt($uploadAgain);
+        $this->assertLessThan($uploadAgain, $reference);
+    }
+
     public function test_the_email_carries_the_amount_date_reason_and_a_link_to_the_payment(): void
     {
         $this->proof->update(['status' => 'rejected', 'admin_note' => 'Amount does not match the receipt']);

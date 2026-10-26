@@ -6,7 +6,7 @@ use InvalidArgumentException;
 
 /**
  * Per-member payment reference: "PTN" + user id zero-padded to 4 digits + a Damm check
- * digit (user 142 -> PTN01420). Derived from the id, never stored. The check digit catches every
+ * digit (user 142 -> PTN01428). Derived from the id, never stored. The check digit catches every
  * single-digit typo and every adjacent swap, so the statement matcher never credits the wrong member.
  */
 class ReferenceCode
@@ -28,7 +28,7 @@ class ReferenceCode
 
     public static function isValid(string $code): bool
     {
-        return preg_match('/^'.self::PREFIX.'(\d{4})(\d)$/i', $code, $m) === 1
+        return preg_match('/^'.self::PREFIX.'(\d{4})(\d)\z/i', $code, $m) === 1
             && self::checkDigit($m[1]) === (int) $m[2];
     }
 
