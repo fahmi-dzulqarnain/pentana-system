@@ -6,6 +6,8 @@ use App\Enums\SupportTicketStatus;
 use App\Models\SupportMessage;
 use App\Models\SupportTicket;
 use App\Models\User;
+use App\Notifications\SupportReplyFromMember;
+use App\Notifications\SupportTicketOpened;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Notification;
@@ -106,6 +108,110 @@ class SupportTicketApiTest extends TestCase
 
         $this->getJson('/api/v1/support-tickets')->assertForbidden();
         $this->getJson("/api/v1/support-tickets/{$ticket->id}")->assertForbidden();
+    }
+
+    private function openTicket(array $fields): \Illuminate\Testing\TestResponse
+    {
+        return $this->post('/api/v1/support-tickets', $fields, ['Accept' => 'application/json']);
+    }
+
+    public function test_a_member_opens_a_ticket_with_a_screenshot(): void
+    {
+        Storage::fake('local');
+        Sanctum::actingAs($this->member);
+
+        $this->openTicket([
+            'type' => 'bug', 'subject' => 'Blank page', 'body' => 'The lunch page is blank.',
+            'screenshot' => UploadedFile::fake()->image('s.jpg'),
+        ])->assertCreated()
+            ->assertJsonPath('data.status', 'needs_reply')
+            ->assertJsonPath('data.type', 'bug')
+            ->assertJsonPath('data.messages.0.body', 'The lunch page is blank.')
+            ->assertJsonPath('data.messages.0.is_mine', true);
+
+        $path = SupportTicket::sole()->messages->first()->attachment_path;
+        $this->assertStringStartsWith('support/', $path);
+        Storage::disk('local')->assertExists($path);
+        Notification::assertSentTo($this->admin, SupportTicketOpened::class);
+    }
+
+    public function test_a_ticket_without_a_screenshot_is_fine(): void
+    {
+        Sanctum::actingAs($this->member);
+
+        $this->openTicket(['type' => 'question', 'subject' => 'Trip?', 'body' => 'Can my spouse join?'])
+            ->assertCreated()
+            ->assertJsonPath('data.messages.0.attachment_url', null);
+    }
+
+    public function test_invalid_input_is_rejected(): void
+    {
+        Storage::fake('local');
+        Sanctum::actingAs($this->member);
+        $valid = ['type' => 'question', 'subject' => 'S', 'body' => 'B'];
+
+        foreach ([
+            ['subject' => ''],
+            ['type' => 'complaint'],
+            ['body' => str_repeat('x', 5001)],
+            ['subject' => str_repeat('x', 151)],
+            ['screenshot' => UploadedFile::fake()->create('doc.pdf', 10, 'application/pdf')],
+            ['screenshot' => UploadedFile::fake()->image('big.jpg')->size(6000)],
+        ] as $override) {
+            $this->openTicket(array_merge($valid, $override))->assertUnprocessable();
+        }
+
+        $this->assertSame(0, SupportTicket::count());
+    }
+
+    public function test_a_member_replies_and_a_closed_ticket_reopens(): void
+    {
+        $ticket = $this->ticketFor($this->member, ['status' => SupportTicketStatus::Closed, 'closed_at' => now(), 'closed_by_id' => $this->admin->id]);
+        Sanctum::actingAs($this->member);
+
+        $this->postJson("/api/v1/support-tickets/{$ticket->id}/replies", ['body' => 'One more thing'])
+            ->assertCreated()
+            ->assertJsonPath('data.body', 'One more thing')
+            ->assertJsonPath('data.is_mine', true)
+            ->assertJsonPath('data.from_committee', false);
+
+        $this->assertSame(SupportTicketStatus::NeedsReply, $ticket->fresh()->status);
+        Notification::assertSentTo($this->admin, SupportReplyFromMember::class);
+    }
+
+    public function test_a_member_resolves_their_ticket(): void
+    {
+        $ticket = $this->ticketFor($this->member);
+        Sanctum::actingAs($this->member);
+
+        $this->postJson("/api/v1/support-tickets/{$ticket->id}/resolve")
+            ->assertOk()
+            ->assertJsonPath('data.status', 'closed')
+            ->assertJsonPath('data.closed_by_committee', false);
+    }
+
+    public function test_writes_on_another_members_ticket_are_not_found_and_change_nothing(): void
+    {
+        $others = $this->ticketFor(User::factory()->create(['activated_at' => now()]));
+        Sanctum::actingAs($this->member);
+
+        $this->postJson("/api/v1/support-tickets/{$others->id}/replies", ['body' => 'Sneaky'])->assertNotFound();
+        $this->postJson("/api/v1/support-tickets/{$others->id}/resolve")->assertNotFound();
+
+        $this->assertSame(1, $others->messages()->count());
+        $this->assertSame(SupportTicketStatus::NeedsReply, $others->fresh()->status);
+    }
+
+    public function test_admins_cannot_use_the_write_endpoints(): void
+    {
+        $ticket = $this->ticketFor($this->member);
+        Sanctum::actingAs($this->admin);
+
+        $this->openTicket(['type' => 'question', 'subject' => 'S', 'body' => 'B'])->assertForbidden();
+        $this->postJson("/api/v1/support-tickets/{$ticket->id}/replies", ['body' => 'Hi'])->assertForbidden();
+        $this->postJson("/api/v1/support-tickets/{$ticket->id}/resolve")->assertForbidden();
+        $this->assertSame(1, SupportTicket::count());
+        $this->assertSame(1, $ticket->messages()->count());
     }
 
     public function test_the_screenshot_is_served_to_the_owner_with_nosniff_and_hidden_from_others(): void

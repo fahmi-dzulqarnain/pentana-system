@@ -60,6 +60,11 @@ Route::prefix('v1')->group(function () {
         Route::get('support-tickets/messages/{message}/attachment', SupportAttachmentController::class)
             ->name('api.support-tickets.attachment');
         Route::get('support-tickets/{supportTicket}', [SupportTicketController::class, 'show']);
+        Route::middleware('throttle:20,1')->group(function () {
+            Route::post('support-tickets', [SupportTicketController::class, 'store']);
+            Route::post('support-tickets/{supportTicket}/replies', [SupportTicketController::class, 'reply']);
+            Route::post('support-tickets/{supportTicket}/resolve', [SupportTicketController::class, 'resolve']);
+        });
 
         Route::get('activities', [ActivityController::class, 'index']);
         Route::post('activities/{activity}/register', [ActivityController::class, 'register']);
