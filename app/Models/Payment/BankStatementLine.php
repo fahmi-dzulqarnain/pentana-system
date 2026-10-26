@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Collection;
 
 class BankStatementLine extends Model
 {
@@ -48,5 +49,23 @@ class BankStatementLine extends Model
     public function scopeUnmatched(Builder $query): Builder
     {
         return $query->whereNull('payment_proof_id');
+    }
+
+    /**
+     * Unmatched lines carrying this proof's member code that the matcher left for a human
+     * (wrong amount, no proof at the time): a hint for the reviewing admin, newest first.
+     *
+     * @return Collection<int, static>
+     */
+    public static function possibleMatchesFor(PaymentProof $proof): Collection
+    {
+        return static::query()
+            ->unmatched()
+            ->where('user_id', $proof->user_id)
+            ->whereIn('outcome', [StatementLineOutcome::NeedsReview, StatementLineOutcome::NoProof])
+            ->whereDate('txn_date', '>=', $proof->created_at->copy()->subDays(30)->toDateString())
+            ->orderByDesc('txn_date')
+            ->orderByDesc('id')
+            ->get();
     }
 }

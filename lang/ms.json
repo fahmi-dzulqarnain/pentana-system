@@ -803,5 +803,8 @@
     "Statement lines": "Baris penyata",
     "Reference": "Rujukan",
     "Outcome": "Hasil",
-    "The uploaded file could not be found. Please upload it again.": "Fail yang dimuat naik tidak ditemui. Sila muat naik semula."
+    "The uploaded file could not be found. Please upload it again.": "Fail yang dimuat naik tidak ditemui. Sila muat naik semula.",
+    "Possible bank match": "Kemungkinan padanan bank",
+    "A bank statement line carries this member's code but was not matched automatically. Check it, then verify as usual.": "Satu baris penyata bank membawa kod ahli ini tetapi tidak dipadankan secara automatik. Semak, kemudian sahkan seperti biasa.",
+    "CIMB ref": "Rujukan CIMB"
 }

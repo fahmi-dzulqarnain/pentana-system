@@ -7,6 +7,7 @@ use App\Filament\Resources\FeePayments\FeePaymentResource;
 use App\Filament\Resources\FeePayments\Tables\FeePaymentsTable;
 use App\Filament\Resources\PaymentReceipts\Actions\DownloadReceiptAction;
 use App\Filament\Support\MemberName;
+use App\Models\Payment\BankStatementLine;
 use App\Models\Payment\PaymentProof;
 use App\Support\StatusLabel;
 use Filament\Actions\Action;
@@ -16,6 +17,7 @@ use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Text;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\Storage;
 
@@ -69,6 +71,22 @@ class ViewFeePayment extends ViewRecord
                             ->visible(fn ($record) => $record->status === 'rejected' && filled($record->admin_note)),
                     ])
                     ->columns(2),
+
+                Section::make(__('Possible bank match'))
+                    ->description(__('A bank statement line carries this member\'s code but was not matched automatically. Check it, then verify as usual.'))
+                    ->schema(fn (PaymentProof $record): array => BankStatementLine::possibleMatchesFor($record)
+                        ->map(fn (BankStatementLine $line): Text => Text::make(sprintf(
+                            '%s · MYR %s · %s %s · %s',
+                            $line->txn_date->format('d/m/Y'),
+                            number_format((float) $line->amount, 2),
+                            __('CIMB ref'),
+                            $line->bank_ref_no,
+                            $line->reference_text,
+                        )))
+                        ->all())
+                    ->visible(fn (PaymentProof $record): bool => $record->status === 'pending'
+                        && (bool) auth()->user()?->canManageFinance()
+                        && BankStatementLine::possibleMatchesFor($record)->isNotEmpty()),
 
                 Section::make(__('Allocations'))
                     ->description(__('This shows which months this payment covered.'))
