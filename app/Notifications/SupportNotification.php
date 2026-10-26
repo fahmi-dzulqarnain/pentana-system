@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Filament\Resources\SupportTickets\SupportTicketResource;
 use App\Models\SupportMessage;
 use App\Models\SupportTicket;
 use App\Notifications\Concerns\PushesViaApn;
@@ -65,6 +66,6 @@ abstract class SupportNotification extends Notification
 
     private function url(): string
     {
-        return url('/account/support-tickets/'.$this->ticket->getKey());
+        return SupportTicketResource::getUrl('view', ['record' => $this->ticket], panel: 'account');
     }
 }
