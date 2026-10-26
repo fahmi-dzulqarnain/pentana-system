@@ -16,6 +16,7 @@ use Filament\Notifications\Notification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -106,6 +107,44 @@ class BankStatementScreensTest extends TestCase
         // The action is hidden and unrunnable for the new user; the handler also aborts 403 on its own.
         $component->assertActionHidden('importStatement');
 
+        $this->assertSame(0, BankStatementImport::count());
+    }
+
+    public function test_forged_file_paths_are_refused_and_left_untouched(): void
+    {
+        Storage::disk('local')->put('receipts/x.pdf', 'keep');
+        $this->actingAs(User::factory()->treasurer()->create(['activated_at' => now()]));
+
+        foreach (['receipts/x.pdf', '../.env', 'bank-statements/../receipts/x.pdf', 'bank-statements/sub/s.pdf', 'bank-statements/missing.pdf'] as $forged) {
+            Livewire::test(ListBankStatementImports::class)
+                ->callAction('importStatement', data: ['file' => [(string) Str::uuid() => $forged]]);
+        }
+
+        $this->assertSame(0, BankStatementImport::count());
+        Storage::disk('local')->assertExists('receipts/x.pdf');
+    }
+
+    public function test_stored_file_is_removed_when_the_importer_fails_unexpectedly(): void
+    {
+        $this->app->bind(StatementTextExtractor::class, fn () => new class implements StatementTextExtractor
+        {
+            public function extract(string $pdfPath): string
+            {
+                throw new \RuntimeException('boom');
+            }
+        });
+        Storage::disk('local')->put('bank-statements/s.pdf', 'pdf');
+        $this->actingAs(User::factory()->treasurer()->create(['activated_at' => now()]));
+
+        try {
+            Livewire::test(ListBankStatementImports::class)
+                ->callAction('importStatement', data: ['file' => [(string) Str::uuid() => 'bank-statements/s.pdf']]);
+            $this->fail('Expected the exception to surface.');
+        } catch (\RuntimeException $e) {
+            $this->assertSame('boom', $e->getMessage());
+        }
+
+        Storage::disk('local')->assertMissing('bank-statements/s.pdf');
         $this->assertSame(0, BankStatementImport::count());
     }
 

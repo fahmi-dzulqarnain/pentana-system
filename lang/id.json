@@ -802,5 +802,6 @@
     "Bank statement :from - :to": "Laporan bank :from - :to",
     "Statement lines": "Baris laporan",
     "Reference": "Referensi",
-    "Outcome": "Hasil"
+    "Outcome": "Hasil",
+    "The uploaded file could not be found. Please upload it again.": "File yang diunggah tidak ditemukan. Silakan unggah ulang."
 }

@@ -36,19 +36,31 @@ class ListBankStatementImports extends ListRecords
                         ->required(),
                 ])
                 ->action(function (array $data, Action $action) {
-                    // Re-checked here: the action is callable from the browser, not just visible there.
-                    abort_unless((bool) auth()->user()?->canImportBankStatements(), 403);
+                    $path = $data['file'] ?? null;
+                    $disk = Storage::disk('local');
+
+                    // The value is form state from the browser: only a file directly inside
+                    // bank-statements/ is ever handed to an importer that deletes what it reads.
+                    if (! is_string($path) || ! preg_match('#^bank-statements/[^/]+$#', $path) || str_contains($path, '..') || ! $disk->exists($path)) {
+                        Notification::make()->title(__('The uploaded file could not be found. Please upload it again.'))->danger()->send();
+                        $action->halt();
+
+                        return;
+                    }
 
                     try {
-                        $import = app(StatementImporter::class)->import(
-                            Storage::disk('local')->path($data['file']),
-                            auth()->user(),
-                        );
+                        // Re-checked here: the action is callable from the browser, not just visible there.
+                        abort_unless((bool) auth()->user()?->canImportBankStatements(), 403);
+
+                        $import = app(StatementImporter::class)->import($disk->path($path), auth()->user());
                     } catch (StatementParseException|DuplicateStatementException $e) {
                         Notification::make()->title($e->getMessage())->danger()->send();
                         $action->halt();
 
                         return;
+                    } finally {
+                        // The importer deletes the file itself; this covers a refusal or error before it ran.
+                        $disk->delete($path);
                     }
 
                     Notification::make()
