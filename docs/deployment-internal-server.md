@@ -569,10 +569,10 @@ sudo apt-get install -y poppler-utils
 sudo -u www-data pdftotext -v   # must print a version (it writes to stderr), run as www-data
 ```
 
-Without it, every statement upload fails at extraction. Uploaded PDFs are written to the
-`bank-statements` directory on the `local` disk (`storage/app/private/bank-statements`) and
-removed after import. php-fpm must be able to write there; the `storage/app/private` ACLs
-in section 7 already cover it (the default ACL makes new subdirectories inherit write).
+Without it, every statement upload fails at extraction. The PDF is never stored: the
+importer reads Livewire's temporary upload (`storage/app/private/livewire-tmp`, the same
+place every other upload passes through) and deletes it after the import, whether it
+succeeded, was refused or failed. No extra directory or permission is needed.
 
 Migrations are additive (new tables and unique constraints) and run via auto-deploy as usual.
 On the first real statement, spot-check every auto-verified line.

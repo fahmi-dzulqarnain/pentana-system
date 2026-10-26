@@ -11,7 +11,7 @@ use Filament\Actions\Action;
 use Filament\Forms\Components\FileUpload;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
-use Illuminate\Support\Facades\Storage;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
 class ListBankStatementImports extends ListRecords
 {
@@ -31,17 +31,16 @@ class ListBankStatementImports extends ListRecords
                         ->label(__('CIMB BizChannel statement (PDF)'))
                         ->acceptedFileTypes(['application/pdf'])
                         ->maxSize(5120)
-                        ->disk('local')
-                        ->directory('bank-statements')
+                        // Never copied to a disk: the importer reads Livewire's temporary upload
+                        // and it is deleted below, so no copy of the full statement is kept.
+                        ->storeFiles(false)
                         ->required(),
                 ])
                 ->action(function (array $data, Action $action) {
-                    $path = $data['file'] ?? null;
-                    $disk = Storage::disk('local');
+                    $file = $data['file'] ?? null;
 
-                    // The value is form state from the browser: only a file directly inside
-                    // bank-statements/ is ever handed to an importer that deletes what it reads.
-                    if (! is_string($path) || ! preg_match('#^bank-statements/[^/]+$#', $path) || str_contains($path, '..') || ! $disk->exists($path)) {
+                    // Only a signed Livewire temporary upload is ever a file object here.
+                    if (! $file instanceof TemporaryUploadedFile) {
                         Notification::make()->title(__('The uploaded file could not be found. Please upload it again.'))->danger()->send();
                         $action->halt();
 
@@ -52,15 +51,15 @@ class ListBankStatementImports extends ListRecords
                         // Re-checked here: the action is callable from the browser, not just visible there.
                         abort_unless((bool) auth()->user()?->canImportBankStatements(), 403);
 
-                        $import = app(StatementImporter::class)->import($disk->path($path), auth()->user());
+                        $import = app(StatementImporter::class)->import($file->getRealPath(), auth()->user());
                     } catch (StatementParseException|DuplicateStatementException $e) {
                         Notification::make()->title($e->getMessage())->danger()->send();
                         $action->halt();
 
                         return;
                     } finally {
-                        // The importer deletes the file itself; this covers a refusal or error before it ran.
-                        $disk->delete($path);
+                        // The importer deletes what it read; this covers a refusal or error before it ran.
+                        $file->delete();
                     }
 
                     Notification::make()

@@ -17,6 +17,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Livewire\Features\SupportFileUploads\FileUploadConfiguration;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -25,6 +26,9 @@ class BankStatementScreensTest extends TestCase
     use RefreshDatabase;
 
     private string $text;
+
+    /** @var list<string> paths the importer was handed */
+    public array $readPaths = [];
 
     protected function setUp(): void
     {
@@ -41,6 +45,8 @@ class BankStatementScreensTest extends TestCase
 
             public function extract(string $pdfPath): string
             {
+                $this->test->readPaths[] = $pdfPath;
+
                 return $this->test->text();
             }
         });
@@ -49,6 +55,15 @@ class BankStatementScreensTest extends TestCase
     public function text(): string
     {
         return $this->text;
+    }
+
+    /**
+     * Livewire's temporary uploads (in tests, the tmp-for-tests disk, faked once per run),
+     * minus the .json metadata sidecars Livewire's test uploads write next to each file.
+     */
+    private function temporaryUploads(): array
+    {
+        return array_values(array_filter(FileUploadConfiguration::storage()->allFiles(), fn (string $path) => ! str_ends_with($path, '.json')));
     }
 
     private function upload(): array
@@ -60,6 +75,7 @@ class BankStatementScreensTest extends TestCase
     {
         $treasurer = User::factory()->treasurer()->create(['activated_at' => now()]);
         $this->actingAs($treasurer);
+        $before = $this->temporaryUploads();
 
         Livewire::test(ListBankStatementImports::class)
             ->callAction('importStatement', data: $this->upload())
@@ -69,13 +85,19 @@ class BankStatementScreensTest extends TestCase
 
         $this->assertSame(1, BankStatementImport::count());
         $this->assertSame($treasurer->id, BankStatementImport::first()->uploaded_by);
-        $this->assertSame([], Storage::disk('local')->allFiles('bank-statements'));
+        // The importer read Livewire's temporary upload itself, never a copy stored on a disk ...
+        $this->assertCount(1, $this->readPaths);
+        $this->assertStringStartsWith(FileUploadConfiguration::storage()->path('livewire-tmp/'), $this->readPaths[0]);
+        $this->assertSame([], Storage::disk('local')->allFiles());
+        // ... and that temporary upload is gone.
+        $this->assertSame($before, $this->temporaryUploads());
     }
 
     public function test_unreconciled_statement_shows_the_reason(): void
     {
         $this->text = str_replace('1,699.90', '1,699.91', $this->text);
         $this->actingAs(User::factory()->treasurer()->create(['activated_at' => now()]));
+        $before = $this->temporaryUploads();
 
         Livewire::test(ListBankStatementImports::class)
             ->callAction('importStatement', data: $this->upload())
@@ -83,6 +105,23 @@ class BankStatementScreensTest extends TestCase
             ->assertNoRedirect();
 
         $this->assertSame(0, BankStatementImport::count());
+        $this->assertSame($before, $this->temporaryUploads());
+    }
+
+    public function test_duplicate_statement_is_refused_and_its_upload_deleted(): void
+    {
+        $this->actingAs(User::factory()->treasurer()->create(['activated_at' => now()]));
+        $file = UploadedFile::fake()->createWithContent('s.pdf', 'same statement');
+        BankStatementImport::factory()->create(['file_sha256' => hash('sha256', 'same statement')]);
+        $before = $this->temporaryUploads();
+
+        Livewire::test(ListBankStatementImports::class)
+            ->callAction('importStatement', data: ['file' => $file])
+            ->assertNotified(Notification::make()->title(__('This statement has already been imported.'))->danger())
+            ->assertNoRedirect();
+
+        $this->assertSame(1, BankStatementImport::count());
+        $this->assertSame($before, $this->temporaryUploads());
     }
 
     public function test_super_admin_without_treasurer_cannot_open_the_resource(): void
@@ -110,12 +149,13 @@ class BankStatementScreensTest extends TestCase
         $this->assertSame(0, BankStatementImport::count());
     }
 
-    public function test_forged_file_paths_are_refused_and_left_untouched(): void
+    public function test_a_forged_file_value_is_refused_and_nothing_is_touched(): void
     {
         Storage::disk('local')->put('receipts/x.pdf', 'keep');
         $this->actingAs(User::factory()->treasurer()->create(['activated_at' => now()]));
 
-        foreach (['receipts/x.pdf', '../.env', 'bank-statements/../receipts/x.pdf', 'bank-statements/sub/s.pdf', 'bank-statements/missing.pdf'] as $forged) {
+        // Only a signed Livewire temporary upload becomes a file object; any other value is refused.
+        foreach (['receipts/x.pdf', '../.env', 'livewire-tmp/x.pdf'] as $forged) {
             Livewire::test(ListBankStatementImports::class)
                 ->callAction('importStatement', data: ['file' => [(string) Str::uuid() => $forged]]);
         }
@@ -124,7 +164,7 @@ class BankStatementScreensTest extends TestCase
         Storage::disk('local')->assertExists('receipts/x.pdf');
     }
 
-    public function test_stored_file_is_removed_when_the_importer_fails_unexpectedly(): void
+    public function test_temporary_upload_is_removed_when_the_importer_fails_unexpectedly(): void
     {
         $this->app->bind(StatementTextExtractor::class, fn () => new class implements StatementTextExtractor
         {
@@ -133,18 +173,18 @@ class BankStatementScreensTest extends TestCase
                 throw new \RuntimeException('boom');
             }
         });
-        Storage::disk('local')->put('bank-statements/s.pdf', 'pdf');
         $this->actingAs(User::factory()->treasurer()->create(['activated_at' => now()]));
+        $before = $this->temporaryUploads();
 
         try {
             Livewire::test(ListBankStatementImports::class)
-                ->callAction('importStatement', data: ['file' => [(string) Str::uuid() => 'bank-statements/s.pdf']]);
+                ->callAction('importStatement', data: $this->upload());
             $this->fail('Expected the exception to surface.');
         } catch (\RuntimeException $e) {
             $this->assertSame('boom', $e->getMessage());
         }
 
-        Storage::disk('local')->assertMissing('bank-statements/s.pdf');
+        $this->assertSame($before, $this->temporaryUploads());
         $this->assertSame(0, BankStatementImport::count());
     }
 
