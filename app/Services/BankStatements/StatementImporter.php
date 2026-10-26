@@ -6,6 +6,7 @@ use App\Enums\StatementLineOutcome;
 use App\Models\Payment\BankStatementImport;
 use App\Models\Payment\BankStatementLine;
 use App\Models\User;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -35,7 +36,12 @@ class StatementImporter
 
             $statement = $this->parser->parse($this->extractor->extract($pdfPath));
 
-            $import = DB::transaction(fn () => $this->store($statement, $hash, $uploadedBy));
+            try {
+                $import = DB::transaction(fn () => $this->store($statement, $hash, $uploadedBy));
+            } catch (UniqueConstraintViolationException) {
+                // Lines use insertOrIgnore, so only the import's file hash can collide: a concurrent upload of this file won.
+                throw new DuplicateStatementException(__('This statement has already been imported.'));
+            }
         } finally {
             @unlink($pdfPath);
         }

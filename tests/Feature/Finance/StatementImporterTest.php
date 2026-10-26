@@ -148,6 +148,33 @@ class StatementImporterTest extends TestCase
         $this->assertFileDoesNotExist($second);
     }
 
+    public function test_concurrent_import_of_the_same_file_is_refused_as_a_duplicate(): void
+    {
+        // The other upload commits between our hash check and our insert (here: while the text is extracted).
+        $this->app->bind(StatementTextExtractor::class, fn () => new class($this) implements StatementTextExtractor
+        {
+            public function __construct(private StatementImporterTest $test) {}
+
+            public function extract(string $pdfPath): string
+            {
+                BankStatementImport::factory()->create(['file_sha256' => hash('sha256', 'dummy')]);
+
+                return $this->test->text();
+            }
+        });
+        $path = $this->pdf();
+
+        try {
+            $this->import($path);
+            $this->fail('Expected DuplicateStatementException.');
+        } catch (DuplicateStatementException) {
+        }
+
+        $this->assertSame(1, BankStatementImport::count());
+        $this->assertSame(0, BankStatementLine::count());
+        $this->assertFileDoesNotExist($path);
+    }
+
     public function test_overlapping_statement_adds_only_new_lines(): void
     {
         $this->bill();
