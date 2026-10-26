@@ -142,7 +142,9 @@ class StatementImporterTest extends TestCase
         $this->assertSame($this->treasurer->id, $import->uploaded_by);
         $this->assertSame(hash('sha256', 'dummy'), $import->file_sha256);
         $this->assertSame(5, $import->lines()->count());
-        $this->assertSame(5, $import->auto_verified + $import->confirmed + $import->unmatched);
+        $counts = BankStatementImport::withOutcomeCounts()->findOrFail($import->id);
+        $this->assertSame(5, $counts->auto_verified_count + $counts->confirmed_count + $counts->to_review_count);
+        $this->assertSame(5, $import->matchResult->autoVerified + $import->matchResult->confirmed + $import->matchResult->unmatched);
         $this->assertFileDoesNotExist($path);
     }
 
@@ -201,8 +203,9 @@ class StatementImporterTest extends TestCase
         $this->assertSame(5, $second->lines_duplicate);
         $this->assertSame(1, $second->lines_new);
         $this->assertSame(6, BankStatementLine::count());
-        $this->assertSame(0, $second->auto_verified);
-        $this->assertSame(1, $first->fresh()->auto_verified);
+        $this->assertSame(0, $second->matchResult->autoVerified);
+        $this->assertSame(0, BankStatementImport::withOutcomeCounts()->findOrFail($second->id)->auto_verified_count);
+        $this->assertSame(1, BankStatementImport::withOutcomeCounts()->findOrFail($first->id)->auto_verified_count);
         $this->assertSame(1, PaymentProof::where('status', 'verified')->count());
         $this->assertSame(1, BankStatementLine::where('outcome', StatementLineOutcome::AutoVerified)->count());
     }
@@ -211,7 +214,7 @@ class StatementImporterTest extends TestCase
     {
         $this->bill();
         $first = $this->import($this->pdf('first'));
-        $this->assertSame(0, $first->auto_verified);
+        $this->assertSame(0, $first->matchResult->autoVerified);
         $old = BankStatementLine::where('amount', '105.00')->firstOrFail();
         $this->assertSame(StatementLineOutcome::NoProof, $old->outcome);
 
@@ -223,7 +226,7 @@ class StatementImporterTest extends TestCase
         $this->assertSame(StatementLineOutcome::AutoVerified, $old->outcome);
         $this->assertSame($proof->id, $old->payment_proof_id);
         $this->assertSame('verified', $proof->fresh()->status);
-        $this->assertSame(1, $second->auto_verified);
+        $this->assertSame(1, $second->matchResult->autoVerified);
     }
 
     public function test_two_identical_credits_on_one_day_are_both_stored(): void
@@ -255,6 +258,45 @@ class StatementImporterTest extends TestCase
         $this->assertSame(6, $second->lines_duplicate);
         $this->assertSame(1, $second->lines_new);
         $this->assertSame(7, BankStatementLine::count());
+    }
+
+    public function test_an_earlier_no_code_line_is_not_matched_again(): void
+    {
+        $this->import($this->pdf('first'));
+        $noCode = BankStatementLine::where('bank_ref_no', '900000002')->firstOrFail();
+        $this->assertSame(StatementLineOutcome::NoCode, $noCode->outcome);
+        $stamp = $noCode->updated_at->toDateTimeString();
+
+        $this->travel(2)->hours();
+        $this->text = $this->extendedText();
+        $this->import($this->pdf('second'));
+
+        $noCode->refresh();
+        $this->assertSame(StatementLineOutcome::NoCode, $noCode->outcome);
+        $this->assertSame($stamp, $noCode->updated_at->toDateTimeString());
+    }
+
+    public function test_import_counts_come_from_its_own_lines_after_an_earlier_line_resolves(): void
+    {
+        $this->bill();
+        $first = $this->import($this->pdf('first'));
+        $before = BankStatementImport::withOutcomeCounts()->findOrFail($first->id);
+        $this->assertSame(0, $before->auto_verified_count);
+        $this->assertSame(5, $before->to_review_count);
+
+        $this->pendingProof(105);
+        $this->text = $this->extendedText();
+        $second = $this->import($this->pdf('second'));
+
+        // The run that resolved the old line reports it ...
+        $this->assertSame(1, $second->matchResult->autoVerified);
+        // ... but each import's own counts follow its own lines.
+        $first = BankStatementImport::withOutcomeCounts()->findOrFail($first->id);
+        $this->assertSame(1, $first->auto_verified_count);
+        $this->assertSame(4, $first->to_review_count);
+        $second = BankStatementImport::withOutcomeCounts()->findOrFail($second->id);
+        $this->assertSame(0, $second->auto_verified_count);
+        $this->assertSame(1, $second->to_review_count);
     }
 
     public function test_unreconciled_statement_stores_nothing_and_deletes_the_file(): void

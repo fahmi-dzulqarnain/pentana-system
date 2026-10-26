@@ -49,13 +49,16 @@ class StatementImporter
 
         // Outside the store transaction: each auto-verify commits on its own and member
         // notifications are deferred, so a rollback here must not be able to undo them.
-        $result = $this->matcher->match(BankStatementLine::unmatched()->orderBy('txn_date')->orderBy('id')->get());
+        // Earlier lines are retried unless they carry no code: that outcome is final.
+        $lines = BankStatementLine::unmatched()
+            ->where(fn ($query) => $query
+                ->where('outcome', '!=', StatementLineOutcome::NoCode->value)
+                ->orWhere('bank_statement_import_id', $import->id))
+            ->orderBy('txn_date')
+            ->orderBy('id')
+            ->get();
 
-        $import->update([
-            'auto_verified' => $result->autoVerified,
-            'confirmed' => $result->confirmed,
-            'unmatched' => $result->unmatched,
-        ]);
+        $import->matchResult = $this->matcher->match($lines);
 
         return $import;
     }

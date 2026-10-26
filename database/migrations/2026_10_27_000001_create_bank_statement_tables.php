@@ -17,9 +17,7 @@ return new class extends Migration
             $table->date('statement_to');
             $table->unsignedInteger('lines_new')->default(0);
             $table->unsignedInteger('lines_duplicate')->default(0);
-            $table->unsignedInteger('auto_verified')->default(0);
-            $table->unsignedInteger('confirmed')->default(0);
-            $table->unsignedInteger('unmatched')->default(0);
+            // No stored outcome counts: they are counted live from the import's own lines.
             $table->timestamps();
         });
 

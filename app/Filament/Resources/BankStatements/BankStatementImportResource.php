@@ -16,6 +16,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use UnitEnum;
 
@@ -87,9 +88,18 @@ class BankStatementImportResource extends Resource
                     TextEntry::make('lines_new')->label(__('New lines'))->numeric(),
                     // Credits an earlier, overlapping statement had already brought in.
                     TextEntry::make('lines_duplicate')->label(__('Already imported'))->numeric(),
+                    TextEntry::make('auto_verified_count')->label(__('Auto-verified'))->numeric(),
+                    TextEntry::make('confirmed_count')->label(__('Confirmed'))->numeric(),
+                    TextEntry::make('to_review_count')->label(__('To review'))->numeric(),
                 ])
                 ->columns(3),
         ]);
+    }
+
+    // Live per-outcome counts for the list and the view page alike, in the one query.
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->withOutcomeCounts();
     }
 
     public static function table(Table $table): Table
@@ -101,9 +111,9 @@ class BankStatementImportResource extends Resource
                     ->label(__('Statement period'))
                     ->formatStateUsing(fn (BankStatementImport $record): string => $record->statement_from->format('d M Y').' - '.$record->statement_to->format('d M Y')),
                 MemberName::column('uploader')->label(__('Uploaded by')),
-                TextColumn::make('auto_verified')->label(__('Auto-verified'))->numeric(),
-                TextColumn::make('confirmed')->label(__('Confirmed'))->numeric(),
-                TextColumn::make('unmatched')->label(__('To review'))->numeric(),
+                TextColumn::make('auto_verified_count')->label(__('Auto-verified'))->numeric(),
+                TextColumn::make('confirmed_count')->label(__('Confirmed'))->numeric(),
+                TextColumn::make('to_review_count')->label(__('To review'))->numeric(),
                 TextColumn::make('created_at')->label(__('Imported'))->dateTime()->sortable(),
             ])
             ->defaultSort('created_at', 'desc')

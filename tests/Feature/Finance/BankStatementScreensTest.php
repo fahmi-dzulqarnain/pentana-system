@@ -159,6 +159,27 @@ class BankStatementScreensTest extends TestCase
             ->assertSeeInOrder([__('Already imported'), '731']);
     }
 
+    public function test_list_shows_live_outcome_counts_from_each_imports_own_lines(): void
+    {
+        $this->actingAs(User::factory()->treasurer()->create(['activated_at' => now()]));
+        $import = BankStatementImport::factory()->create();
+        $other = BankStatementImport::factory()->create();
+        foreach ([StatementLineOutcome::AutoVerified, StatementLineOutcome::AutoVerified, StatementLineOutcome::Confirmed, StatementLineOutcome::NeedsReview, StatementLineOutcome::NoProof, StatementLineOutcome::NoCode] as $outcome) {
+            BankStatementLine::factory()->for($import, 'import')->create(['outcome' => $outcome]);
+        }
+        BankStatementLine::factory()->for($other, 'import')->create(['outcome' => StatementLineOutcome::AutoVerified]);
+
+        Livewire::test(ListBankStatementImports::class)
+            ->assertTableColumnStateSet('auto_verified_count', 2, $import)
+            ->assertTableColumnStateSet('confirmed_count', 1, $import)
+            ->assertTableColumnStateSet('to_review_count', 3, $import)
+            ->assertTableColumnStateSet('auto_verified_count', 1, $other)
+            ->assertTableColumnStateSet('to_review_count', 0, $other);
+
+        Livewire::test(ViewBankStatementImport::class, ['record' => $import->getRouteKey()])
+            ->assertSeeInOrder([__('Auto-verified'), '2', __('Confirmed'), '1', __('To review'), '3']);
+    }
+
     public function test_lines_can_be_filtered_by_outcome(): void
     {
         $this->actingAs(User::factory()->treasurer()->create(['activated_at' => now()]));

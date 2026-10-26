@@ -65,9 +65,10 @@ class ListBankStatementImports extends ListRecords
 
                     Notification::make()
                         ->title(__(':verified verified, :confirmed confirmed, :unmatched to review', [
-                            'verified' => $import->auto_verified,
-                            'confirmed' => $import->confirmed,
-                            'unmatched' => $import->unmatched,
+                            // This run's result: it may include earlier imports' lines it resolved.
+                            'verified' => $import->matchResult->autoVerified,
+                            'confirmed' => $import->matchResult->confirmed,
+                            'unmatched' => $import->matchResult->unmatched,
                         ]))
                         ->success()
                         ->send();
