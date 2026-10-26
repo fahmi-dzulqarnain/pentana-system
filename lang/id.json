@@ -787,5 +787,6 @@
     "Confirmed": "Terkonfirmasi",
     "Needs review": "Perlu ditinjau",
     "No proof submitted": "Belum ada bukti dikirim",
-    "No reference code": "Tidak ada kode referensi"
+    "No reference code": "Tidak ada kode referensi",
+    "This statement has already been imported.": "Laporan ini sudah pernah diimpor."
 }
