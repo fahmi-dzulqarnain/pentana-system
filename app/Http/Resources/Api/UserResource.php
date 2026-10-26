@@ -21,6 +21,8 @@ class UserResource extends JsonResource
             'member_category' => $this->memberCategory?->name,
             'birthday' => $this->birthday?->toDateString(),
             'credit' => (float) $this->credit,
+            // Lets the apps hide member-only features (Ask the committee) from admins.
+            'is_admin' => (bool) $this->is_admin,
         ];
     }
 }
