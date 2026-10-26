@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /** A member's question, bug report or suggestion to the committee. State changes go through SupportService. */
 class SupportTicket extends Model
@@ -40,6 +41,11 @@ class SupportTicket extends Model
     public function messages(): HasMany
     {
         return $this->hasMany(SupportMessage::class)->oldest()->oldest('id');
+    }
+
+    public function latestMessage(): HasOne
+    {
+        return $this->hasOne(SupportMessage::class)->latestOfMany();
     }
 
     public function scopeNeedsReply(Builder $query): void

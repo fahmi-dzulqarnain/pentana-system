@@ -11,6 +11,8 @@ use App\Http\Controllers\Api\V1\MeController;
 use App\Http\Controllers\Api\V1\NotificationController;
 use App\Http\Controllers\Api\V1\PasskeyController;
 use App\Http\Controllers\Api\V1\PaymentProofController;
+use App\Http\Controllers\Api\V1\SupportAttachmentController;
+use App\Http\Controllers\Api\V1\SupportTicketController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
@@ -53,6 +55,11 @@ Route::prefix('v1')->group(function () {
 
         Route::get('lunches', [LunchController::class, 'index']);
         Route::post('lunches/{lunch}/respond', [LunchController::class, 'respond']);
+
+        Route::get('support-tickets', [SupportTicketController::class, 'index']);
+        Route::get('support-tickets/messages/{message}/attachment', SupportAttachmentController::class)
+            ->name('api.support-tickets.attachment');
+        Route::get('support-tickets/{supportTicket}', [SupportTicketController::class, 'show']);
 
         Route::get('activities', [ActivityController::class, 'index']);
         Route::post('activities/{activity}/register', [ActivityController::class, 'register']);
