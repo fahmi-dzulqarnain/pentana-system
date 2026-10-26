@@ -742,5 +742,8 @@
     "Add a passkey for faster sign-in": "Tambah kunci laluan untuk log masuk lebih pantas",
     "Use your fingerprint, face or device PIN instead of typing your password.": "Gunakan cap jari, wajah atau PIN peranti anda dan bukan menaip kata laluan.",
     "Add one": "Tambah",
-    "Dismiss": "Tutup"
+    "Dismiss": "Tutup",
+    "Last call: lunch for :days": "Peluang terakhir: makan tengah hari untuk :days",
+    "Last call to order lunch for :days": "Peluang terakhir untuk memesan makan tengah hari bagi :days",
+    "You haven't responded to lunch for these days:": "Anda belum memberi maklum balas untuk makan tengah hari pada hari-hari ini:"
 }
