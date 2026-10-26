@@ -1,0 +1,190 @@
+<?php
+
+namespace App\Services\BankStatements;
+
+use App\Enums\StatementLineOutcome;
+use App\Exceptions\PaymentNotPendingException;
+use App\Models\Payment\BankStatementLine;
+use App\Models\Payment\PaymentProof;
+use App\Models\User;
+use App\Notifications\PaymentVerified;
+use App\Services\FinanceService;
+use App\Services\MemberNotifier;
+use App\Support\ReferenceCode;
+use Illuminate\Database\RecordsNotFoundException;
+use Illuminate\Database\UniqueConstraintViolationException;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
+
+/**
+ * Decides, for each stored bank credit, whether it verifies a member's pending proof.
+ * Only a certain match is acted on: one code, one proof of exactly that amount, and no
+ * other line in the batch after the same proof. Anything less is left for the treasurer,
+ * because a wrong auto-verify marks the wrong member's money as received.
+ */
+class StatementMatcher
+{
+    public const PROOF_LOOKBACK_DAYS = 7;
+
+    public const CONFIRM_WINDOW_DAYS = 30;
+
+    public function __construct(
+        private FinanceService $finance,
+        private MemberNotifier $notifier,
+    ) {}
+
+    /** @param  Collection<int, BankStatementLine>  $lines  lines not yet tied to a proof */
+    public function match(Collection $lines): MatchResult
+    {
+        $userIds = $this->members($lines);
+
+        // Every line's candidates first: a proof two lines could claim is verified by neither.
+        $candidates = $lines->mapWithKeys(fn (BankStatementLine $line) => [
+            $line->id => $userIds[$line->id] === null ? collect() : $this->candidates($line, $userIds[$line->id]),
+        ]);
+        $claims = $candidates->flatMap(fn (Collection $proofs) => $proofs->pluck('id'))->countBy();
+
+        $autoVerified = $confirmed = $unmatched = 0;
+        $verifiedProofIds = [];
+
+        foreach ($lines as $line) {
+            $userId = $userIds[$line->id];
+            $mine = $candidates[$line->id];
+            $outcome = null;
+
+            if ($userId === null) {
+                $outcome = $this->settle($line, StatementLineOutcome::NoCode, null) ? StatementLineOutcome::NoCode : false;
+            } elseif ($mine->count() === 1 && $claims[$mine->first()->id] === 1) {
+                $outcome = $this->autoVerify($line, $userId, $mine->first());
+            } elseif ($mine->isEmpty() && ($proof = $this->confirmable($line, $userId))) {
+                $outcome = $this->confirm($line, $userId, $proof);
+            }
+
+            $outcome ??= $this->leaveForReview($line, $userId);
+
+            if ($outcome === false) {
+                continue; // Linked by a concurrent import meanwhile; that run owns the line now.
+            }
+
+            if ($outcome === StatementLineOutcome::AutoVerified) {
+                $autoVerified++;
+                $verifiedProofIds[] = $line->payment_proof_id;
+            } elseif ($outcome === StatementLineOutcome::Confirmed) {
+                $confirmed++;
+            } else {
+                $unmatched++;
+            }
+        }
+
+        // After every transaction has committed, and per member, so one bad channel skips only that member.
+        $this->notifier->sendEachAfterResponse(
+            PaymentProof::with('user')->whereKey($verifiedProofIds)->get()
+                ->map(fn (PaymentProof $proof) => [$proof->user, new PaymentVerified($proof)])
+        );
+
+        return new MatchResult($autoVerified, $confirmed, $unmatched, $verifiedProofIds);
+    }
+
+    /**
+     * The member each line's code names, or null. extractUserId() trusts the check digit
+     * only, so a code of a since-deleted member counts as no code.
+     *
+     * @return Collection<int, int|null> keyed by line id
+     */
+    private function members(Collection $lines): Collection
+    {
+        $codes = $lines->mapWithKeys(fn (BankStatementLine $line) => [
+            $line->id => ReferenceCode::extractUserId((string) $line->reference_text),
+        ]);
+        $existing = User::whereKey($codes->filter()->unique()->values())->pluck('id')->flip();
+
+        return $codes->map(fn (?int $id) => $id !== null && $existing->has($id) ? $id : null);
+    }
+
+    /** @return Collection<int, PaymentProof> */
+    private function candidates(BankStatementLine $line, int $userId): Collection
+    {
+        // Compared in PHP, in cents: decimal columns come back as strings on Postgres and SQLite alike.
+        return PaymentProof::where('user_id', $userId)
+            ->where('status', 'pending')
+            ->where('created_at', '>=', $line->txn_date->toImmutable()->startOfDay()->subDays(self::PROOF_LOOKBACK_DAYS))
+            ->get()
+            ->filter(fn (PaymentProof $proof) => FinanceService::toCents($proof->amount_claimed) === FinanceService::toCents($line->amount))
+            ->values();
+    }
+
+    private function autoVerify(BankStatementLine $line, int $userId, PaymentProof $proof): StatementLineOutcome|false
+    {
+        try {
+            DB::transaction(function () use ($line, $userId, $proof) {
+                // Takes the member lock, so the line row below is locked second, as on a manual verify.
+                $this->finance->verifyAndAllocate($proof, (float) $line->amount);
+                $proof->update(['admin_note' => "Verified from bank statement (CIMB ref {$line->bank_ref_no})"]);
+
+                if (! $this->settle($line, StatementLineOutcome::AutoVerified, $userId, $proof->id)) {
+                    throw new RecordsNotFoundException("Bank statement line {$line->id} is already linked.");
+                }
+            });
+        } catch (PaymentNotPendingException) {
+            // Verified or rejected by hand since the candidates were read.
+            return $this->settle($line, StatementLineOutcome::NeedsReview, $userId) ? StatementLineOutcome::NeedsReview : false;
+        } catch (RecordsNotFoundException) {
+            return false;
+        }
+
+        return StatementLineOutcome::AutoVerified;
+    }
+
+    /** The one verified, still unlinked proof this credit already paid for, if there is exactly one. */
+    private function confirmable(BankStatementLine $line, int $userId): ?PaymentProof
+    {
+        $day = $line->txn_date->toImmutable();
+
+        $proofs = PaymentProof::where('user_id', $userId)
+            ->where('status', 'verified')
+            ->whereDoesntHave('bankStatementLine')
+            ->whereBetween('verified_at', [$day->startOfDay(), $day->addDays(self::CONFIRM_WINDOW_DAYS)->endOfDay()])
+            ->get()
+            ->filter(fn (PaymentProof $proof) => FinanceService::toCents($proof->amount_verified) === FinanceService::toCents($line->amount));
+
+        return $proofs->count() === 1 ? $proofs->first() : null;
+    }
+
+    private function confirm(BankStatementLine $line, int $userId, PaymentProof $proof): StatementLineOutcome|false|null
+    {
+        try {
+            // Own transaction (a savepoint when nested), so a lost race leaves Postgres usable.
+            $linked = DB::transaction(fn () => $this->settle($line, StatementLineOutcome::Confirmed, $userId, $proof->id));
+        } catch (UniqueConstraintViolationException) {
+            return null; // Another line took this proof meanwhile.
+        }
+
+        return $linked ? StatementLineOutcome::Confirmed : false;
+    }
+
+    private function leaveForReview(BankStatementLine $line, int $userId): StatementLineOutcome|false
+    {
+        $outcome = PaymentProof::where('user_id', $userId)->where('status', 'pending')->exists()
+            ? StatementLineOutcome::NeedsReview
+            : StatementLineOutcome::NoProof;
+
+        return $this->settle($line, $outcome, $userId) ? $outcome : false;
+    }
+
+    /**
+     * Writes the line's outcome only while it is still unlinked, so a concurrent import's
+     * match is never overwritten. False when another run linked it first.
+     */
+    private function settle(BankStatementLine $line, StatementLineOutcome $outcome, ?int $userId, ?int $proofId = null): bool
+    {
+        $attributes = ['user_id' => $userId, 'outcome' => $outcome->value, 'payment_proof_id' => $proofId];
+
+        if (BankStatementLine::whereKey($line->id)->whereNull('payment_proof_id')->update($attributes) === 0) {
+            return false;
+        }
+
+        $line->forceFill($attributes)->syncOriginal();
+
+        return true;
+    }
+}
