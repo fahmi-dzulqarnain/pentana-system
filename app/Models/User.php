@@ -280,6 +280,11 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
         return $this->hasMany(DeviceToken::class);
     }
 
+    public function supportTickets(): HasMany
+    {
+        return $this->hasMany(SupportTicket::class);
+    }
+
     /** APNs device tokens this member has registered (used by the apn notification channel). */
     public function routeNotificationForApn(): array
     {
