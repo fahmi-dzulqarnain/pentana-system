@@ -29,8 +29,7 @@ class ReferenceCodeTest extends TestCase
                     $this->assertFalse(ReferenceCode::isValid('PTN'.$typo), "PTN$typo");
                 }
                 // Luhn's one blind spot: swapping adjacent 0 and 9 keeps the sum, so that pair is excluded.
-                $blindSpot = in_array($digits[$i].$digits[$i + 1] ?? '', ['09', '90'], true);
-                if ($i < 4 && $digits[$i] !== $digits[$i + 1] && ! $blindSpot) {
+                if ($i < 4 && $digits[$i] !== $digits[$i + 1] && ! in_array($digits[$i].$digits[$i + 1], ['09', '90'], true)) {
                     $swap = $digits;
                     [$swap[$i], $swap[$i + 1]] = [$swap[$i + 1], $swap[$i]];
                     $this->assertFalse(ReferenceCode::isValid('PTN'.$swap), "PTN$swap");
