@@ -773,5 +773,9 @@
     "Last message": "Mesej terakhir",
     "You": "Anda",
     "Committee": "Jawatankuasa",
-    "Screenshot": "Tangkapan skrin"
+    "Screenshot": "Tangkapan skrin",
+    "Use reference :code when you transfer, then enter the total amount and upload your bank receipt.": "Gunakan rujukan :code semasa membuat pindahan, kemudian masukkan jumlah keseluruhan dan muat naik resit bank anda.",
+    "Use reference :code when you transfer.": "Gunakan rujukan :code semasa membuat pindahan.",
+    "Payment reference": "Rujukan pembayaran",
+    "Use this reference when you transfer your fees.": "Gunakan rujukan ini semasa memindahkan yuran anda."
 }

@@ -23,6 +23,7 @@ class UserResource extends JsonResource
             'credit' => (float) $this->credit,
             // Lets the apps hide member-only features (Ask the committee) from admins.
             'is_admin' => (bool) $this->is_admin,
+            'payment_reference' => $this->payment_reference,
         ];
     }
 }
