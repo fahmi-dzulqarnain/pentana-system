@@ -68,7 +68,7 @@ class EmailBudgetStats extends StatsOverviewWidget
 
     public function failedCount(): int
     {
-        return QueuedEmail::whereNotNull('failed_at')->count();
+        return QueuedEmail::lost()->count();
     }
 
     public function queueColour(): string
