@@ -31,6 +31,9 @@ return new class extends Migration
             $table->string('type', 50);
             $table->string('bank_ref_no', 100);
             $table->decimal('amount', 10, 2);
+            // 1-based position among this statement's credits with the same date, ref and amount:
+            // two real identical transfers on one day stay two lines.
+            $table->unsignedSmallInteger('occurrence')->default(1);
             $table->text('reference_text');
             $table->foreignId('user_id')->nullable()->index()->constrained()->nullOnDelete();
             // Unique: one proof is evidence for at most one bank credit.
@@ -39,7 +42,7 @@ return new class extends Migration
             $table->timestamps();
 
             // Re-importing an overlapping statement must not double-count a credit.
-            $table->unique(['txn_date', 'bank_ref_no', 'amount']);
+            $table->unique(['txn_date', 'bank_ref_no', 'amount', 'occurrence']);
         });
     }
 

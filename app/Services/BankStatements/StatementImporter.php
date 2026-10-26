@@ -6,6 +6,7 @@ use App\Enums\StatementLineOutcome;
 use App\Models\Payment\BankStatementImport;
 use App\Models\Payment\BankStatementLine;
 use App\Models\User;
+use App\Services\FinanceService;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 
@@ -69,13 +70,20 @@ class StatementImporter
         ]);
 
         $new = 0;
+        $seen = [];
         foreach ($statement->credits as $credit) {
+            // Identical credits within one statement are separate transfers, told apart by their
+            // position; the same position in an overlapping statement is the same credit again.
+            $key = $credit->date->toDateString().'|'.$credit->bankRefNo.'|'.FinanceService::toCents($credit->amount);
+            $occurrence = $seen[$key] = ($seen[$key] ?? 0) + 1;
+
             $new += BankStatementLine::insertOrIgnore([
                 'bank_statement_import_id' => $import->id,
                 'txn_date' => $credit->date->toDateString(),
                 'type' => $credit->type,
                 'bank_ref_no' => $credit->bankRefNo,
                 'amount' => $credit->amount,
+                'occurrence' => $occurrence,
                 'reference_text' => $credit->referenceText,
                 'user_id' => null,
                 'payment_proof_id' => null,

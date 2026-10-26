@@ -806,5 +806,7 @@
     "The uploaded file could not be found. Please upload it again.": "File yang diunggah tidak ditemukan. Silakan unggah ulang.",
     "Possible bank match": "Kemungkinan kecocokan bank",
     "A bank statement line carries this member's code but was not matched automatically. Check it, then verify as usual.": "Satu baris mutasi bank memuat kode anggota ini tetapi tidak dicocokkan secara otomatis. Periksa, lalu verifikasi seperti biasa.",
-    "CIMB ref": "Ref CIMB"
+    "CIMB ref": "Ref CIMB",
+    "New lines": "Baris baru",
+    "Already imported": "Sudah diimpor"
 }

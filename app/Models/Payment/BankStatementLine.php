@@ -21,13 +21,13 @@ class BankStatementLine extends Model
     }
 
     protected $fillable = [
-        'bank_statement_import_id', 'txn_date', 'type', 'bank_ref_no', 'amount',
+        'bank_statement_import_id', 'txn_date', 'type', 'bank_ref_no', 'amount', 'occurrence',
         'reference_text', 'user_id', 'payment_proof_id', 'outcome',
     ];
 
     protected function casts(): array
     {
-        return ['txn_date' => 'date', 'outcome' => StatementLineOutcome::class];
+        return ['txn_date' => 'date', 'occurrence' => 'integer', 'outcome' => StatementLineOutcome::class];
     }
 
     public function import(): BelongsTo

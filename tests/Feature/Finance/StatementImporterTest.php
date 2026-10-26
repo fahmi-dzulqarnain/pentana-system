@@ -101,6 +101,19 @@ class StatementImporterTest extends TestCase
         return $text;
     }
 
+    /** The statement with its newest credit (28/09, ref 800000005, RM 1,050.00) appearing twice. */
+    private function twinCreditText(): string
+    {
+        $top = '28/09/2024       DUITNOW TO ACCOUNT                        800000005                                     1,050.00         1,699.90';
+        $this->assertStringContainsString($top, $this->text);
+        $twin = str_replace('1,699.90', '2,749.90', $top);
+        $text = str_replace($top, $twin."\n                 Pentana fee whole year\n\n".$top, $this->text);
+        $text = preg_replace('/\b5(\s+500\.10\s+)1,200\.00/', '6${1}2,250.00', $text, -1, $count);
+        $this->assertSame(1, $count);
+
+        return $text;
+    }
+
     private function pendingProof(float $amount): PaymentProof
     {
         $proof = PaymentProof::create([
@@ -211,6 +224,37 @@ class StatementImporterTest extends TestCase
         $this->assertSame($proof->id, $old->payment_proof_id);
         $this->assertSame('verified', $proof->fresh()->status);
         $this->assertSame(1, $second->auto_verified);
+    }
+
+    public function test_two_identical_credits_on_one_day_are_both_stored(): void
+    {
+        $this->text = $this->twinCreditText();
+
+        $import = $this->import($this->pdf());
+
+        $this->assertSame(6, $import->lines_new);
+        $this->assertSame(0, $import->lines_duplicate);
+        $this->assertSame(6, BankStatementLine::count());
+        $this->assertSame([1, 2], BankStatementLine::where('bank_ref_no', '800000005')->orderBy('occurrence')->pluck('occurrence')->all());
+    }
+
+    public function test_reimporting_a_statement_with_twin_credits_counts_both_as_duplicates(): void
+    {
+        $this->text = $this->twinCreditText();
+        $this->import($this->pdf('first'));
+
+        // The same period again plus one newer credit.
+        $twin = '28/09/2024       DUITNOW TO ACCOUNT                        800000005                                     1,050.00         2,749.90';
+        $newer = '29/09/2024       DUITNOW TO ACCOUNT                        800000006                                        20.00         2,769.90';
+        $this->text = str_replace($twin, $newer."\n                 extra\n\n".$twin, $this->text);
+        $this->text = preg_replace('/\b6(\s+500\.10\s+)2,250\.00/', '7${1}2,270.00', $this->text, -1, $count);
+        $this->assertSame(1, $count);
+
+        $second = $this->import($this->pdf('second'));
+
+        $this->assertSame(6, $second->lines_duplicate);
+        $this->assertSame(1, $second->lines_new);
+        $this->assertSame(7, BankStatementLine::count());
     }
 
     public function test_unreconciled_statement_stores_nothing_and_deletes_the_file(): void

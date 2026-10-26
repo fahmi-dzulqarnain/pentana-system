@@ -148,6 +148,17 @@ class BankStatementScreensTest extends TestCase
         $this->assertSame(0, BankStatementImport::count());
     }
 
+    public function test_view_page_shows_new_and_already_imported_line_counts(): void
+    {
+        $this->actingAs(User::factory()->treasurer()->create(['activated_at' => now()]));
+        $import = BankStatementImport::factory()->create(['lines_new' => 4, 'lines_duplicate' => 731]);
+
+        Livewire::test(ViewBankStatementImport::class, ['record' => $import->getRouteKey()])
+            ->assertSee(__('New lines'))
+            ->assertSee(__('Already imported'))
+            ->assertSeeInOrder([__('Already imported'), '731']);
+    }
+
     public function test_lines_can_be_filtered_by_outcome(): void
     {
         $this->actingAs(User::factory()->treasurer()->create(['activated_at' => now()]));

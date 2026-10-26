@@ -9,7 +9,10 @@ use App\Filament\Resources\BankStatements\RelationManagers\LinesRelationManager;
 use App\Filament\Support\MemberName;
 use App\Models\Payment\BankStatementImport;
 use BackedEnum;
+use Filament\Infolists\Components\TextEntry;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -69,6 +72,24 @@ class BankStatementImportResource extends Resource
     public static function canDelete(Model $record): bool
     {
         return false;
+    }
+
+    public static function infolist(Schema $schema): Schema
+    {
+        return $schema->components([
+            Section::make()
+                ->schema([
+                    TextEntry::make('statement_from')
+                        ->label(__('Statement period'))
+                        ->formatStateUsing(fn (BankStatementImport $record): string => $record->statement_from->format('d M Y').' - '.$record->statement_to->format('d M Y')),
+                    MemberName::entry('uploader')->label(__('Uploaded by')),
+                    TextEntry::make('created_at')->label(__('Imported'))->dateTime(),
+                    TextEntry::make('lines_new')->label(__('New lines'))->numeric(),
+                    // Credits an earlier, overlapping statement had already brought in.
+                    TextEntry::make('lines_duplicate')->label(__('Already imported'))->numeric(),
+                ])
+                ->columns(3),
+        ]);
     }
 
     public static function table(Table $table): Table
