@@ -4,11 +4,16 @@ namespace Tests\Feature\Api;
 
 use App\Models\Activity;
 use App\Models\DeviceToken;
+use App\Models\Lunch;
 use App\Models\User;
 use App\Notifications\ActivityPublished;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Laravel\Sanctum\Sanctum;
+use App\Notifications\BillReminder;
 use App\Notifications\Channels\ResilientApnChannel;
+use App\Notifications\LunchVoteNudge;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Notifications\Events\NotificationFailed;
+use Laravel\Sanctum\Sanctum;
+use NotificationChannels\Apn\ApnChannel;
 use Tests\TestCase;
 
 class PushNotificationTest extends TestCase
@@ -88,5 +93,42 @@ class PushNotificationTest extends TestCase
         DeviceToken::create(['user_id' => $withToken->id, 'token' => 'dev-tok']);
 
         $this->assertNotContains(ResilientApnChannel::class, (new ActivityPublished($activity))->via($withToken));
+    }
+
+    public function test_routine_notices_go_by_push_instead_of_email_when_the_member_has_push(): void
+    {
+        config(['broadcasting.connections.apn.key_id' => 'KEY123']);
+        $lunch = Lunch::factory()->create(['date' => today()->addDay()->toDateString(), 'status' => 'published', 'deadline' => now()->addHours(5)]);
+        $nudge = new LunchVoteNudge($lunch);
+
+        $noToken = User::factory()->create();
+        $this->assertSame(['database', 'mail'], $nudge->via($noToken));
+
+        $withToken = User::factory()->create();
+        DeviceToken::create(['user_id' => $withToken->id, 'token' => 'dev-tok']);
+        $this->assertSame(['database', ResilientApnChannel::class], $nudge->via($withToken));
+    }
+
+    public function test_money_notices_still_email_members_who_have_push(): void
+    {
+        config(['broadcasting.connections.apn.key_id' => 'KEY123']);
+        $withToken = User::factory()->create();
+        DeviceToken::create(['user_id' => $withToken->id, 'token' => 'dev-tok']);
+
+        $this->assertContains('mail', (new BillReminder(50.0, 1))->via($withToken));
+    }
+
+    public function test_a_dead_token_is_pruned_so_the_member_falls_back_to_email(): void
+    {
+        $member = User::factory()->create();
+        DeviceToken::create(['user_id' => $member->id, 'token' => 'dead-tok']);
+        DeviceToken::create(['user_id' => $member->id, 'token' => 'live-tok']);
+        $activity = Activity::factory()->create(['starts_at' => now()->addWeek()]);
+
+        event(new NotificationFailed($member, new ActivityPublished($activity), ApnChannel::class, ['id' => 'x', 'token' => 'dead-tok', 'error' => 'Unregistered']));
+        event(new NotificationFailed($member, new ActivityPublished($activity), ApnChannel::class, ['id' => 'y', 'token' => 'live-tok', 'error' => 'TooManyRequests']));
+
+        $this->assertDatabaseMissing('device_tokens', ['token' => 'dead-tok']);
+        $this->assertDatabaseHas('device_tokens', ['token' => 'live-tok']);
     }
 }
