@@ -6,9 +6,9 @@ use App\Models\Activity;
 use App\Models\DeviceToken;
 use App\Models\User;
 use App\Notifications\ActivityPublished;
+use App\Notifications\Channels\ResilientApnChannel;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
-use App\Notifications\Channels\ResilientApnChannel;
 use Tests\TestCase;
 
 class PushNotificationTest extends TestCase

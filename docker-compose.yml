@@ -1,0 +1,81 @@
+# Local stack: PostgreSQL, the PHP-FPM app, nginx on http://localhost:8080, and the scheduler.
+# Usage and the APP_KEY step are in README.md, "Run with Docker".
+
+x-app-env: &app-env
+  APP_NAME: PENTANA
+  APP_ENV: local
+  APP_KEY: ${APP_KEY:?APP_KEY is not set. Run "php artisan key:generate --show" and put it in .env}
+  APP_DEBUG: "true"
+  APP_URL: http://localhost:8080
+  LOG_CHANNEL: stderr
+  DB_CONNECTION: pgsql
+  DB_HOST: db
+  DB_PORT: "5432"
+  DB_DATABASE: pentana
+  DB_USERNAME: pentana
+  DB_PASSWORD: pentana # ggignore: local-only throwaway DB, never published outside compose
+  SESSION_DRIVER: database
+  CACHE_STORE: database
+  QUEUE_CONNECTION: sync
+  MAIL_MAILER: log
+
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: pentana
+      POSTGRES_USER: pentana
+      POSTGRES_PASSWORD: pentana # ggignore: local-only throwaway DB, never published outside compose
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pentana -d pentana"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  app:
+    build:
+      context: .
+      target: app
+    image: pentana-app:local
+    environment:
+      <<: *app-env
+      RUN_MIGRATIONS: "true"
+    volumes:
+      - storage:/var/www/html/storage
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    build:
+      context: .
+      target: web
+    image: pentana-web:local
+    ports:
+      - "8080:8080"
+    volumes:
+      # Read-only, so public/storage (lunch images, payment proofs) resolves in nginx too.
+      - storage:/var/www/html/storage:ro
+    depends_on:
+      - app
+
+  # Replaces the production cron entry: `php artisan schedule:run` every minute.
+  scheduler:
+    build:
+      context: .
+      target: app
+    image: pentana-app:local
+    command: ["php", "artisan", "schedule:work"]
+    environment:
+      <<: *app-env
+    volumes:
+      - storage:/var/www/html/storage
+    depends_on:
+      app:
+        condition: service_started
+
+volumes:
+  db-data:
+  storage:

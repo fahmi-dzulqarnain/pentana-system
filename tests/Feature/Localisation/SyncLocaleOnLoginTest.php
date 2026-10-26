@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cookie;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class SyncLocaleOnLoginTest extends TestCase
@@ -68,7 +69,7 @@ class SyncLocaleOnLoginTest extends TestCase
     {
         $user = User::factory()->create(['locale' => 'id', 'activated_at' => now(), 'password' => bcrypt('secret-pass')]);
 
-        \Livewire\Livewire::test(\App\Filament\Auth\Login::class)
+        Livewire::test(\App\Filament\Auth\Login::class)
             ->fillForm(['email' => $user->email, 'password' => 'secret-pass'])
             ->call('authenticate');
 
