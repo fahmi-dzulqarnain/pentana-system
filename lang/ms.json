@@ -788,5 +788,19 @@
     "Needs review": "Perlu semakan",
     "No proof submitted": "Tiada bukti dihantar",
     "No reference code": "Tiada kod rujukan",
-    "This statement has already been imported.": "Penyata ini sudah pernah diimport."
+    "This statement has already been imported.": "Penyata ini sudah pernah diimport.",
+    "bank statement": "penyata bank",
+    "bank statements": "penyata bank",
+    "Bank statements": "Penyata bank",
+    "Statement period": "Tempoh penyata",
+    "Uploaded by": "Dimuat naik oleh",
+    "To review": "Untuk disemak",
+    "Imported": "Diimport",
+    "Import statement": "Import penyata",
+    "CIMB BizChannel statement (PDF)": "Penyata CIMB BizChannel (PDF)",
+    ":verified verified, :confirmed confirmed, :unmatched to review": ":verified disahkan, :confirmed dikonfirmasi, :unmatched untuk disemak",
+    "Bank statement :from - :to": "Penyata bank :from - :to",
+    "Statement lines": "Baris penyata",
+    "Reference": "Rujukan",
+    "Outcome": "Hasil"
 }

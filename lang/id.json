@@ -788,5 +788,19 @@
     "Needs review": "Perlu ditinjau",
     "No proof submitted": "Belum ada bukti dikirim",
     "No reference code": "Tidak ada kode referensi",
-    "This statement has already been imported.": "Laporan ini sudah pernah diimpor."
+    "This statement has already been imported.": "Laporan ini sudah pernah diimpor.",
+    "bank statement": "laporan bank",
+    "bank statements": "laporan bank",
+    "Bank statements": "Laporan bank",
+    "Statement period": "Periode laporan",
+    "Uploaded by": "Diunggah oleh",
+    "To review": "Untuk ditinjau",
+    "Imported": "Diimpor",
+    "Import statement": "Impor laporan",
+    "CIMB BizChannel statement (PDF)": "Laporan CIMB BizChannel (PDF)",
+    ":verified verified, :confirmed confirmed, :unmatched to review": ":verified diverifikasi, :confirmed dikonfirmasi, :unmatched untuk ditinjau",
+    "Bank statement :from - :to": "Laporan bank :from - :to",
+    "Statement lines": "Baris laporan",
+    "Reference": "Referensi",
+    "Outcome": "Hasil"
 }
