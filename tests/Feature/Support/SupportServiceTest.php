@@ -201,6 +201,20 @@ class SupportServiceTest extends TestCase
         Notification::assertNothingSent();
     }
 
+    public function test_resolving_a_ticket_the_committee_already_closed_keeps_the_committee_close(): void
+    {
+        $ticket = $this->openTicket();
+        $this->travelTo(now()->subDay());
+        $this->support->close($ticket, $this->adminA);
+        $this->travelBack();
+
+        $this->support->resolveByMember($ticket->fresh(), $this->member);
+
+        $ticket->refresh();
+        $this->assertSame($this->adminA->id, $ticket->closed_by_id);
+        $this->assertTrue($ticket->closed_at->isBefore(now()->subHours(12)));
+    }
+
     public function test_a_committee_reply_on_a_closed_ticket_reopens_it_as_waiting_on_member(): void
     {
         $ticket = $this->openTicket();

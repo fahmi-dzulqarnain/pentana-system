@@ -114,6 +114,11 @@ class SupportService
     {
         $this->ensure(! $member->is_admin && $this->owns($member, $ticket));
 
+        // Already closed (e.g. a stale tap in the app after the committee closed it): keep who closed it.
+        if ($ticket->status === SupportTicketStatus::Closed) {
+            return;
+        }
+
         $ticket->update($this->closedState($member));
     }
 

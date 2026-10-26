@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Enums\SupportTicketStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Activity;
 use App\Models\Lunch;
@@ -25,6 +26,8 @@ class DashboardController extends Controller
                 'next_activity' => $this->nextActivity($user),
                 'open_activities_count' => $this->openActivitiesCount($user),
                 'pending_proofs_count' => $user->paymentProofs()->where('status', 'pending')->count(),
+                // Tickets where the committee answered and the member hasn't yet: the Home card count.
+                'support_replies_waiting' => $user->supportTickets()->where('status', SupportTicketStatus::WaitingOnMember)->count(),
             ],
         ]);
     }
