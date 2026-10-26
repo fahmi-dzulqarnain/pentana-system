@@ -782,5 +782,10 @@
     "No transactions found": "Tiada transaksi ditemui dalam penyata ini",
     "Balance does not reconcile on :date": "Baki tidak sepadan pada :date",
     "The statement totals do not match its transactions.": "Jumlah penyata tidak sepadan dengan transaksinya.",
-    "Could not read the transaction on :date.": "Transaksi pada :date tidak dapat dibaca."
+    "Could not read the transaction on :date.": "Transaksi pada :date tidak dapat dibaca.",
+    "Auto-verified": "Disahkan automatik",
+    "Confirmed": "Disahkan",
+    "Needs review": "Perlu semakan",
+    "No proof submitted": "Tiada bukti dihantar",
+    "No reference code": "Tiada kod rujukan"
 }

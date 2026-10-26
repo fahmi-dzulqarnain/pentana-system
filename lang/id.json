@@ -782,5 +782,10 @@
     "No transactions found": "Tidak ada transaksi dalam rekening koran ini",
     "Balance does not reconcile on :date": "Saldo tidak cocok pada :date",
     "The statement totals do not match its transactions.": "Total rekening koran tidak cocok dengan transaksinya.",
-    "Could not read the transaction on :date.": "Transaksi pada :date tidak dapat dibaca."
+    "Could not read the transaction on :date.": "Transaksi pada :date tidak dapat dibaca.",
+    "Auto-verified": "Diverifikasi otomatis",
+    "Confirmed": "Terkonfirmasi",
+    "Needs review": "Perlu ditinjau",
+    "No proof submitted": "Belum ada bukti dikirim",
+    "No reference code": "Tidak ada kode referensi"
 }
