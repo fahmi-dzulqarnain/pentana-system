@@ -171,6 +171,20 @@ class SupportServiceTest extends TestCase
         $this->assertSame(1, SupportTicket::count());
     }
 
+    public function test_an_attachment_path_outside_the_support_folder_is_refused(): void
+    {
+        foreach (['android/app.apk', 'livewire-tmp/x.png', 'support/../android/app.apk', 'support/a/b.png', '/support/x.png'] as $path) {
+            try {
+                $this->support->open($this->member, SupportTicketType::Bug, 'x', 'y', $path);
+                $this->fail("Accepted attachment path [$path]");
+            } catch (\InvalidArgumentException) {
+                // refused, as it should be
+            }
+        }
+
+        $this->assertSame(0, SupportTicket::count());
+    }
+
     public function test_the_bell_entry_shows_user_text_escaped_and_never_offers_email(): void
     {
         $ticket = $this->support->open($this->member, SupportTicketType::Question, '<script>x</script>', 'Body');

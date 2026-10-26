@@ -37,7 +37,9 @@ class SupportTicketForm
                     ->disk('local')
                     ->directory('support')
                     ->visibility('private')
-                    ->maxSize(5120),
+                    ->maxSize(5120)
+                    // The field's value is client-controlled: accept only files uploaded here, never a typed path.
+                    ->preventFilePathTampering(),
             ])
             ->columns(1);
     }

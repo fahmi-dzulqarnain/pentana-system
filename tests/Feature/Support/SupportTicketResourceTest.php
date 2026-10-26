@@ -13,7 +13,9 @@ use App\Models\User;
 use App\Notifications\SupportTicketOpened;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -57,6 +59,38 @@ class SupportTicketResourceTest extends TestCase
         $this->assertSame(SupportTicketStatus::NeedsReply, $ticket->status);
         $this->assertSame('The lunch page is blank.', $ticket->messages->first()->body);
         Notification::assertSentTo($this->admin, SupportTicketOpened::class);
+    }
+
+    public function test_a_member_can_attach_a_screenshot_and_it_is_stored_privately(): void
+    {
+        Storage::fake('local');
+        $this->actingAs($this->member);
+
+        Livewire::test(CreateSupportTicket::class)
+            ->fillForm([
+                'type' => 'bug', 'subject' => 'Blank page', 'body' => 'See screenshot.',
+                'attachment' => UploadedFile::fake()->image('s.png'),
+            ])
+            ->call('create')
+            ->assertHasNoFormErrors();
+
+        $path = SupportTicket::sole()->messages->first()->attachment_path;
+        $this->assertStringStartsWith('support/', $path);
+        Storage::disk('local')->assertExists($path);
+    }
+
+    public function test_a_tampered_attachment_path_is_rejected(): void
+    {
+        Storage::fake('local');
+        Storage::disk('local')->put('android/app.apk', 'secret');
+        $this->actingAs($this->member);
+
+        Livewire::test(CreateSupportTicket::class)
+            ->fillForm(['type' => 'bug', 'subject' => 'x', 'body' => 'y'])
+            ->set('data.attachment', ['android/app.apk'])
+            ->call('create');
+
+        $this->assertNull(SupportMessage::query()->whereNotNull('attachment_path')->first());
     }
 
     public function test_an_admin_cannot_reach_the_create_page(): void

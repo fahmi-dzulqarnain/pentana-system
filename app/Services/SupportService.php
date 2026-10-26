@@ -14,6 +14,7 @@ use App\Notifications\SupportTicketOpened;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\DB;
+use InvalidArgumentException;
 
 /**
  * Every support-ticket state change, and who hears about it. This is the authorization
@@ -30,6 +31,11 @@ class SupportService
     public function open(User $member, SupportTicketType $type, string $subject, string $body, ?string $attachmentPath = null): SupportTicket
     {
         $this->ensure(! $member->is_admin);
+        // A screenshot is served back to its member, so only a file stored straight under support/
+        // may be referenced; anything else could expose another private file (APKs, other screenshots' temp copies).
+        if ($attachmentPath !== null && (! preg_match('#^support/[A-Za-z0-9._-]+$#', $attachmentPath) || str_contains($attachmentPath, '..'))) {
+            throw new InvalidArgumentException('Invalid support attachment path.');
+        }
 
         $ticket = DB::transaction(function () use ($member, $type, $subject, $body, $attachmentPath) {
             $ticket = SupportTicket::create([
