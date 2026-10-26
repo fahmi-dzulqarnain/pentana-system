@@ -24,7 +24,13 @@ use Illuminate\Support\Facades\DB;
  */
 class StatementMatcher
 {
+    /** A pending proof counts for a credit only if uploaded from 7 days before to 14 days after it. */
     public const PROOF_LOOKBACK_DAYS = 7;
+
+    public const PROOF_LOOKAHEAD_DAYS = 14;
+
+    /** A verified proof is confirmed by a credit only if verified from 3 days before to 30 days after it. */
+    public const CONFIRM_SLACK_DAYS = 3;
 
     public const CONFIRM_WINDOW_DAYS = 30;
 
@@ -54,10 +60,16 @@ class StatementMatcher
 
             if ($userId === null) {
                 $outcome = $this->settle($line, StatementLineOutcome::NoCode, null) ? StatementLineOutcome::NoCode : false;
-            } elseif ($mine->count() === 1 && $claims[$mine->first()->id] === 1) {
-                $outcome = $this->autoVerify($line, $userId, $mine->first());
-            } elseif ($mine->isEmpty() && ($proof = $this->confirmable($line, $userId))) {
-                $outcome = $this->confirm($line, $userId, $proof);
+            } else {
+                // A credit that could be both a new payment and one already verified by hand is
+                // ambiguous: it may be the old payment, so it must not verify the newer proof.
+                $verified = $this->confirmable($line, $userId);
+
+                if ($mine->count() === 1 && $claims[$mine->first()->id] === 1 && $verified->isEmpty()) {
+                    $outcome = $this->autoVerify($line, $userId, $mine->first());
+                } elseif ($mine->isEmpty() && $verified->count() === 1) {
+                    $outcome = $this->confirm($line, $userId, $verified->first());
+                }
             }
 
             $outcome ??= $this->leaveForReview($line, $userId);
@@ -104,10 +116,16 @@ class StatementMatcher
     /** @return Collection<int, PaymentProof> */
     private function candidates(BankStatementLine $line, int $userId): Collection
     {
+        $day = $line->txn_date->toImmutable();
+
+        // Two-sided: an old credit must never claim a proof uploaded for a later payment.
         // Compared in PHP, in cents: decimal columns come back as strings on Postgres and SQLite alike.
         return PaymentProof::where('user_id', $userId)
             ->where('status', 'pending')
-            ->where('created_at', '>=', $line->txn_date->toImmutable()->startOfDay()->subDays(self::PROOF_LOOKBACK_DAYS))
+            ->whereBetween('created_at', [
+                $day->startOfDay()->subDays(self::PROOF_LOOKBACK_DAYS),
+                $day->endOfDay()->addDays(self::PROOF_LOOKAHEAD_DAYS),
+            ])
             ->get()
             ->filter(fn (PaymentProof $proof) => FinanceService::toCents($proof->amount_claimed) === FinanceService::toCents($line->amount))
             ->values();
@@ -135,19 +153,26 @@ class StatementMatcher
         return StatementLineOutcome::AutoVerified;
     }
 
-    /** The one verified, still unlinked proof this credit already paid for, if there is exactly one. */
-    private function confirmable(BankStatementLine $line, int $userId): ?PaymentProof
+    /**
+     * Verified, still unlinked proofs of exactly this amount that this credit may already
+     * have paid for. Exactly one is confirmed; any at all makes the credit ambiguous.
+     *
+     * @return Collection<int, PaymentProof>
+     */
+    private function confirmable(BankStatementLine $line, int $userId): Collection
     {
         $day = $line->txn_date->toImmutable();
 
-        $proofs = PaymentProof::where('user_id', $userId)
+        return PaymentProof::where('user_id', $userId)
             ->where('status', 'verified')
             ->whereDoesntHave('bankStatementLine')
-            ->whereBetween('verified_at', [$day->startOfDay(), $day->addDays(self::CONFIRM_WINDOW_DAYS)->endOfDay()])
+            ->whereBetween('verified_at', [
+                $day->startOfDay()->subDays(self::CONFIRM_SLACK_DAYS),
+                $day->endOfDay()->addDays(self::CONFIRM_WINDOW_DAYS),
+            ])
             ->get()
-            ->filter(fn (PaymentProof $proof) => FinanceService::toCents($proof->amount_verified) === FinanceService::toCents($line->amount));
-
-        return $proofs->count() === 1 ? $proofs->first() : null;
+            ->filter(fn (PaymentProof $proof) => FinanceService::toCents($proof->amount_verified) === FinanceService::toCents($line->amount))
+            ->values();
     }
 
     private function confirm(BankStatementLine $line, int $userId, PaymentProof $proof): StatementLineOutcome|false|null

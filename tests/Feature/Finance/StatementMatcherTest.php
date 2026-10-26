@@ -56,11 +56,11 @@ class StatementMatcherTest extends TestCase
 
     private function line(?User $user, string $amount, array $extra = []): BankStatementLine
     {
-        return BankStatementLine::factory()->create([
+        return BankStatementLine::factory()->create($extra + [
             'txn_date' => self::TXN_DATE,
             'amount' => $amount,
             'reference_text' => $user ? 'FEES '.ReferenceCode::for($user->id).' TQ' : 'MONTHLY FEES',
-        ] + $extra);
+        ]);
     }
 
     /** @param  list<BankStatementLine>  $lines */
@@ -234,7 +234,7 @@ class StatementMatcherTest extends TestCase
         $early = User::factory()->create();
         $this->proof($early, 30, 'verified', [
             'amount_verified' => 30,
-            'verified_at' => Carbon::parse('2026-10-04 23:59'), // the day before the transfer
+            'verified_at' => Carbon::parse('2026-10-01 23:59'), // four days before the transfer
         ]);
         $lateLine = $this->line($this->member, '30.00');
         $earlyLine = $this->line($early, '30.00');
@@ -244,6 +244,97 @@ class StatementMatcherTest extends TestCase
         $this->assertSame(StatementLineOutcome::NoProof, $lateLine->fresh()->outcome);
         $this->assertSame(StatementLineOutcome::NoProof, $earlyLine->fresh()->outcome);
         $this->assertNull($lateLine->fresh()->payment_proof_id);
+    }
+
+    public function test_old_line_does_not_verify_a_newer_proof_after_its_own_was_verified_by_hand(): void
+    {
+        Notification::fake();
+        // 15 Sep: RM15 with the code. 16 Sep: treasurer verifies that proof by hand.
+        $september = $this->proof($this->member, 15, extra: ['created_at' => Carbon::parse('2026-09-15 08:00')]);
+        $this->travelTo(Carbon::parse('2026-09-16 10:00'));
+        app(FinanceService::class)->verifyAndAllocate($september, 15);
+        // 1 Oct: October's RM15 proof, still pending. 3 Oct: the September statement is imported.
+        $october = $this->proof($this->member, 15, extra: ['created_at' => Carbon::parse('2026-10-01 09:00')]);
+        $this->travelTo(Carbon::parse('2026-10-03 10:00'));
+        $line = $this->line($this->member, '15.00', ['txn_date' => '2026-09-15']);
+
+        $result = $this->match([$line]);
+
+        $this->assertSame('pending', $october->fresh()->status);
+        $this->assertNotSame(StatementLineOutcome::AutoVerified, $line->fresh()->outcome);
+        $this->assertNotSame($october->id, $line->fresh()->payment_proof_id);
+        $this->assertSame([], $result->verifiedProofIds);
+        Notification::assertNothingSent();
+    }
+
+    public function test_line_with_both_a_pending_candidate_and_a_confirmable_proof_needs_review(): void
+    {
+        Notification::fake();
+        $verified = $this->proof($this->member, 30, 'verified', [
+            'amount_verified' => 30,
+            'verified_at' => Carbon::parse('2026-10-06 10:00'),
+        ]);
+        $pending = $this->proof($this->member, 30, extra: ['created_at' => Carbon::parse('2026-10-08 09:00')]);
+        $line = $this->line($this->member, '30.00');
+
+        $result = $this->match([$line]);
+
+        $line->refresh();
+        $this->assertSame(StatementLineOutcome::NeedsReview, $line->outcome);
+        $this->assertNull($line->payment_proof_id);
+        $this->assertSame('pending', $pending->fresh()->status);
+        $this->assertNull($verified->fresh()->bankStatementLine);
+        $this->assertSame(0, $result->autoVerified);
+        $this->assertSame(0, $result->confirmed);
+        Notification::assertNothingSent();
+    }
+
+    public function test_proof_created_more_than_the_lookahead_after_the_transfer_is_not_a_candidate(): void
+    {
+        Notification::fake();
+        $this->travelTo(Carbon::parse('2026-10-25 10:00'));
+        $late = $this->proof($this->member, 30, extra: ['created_at' => Carbon::parse('2026-10-20 10:00')]); // txn + 15 days
+        $line = $this->line($this->member, '30.00');
+
+        $this->match([$line]);
+
+        $this->assertSame(StatementLineOutcome::NeedsReview, $line->fresh()->outcome);
+        $this->assertNull($line->fresh()->payment_proof_id);
+        $this->assertSame('pending', $late->fresh()->status);
+    }
+
+    public function test_lookahead_boundary_is_the_end_of_the_fourteenth_day(): void
+    {
+        Notification::fake();
+        $this->travelTo(Carbon::parse('2026-10-25 10:00'));
+        $inside = $this->proof($this->member, 30, extra: ['created_at' => Carbon::parse('2026-10-19 23:59:59')]);
+        $insideLine = $this->line($this->member, '30.00');
+        $other = User::factory()->create();
+        $outside = $this->proof($other, 30, extra: ['created_at' => Carbon::parse('2026-10-20 00:00:00')]);
+        $outsideLine = $this->line($other, '30.00');
+
+        $this->match([$insideLine, $outsideLine]);
+
+        $this->assertSame(StatementLineOutcome::AutoVerified, $insideLine->fresh()->outcome);
+        $this->assertSame('verified', $inside->fresh()->status);
+        $this->assertSame(StatementLineOutcome::NeedsReview, $outsideLine->fresh()->outcome);
+        $this->assertSame('pending', $outside->fresh()->status);
+    }
+
+    public function test_proof_verified_within_the_confirm_slack_before_the_transfer_is_confirmed(): void
+    {
+        Notification::fake();
+        $proof = $this->proof($this->member, 30, 'verified', [
+            'amount_verified' => 30,
+            'verified_at' => Carbon::parse('2026-10-02 00:00'), // txn - 3 days, start of day
+        ]);
+        $line = $this->line($this->member, '30.00');
+
+        $result = $this->match([$line]);
+
+        $this->assertSame(StatementLineOutcome::Confirmed, $line->fresh()->outcome);
+        $this->assertSame($proof->id, $line->fresh()->payment_proof_id);
+        $this->assertSame(1, $result->confirmed);
     }
 
     public function test_code_without_any_proof_is_no_proof(): void
