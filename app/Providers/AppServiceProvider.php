@@ -6,6 +6,8 @@ use App\Http\Middleware\SetLocale;
 use App\Mail\BudgetedTransport;
 use App\Models\DeviceToken;
 use App\Models\User;
+use App\Services\BankStatements\PdftotextExtractor;
+use App\Services\BankStatements\StatementTextExtractor;
 use App\Support\TimeFormat;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
@@ -36,7 +38,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->bind(StatementTextExtractor::class, PdftotextExtractor::class);
     }
 
     /**

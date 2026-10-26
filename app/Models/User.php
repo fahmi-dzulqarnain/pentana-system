@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Models\Payment\PaymentProof;
 use App\Support\Locales;
+use App\Support\ReferenceCode;
 use Database\Factories\UserFactory;
 use Filament\Auth\MultiFactor\App\Contracts\HasAppAuthentication;
 use Filament\Auth\MultiFactor\App\Contracts\HasAppAuthenticationRecovery;
@@ -206,6 +207,18 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
     public function canManageFinance(): bool
     {
         return $this->is_admin && ($this->is_treasurer || $this->is_super_admin);
+    }
+
+    /** Bank statement import: the club treasurer only (a super-admin is not enough). */
+    public function canImportBankStatements(): bool
+    {
+        return $this->is_admin && $this->is_treasurer;
+    }
+
+    /** What the member puts in the bank transfer reference so the statement can be matched. */
+    protected function paymentReference(): Attribute
+    {
+        return Attribute::get(fn (): string => ReferenceCode::for($this->id));
     }
 
     public function isActivated(): bool
