@@ -15,11 +15,14 @@ use App\Services\BankStatements\MatchResult;
 use App\Services\BankStatements\StatementMatcher;
 use App\Services\FinanceService;
 use App\Support\ReferenceCode;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Notifications\Events\NotificationSending;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Exceptions;
 use Illuminate\Support\Facades\Notification;
+use Mockery;
 use RuntimeException;
 use Tests\TestCase;
 
@@ -380,6 +383,77 @@ class StatementMatcherTest extends TestCase
         $this->assertSame(0, $result->autoVerified);
         $this->assertSame([], $result->verifiedProofIds);
         Notification::assertNothingSent();
+    }
+
+    /** Makes verifyAndAllocate() throw for one proof and run for real for every other. */
+    private function failVerificationOf(PaymentProof $failing, \Throwable $error): void
+    {
+        $this->partialMock(FinanceService::class, function ($mock) use ($failing, $error) {
+            $mock->shouldReceive('verifyAndAllocate')
+                ->with(Mockery::on(fn (PaymentProof $proof) => $proof->id === $failing->id), Mockery::any())
+                ->andThrow($error);
+            $mock->shouldReceive('verifyAndAllocate')
+                ->with(Mockery::on(fn (PaymentProof $proof) => $proof->id !== $failing->id), Mockery::any())
+                ->passthru();
+        });
+    }
+
+    public function test_a_line_that_throws_is_reported_left_for_review_and_the_rest_still_match(): void
+    {
+        Notification::fake();
+        Exceptions::fake();
+        $other = User::factory()->create();
+        $broken = $this->proof($this->member, 30);
+        $fine = $this->proof($other, 30);
+        $brokenLine = $this->line($this->member, '30.00');
+        $fineLine = $this->line($other, '30.00');
+        $this->failVerificationOf($broken, new RuntimeException('allocation blew up'));
+
+        $result = $this->match([$brokenLine, $fineLine]);
+
+        Exceptions::assertReported(fn (RuntimeException $e) => $e->getPrevious()?->getMessage() === 'allocation blew up'
+            && str_contains($e->getMessage(), "line {$brokenLine->id}"));
+        $this->assertSame(StatementLineOutcome::NeedsReview, $brokenLine->fresh()->outcome);
+        $this->assertNull($brokenLine->fresh()->payment_proof_id);
+        $this->assertSame('pending', $broken->fresh()->status);
+        $this->assertSame(StatementLineOutcome::AutoVerified, $fineLine->fresh()->outcome);
+        $this->assertSame('verified', $fine->fresh()->status);
+        $this->assertSame(1, $result->autoVerified);
+        $this->assertSame(1, $result->unmatched);
+        Notification::assertSentTo($other, PaymentVerified::class);
+        Notification::assertNotSentTo($this->member, PaymentVerified::class);
+    }
+
+    public function test_members_verified_before_a_failing_line_are_still_notified(): void
+    {
+        Notification::fake();
+        Exceptions::fake();
+        $other = User::factory()->create();
+        $fine = $this->proof($other, 30);
+        $broken = $this->proof($this->member, 30);
+        $fineLine = $this->line($other, '30.00');
+        $brokenLine = $this->line($this->member, '30.00');
+        $this->failVerificationOf($broken, new RuntimeException('allocation blew up'));
+
+        $this->match([$fineLine, $brokenLine]);
+
+        $this->assertSame(StatementLineOutcome::NeedsReview, $brokenLine->fresh()->outcome);
+        Notification::assertSentTo($other, PaymentVerified::class);
+    }
+
+    public function test_a_genuine_model_not_found_is_reported_not_swallowed(): void
+    {
+        Notification::fake();
+        Exceptions::fake();
+        $proof = $this->proof($this->member, 30);
+        $line = $this->line($this->member, '30.00');
+        $this->failVerificationOf($proof, (new ModelNotFoundException)->setModel(FeePeriod::class));
+
+        $this->match([$line]);
+
+        Exceptions::assertReported(fn (RuntimeException $e) => $e->getPrevious() instanceof ModelNotFoundException);
+        $this->assertSame(StatementLineOutcome::NeedsReview, $line->fresh()->outcome);
+        $this->assertSame('pending', $proof->fresh()->status);
     }
 
     public function test_one_failing_notification_does_not_stop_the_others(): void

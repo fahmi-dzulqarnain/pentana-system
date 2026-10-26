@@ -11,10 +11,11 @@ use App\Notifications\PaymentVerified;
 use App\Services\FinanceService;
 use App\Services\MemberNotifier;
 use App\Support\ReferenceCode;
-use Illuminate\Database\RecordsNotFoundException;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use RuntimeException;
+use Throwable;
 
 /**
  * Decides, for each stored bank credit, whether it verifies a member's pending proof.
@@ -45,56 +46,107 @@ class StatementMatcher
         $userIds = $this->members($lines);
 
         // Every line's candidates first: a proof two lines could claim is verified by neither.
-        $candidates = $lines->mapWithKeys(fn (BankStatementLine $line) => [
-            $line->id => $userIds[$line->id] === null ? collect() : $this->candidates($line, $userIds[$line->id]),
-        ]);
-        $claims = $candidates->flatMap(fn (Collection $proofs) => $proofs->pluck('id'))->countBy();
+        // A member whose lookup failed gets no auto-verify at all this run: their claims are unknown.
+        $unknownClaims = [];
+        $candidates = $lines->mapWithKeys(function (BankStatementLine $line) use ($userIds, &$unknownClaims) {
+            $userId = $userIds[$line->id];
+
+            try {
+                return [$line->id => $userId === null ? collect() : $this->candidates($line, $userId)];
+            } catch (Throwable $e) {
+                $this->reportFailure($line, $e);
+                $unknownClaims[$userId] = true;
+
+                return [$line->id => null];
+            }
+        });
+        $claims = $candidates->filter()->flatMap(fn (Collection $proofs) => $proofs->pluck('id'))->countBy();
 
         $autoVerified = $confirmed = $unmatched = 0;
         $verifiedProofIds = [];
 
-        foreach ($lines as $line) {
-            $userId = $userIds[$line->id];
-            $mine = $candidates[$line->id];
-            $outcome = null;
+        try {
+            foreach ($lines as $line) {
+                $userId = $userIds[$line->id];
 
-            if ($userId === null) {
-                $outcome = $this->settle($line, StatementLineOutcome::NoCode, null) ? StatementLineOutcome::NoCode : false;
-            } else {
-                // A credit that could be both a new payment and one already verified by hand is
-                // ambiguous: it may be the old payment, so it must not verify the newer proof.
-                $verified = $this->confirmable($line, $userId);
+                try {
+                    $outcome = $candidates[$line->id] === null || isset($unknownClaims[$userId])
+                        ? $this->leaveForReview($line, $userId)
+                        : $this->decide($line, $userId, $candidates[$line->id], $claims);
+                } catch (Throwable $e) {
+                    // One bad line must not stop the others; it stays with the treasurer.
+                    $this->reportFailure($line, $e);
+                    $outcome = $this->fallBackToReview($line, $userId);
+                }
 
-                if ($mine->count() === 1 && $claims[$mine->first()->id] === 1 && $verified->isEmpty()) {
-                    $outcome = $this->autoVerify($line, $userId, $mine->first());
-                } elseif ($mine->isEmpty() && $verified->count() === 1) {
-                    $outcome = $this->confirm($line, $userId, $verified->first());
+                if ($outcome === false) {
+                    continue; // Linked by a concurrent import meanwhile; that run owns the line now.
+                }
+
+                if ($outcome === StatementLineOutcome::AutoVerified) {
+                    $autoVerified++;
+                    $verifiedProofIds[] = $line->payment_proof_id;
+                } elseif ($outcome === StatementLineOutcome::Confirmed) {
+                    $confirmed++;
+                } else {
+                    $unmatched++;
                 }
             }
-
-            $outcome ??= $this->leaveForReview($line, $userId);
-
-            if ($outcome === false) {
-                continue; // Linked by a concurrent import meanwhile; that run owns the line now.
-            }
-
-            if ($outcome === StatementLineOutcome::AutoVerified) {
-                $autoVerified++;
-                $verifiedProofIds[] = $line->payment_proof_id;
-            } elseif ($outcome === StatementLineOutcome::Confirmed) {
-                $confirmed++;
-            } else {
-                $unmatched++;
-            }
+        } finally {
+            // Every collected id is a committed verification, so its member hears about it even if
+            // the run itself fails later. Per member, so one bad channel skips only that member.
+            $this->notifier->sendEachAfterResponse(
+                PaymentProof::with('user')->whereKey($verifiedProofIds)->get()
+                    ->map(fn (PaymentProof $proof) => [$proof->user, new PaymentVerified($proof)])
+            );
         }
 
-        // After every transaction has committed, and per member, so one bad channel skips only that member.
-        $this->notifier->sendEachAfterResponse(
-            PaymentProof::with('user')->whereKey($verifiedProofIds)->get()
-                ->map(fn (PaymentProof $proof) => [$proof->user, new PaymentVerified($proof)])
-        );
-
         return new MatchResult($autoVerified, $confirmed, $unmatched, $verifiedProofIds);
+    }
+
+    /**
+     * @param  Collection<int, PaymentProof>  $mine
+     * @param  Collection<int, int>  $claims  how many lines claim each proof id
+     */
+    private function decide(BankStatementLine $line, ?int $userId, Collection $mine, Collection $claims): StatementLineOutcome|false
+    {
+        if ($userId === null) {
+            return $this->settle($line, StatementLineOutcome::NoCode, null) ? StatementLineOutcome::NoCode : false;
+        }
+
+        // A credit that could be both a new payment and one already verified by hand is
+        // ambiguous: it may be the old payment, so it must not verify the newer proof.
+        $verified = $this->confirmable($line, $userId);
+        $outcome = null;
+
+        if ($mine->count() === 1 && $claims[$mine->first()->id] === 1 && $verified->isEmpty()) {
+            $outcome = $this->autoVerify($line, $userId, $mine->first());
+        } elseif ($mine->isEmpty() && $verified->count() === 1) {
+            $outcome = $this->confirm($line, $userId, $verified->first());
+        }
+
+        return $outcome ?? $this->leaveForReview($line, $userId);
+    }
+
+    /**
+     * Wrapped so the line is named in the log, and so exceptions Laravel never reports on its
+     * own (ModelNotFoundException and friends, normally a 404) still reach the log here.
+     */
+    private function reportFailure(BankStatementLine $line, Throwable $e): void
+    {
+        report(new RuntimeException("Bank statement line {$line->id} could not be matched: {$e->getMessage()}", 0, $e));
+    }
+
+    /** After a failure: NeedsReview if the line is still unlinked. Counted as unmatched even if that write fails too. */
+    private function fallBackToReview(BankStatementLine $line, ?int $userId): StatementLineOutcome|false
+    {
+        try {
+            return $this->settle($line, StatementLineOutcome::NeedsReview, $userId) ? StatementLineOutcome::NeedsReview : false;
+        } catch (Throwable $e) {
+            report($e);
+
+            return StatementLineOutcome::NeedsReview;
+        }
     }
 
     /**
@@ -140,13 +192,13 @@ class StatementMatcher
                 $proof->update(['admin_note' => "Verified from bank statement (CIMB ref {$line->bank_ref_no})"]);
 
                 if (! $this->settle($line, StatementLineOutcome::AutoVerified, $userId, $proof->id)) {
-                    throw new RecordsNotFoundException("Bank statement line {$line->id} is already linked.");
+                    throw new LineAlreadyLinkedException("Bank statement line {$line->id} is already linked.");
                 }
             });
         } catch (PaymentNotPendingException) {
             // Verified or rejected by hand since the candidates were read.
             return $this->settle($line, StatementLineOutcome::NeedsReview, $userId) ? StatementLineOutcome::NeedsReview : false;
-        } catch (RecordsNotFoundException) {
+        } catch (LineAlreadyLinkedException) {
             return false;
         }
 
