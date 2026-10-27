@@ -53,8 +53,13 @@ class MyLunchPageTest extends TestCase
 
         Livewire::test(MyLunch::class)
             ->assertSuccessful()
+            ->assertSee('Not voted yet')
+            ->assertSee('1 lunch needs your vote')
+            ->call('openLunch', $lunch->id)
             ->assertSee('Beef')
-            ->call('choose', $lunch->id, $option->id);
+            ->call('choose', $lunch->id, $option->id)
+            ->assertDispatched('lunch-saved')
+            ->assertDontSee('1 lunch needs your vote');
 
         $this->assertDatabaseHas('lunch_responses', [
             'lunch_id' => $lunch->id, 'user_id' => $user->id,
@@ -135,14 +140,17 @@ class MyLunchPageTest extends TestCase
             'lunch_option_id' => $optB->id, 'meal_option_id' => $optB->meal_option_id,
         ]);
 
+        // The agenda row names the pick and its dish; the panel lists both menus with B's option chosen.
         $html = Livewire::test(MyLunch::class)
-            ->assertSee('Nasi Lemak Royale')
+            ->assertSee('Regular')
             ->assertSee('Mee Goreng Mamak')
+            ->call('openLunch', $lunch->id)
+            ->assertSee('Nasi Lemak Royale')
             ->html();
 
-        $this->assertSame(1, substr_count($html, 'ml-btn--active"'));
-        $this->assertMatchesRegularExpression('/choose\('.$lunch->id.', '.$optB->id.'\)"[^>]*ml-btn ml-btn--active/s', $html);
-        $this->assertDoesNotMatchRegularExpression('/choose\('.$lunch->id.', '.$optA->id.'\)"[^>]*ml-btn--active/s', $html);
+        $this->assertSame(1, substr_count($html, 'ml-opt ml-opt--on"'));
+        $this->assertMatchesRegularExpression('/class="ml-opt ml-opt--on"[^>]*choose\('.$lunch->id.', '.$optB->id.'\)/s', $html);
+        $this->assertDoesNotMatchRegularExpression('/class="ml-opt ml-opt--on"[^>]*choose\('.$lunch->id.', '.$optA->id.'\)/s', $html);
     }
 
     public function test_my_lunch_closed_state_names_the_option_and_its_menu(): void
@@ -157,12 +165,16 @@ class MyLunchPageTest extends TestCase
 
         [$menuA, $menuB] = $lunch->menus()->with(['caterer', 'catererMeal'])->get()->all();
 
-        $html = Livewire::test(MyLunch::class)->assertSee('Ordering closed.')->html();
+        $html = Livewire::test(MyLunch::class)
+            ->assertSee("Today · You're having")
+            ->call('openLunch', $lunch->id)
+            ->assertSee('Ordering closed')
+            ->html();
 
-        $this->assertSame(1, preg_match('/<div class="ml-locked">(.*?)<\/div>/s', $html, $m));
-        $locked = preg_replace('/\s+/', ' ', strip_tags($m[1]));
-        $this->assertStringContainsString('You ordered: Regular ('.$menuB->label().')', html_entity_decode($locked));
-        $this->assertStringNotContainsString($menuA->label(), html_entity_decode($locked));
+        $this->assertSame(1, preg_match('/<div class="ml-summary">(.*?)<\/div>/s', $html, $m));
+        $summary = html_entity_decode(preg_replace('/\s+/', ' ', strip_tags($m[1])));
+        $this->assertStringContainsString('You ordered: Regular ('.$menuB->label().')', $summary);
+        $this->assertStringNotContainsString($menuA->label(), $summary);
     }
 
     public function test_earlier_days_this_week_stay_visible_but_last_week_does_not(): void
@@ -178,7 +190,8 @@ class MyLunchPageTest extends TestCase
         $lunch->update(['date' => $monday->toDateString(), 'deadline' => $monday->copy()->subDay()->setTime(18, 0)]);
         Lunch::factory()->create(['date' => $monday->copy()->subDays(3)->toDateString(), 'status' => 'published', 'deadline' => now()->subWeek()]);
 
-        $page = Livewire::test(MyLunch::class)->assertSee('You ordered:');
+        // Monday is past: one dimmed line with the pick and its dish.
+        $page = Livewire::test(MyLunch::class)->assertSee('Regular')->assertSee('Mee Goreng Mamak')->assertDontSee('Not voted yet');
 
         $this->assertSame([$lunch->id], $page->instance()->upcomingLunches()->pluck('id')->all());
     }
@@ -195,5 +208,79 @@ class MyLunchPageTest extends TestCase
         $rows = LunchResponse::where(['lunch_id' => $lunch->id, 'user_id' => $user->id])->get();
         $this->assertCount(1, $rows);
         $this->assertSame($optB->id, $rows->first()->lunch_option_id);
+    }
+
+    public function test_changing_a_pick_offers_undo_and_undo_puts_it_back(): void
+    {
+        [$lunch, $optA, $optB] = $this->twoMenuLunch();
+        $user = $this->actAsPanelUser();
+
+        Livewire::test(MyLunch::class)
+            ->call('choose', $lunch->id, $optA->id)
+            ->assertNotified('Saved · '.$lunch->date->translatedFormat('D j M').': Regular')
+            ->call('choose', $lunch->id, $optB->id)
+            ->assertNotified('Changed Regular → Regular')
+            ->dispatch('lunch-undo', lunchId: $lunch->id, lunchOptionId: $optA->id)
+            ->assertNotified('Put back Regular');
+
+        $this->assertSame($optA->id, LunchResponse::where(['lunch_id' => $lunch->id, 'user_id' => $user->id])->value('lunch_option_id'));
+    }
+
+    public function test_undo_can_restore_not_attending(): void
+    {
+        [$lunch, $option] = $this->publishedLunch();
+        $user = $this->actAsPanelUser();
+        LunchResponse::create(['lunch_id' => $lunch->id, 'user_id' => $user->id, 'lunch_option_id' => null, 'meal_option_id' => null]);
+
+        Livewire::test(MyLunch::class)
+            ->call('choose', $lunch->id, $option->id)
+            ->assertNotified('Changed Not attending → Beef')
+            ->dispatch('lunch-undo', lunchId: $lunch->id, lunchOptionId: null);
+
+        $row = LunchResponse::where(['lunch_id' => $lunch->id, 'user_id' => $user->id])->first();
+        $this->assertNull($row->lunch_option_id);
+        $this->assertNull($row->meal_option_id);
+    }
+
+    public function test_a_tampered_undo_cannot_pick_another_lunchs_option(): void
+    {
+        [$lunch, $option] = $this->publishedLunch();
+        [, $otherOption] = $this->publishedLunch(['date' => today()->addDays(2)->toDateString()]);
+        $user = $this->actAsPanelUser();
+        LunchResponse::create(['lunch_id' => $lunch->id, 'user_id' => $user->id, 'lunch_option_id' => $option->id, 'meal_option_id' => $option->meal_option_id]);
+
+        Livewire::test(MyLunch::class)
+            ->dispatch('lunch-undo', lunchId: $lunch->id, lunchOptionId: $otherOption->id)
+            ->assertDispatched('lunch-save-failed');
+
+        $this->assertSame($option->id, LunchResponse::where(['lunch_id' => $lunch->id, 'user_id' => $user->id])->value('lunch_option_id'));
+    }
+
+    public function test_tapping_the_saved_answer_again_changes_nothing(): void
+    {
+        [$lunch, $option] = $this->publishedLunch();
+        $user = $this->actAsPanelUser();
+        $row = LunchResponse::create(['lunch_id' => $lunch->id, 'user_id' => $user->id, 'lunch_option_id' => $option->id, 'meal_option_id' => $option->meal_option_id]);
+        $this->travel(5)->minutes();
+
+        Livewire::test(MyLunch::class)
+            ->call('choose', $lunch->id, $option->id)
+            ->assertNotDispatched('lunch-saved')
+            ->assertNotNotified();
+
+        $this->assertTrue($row->updated_at->equalTo($row->fresh()->updated_at));
+    }
+
+    public function test_the_panel_offers_the_next_day_that_still_needs_a_vote(): void
+    {
+        [$friday, $fridayOption] = $this->publishedLunch(['date' => today()->addDays(2)->toDateString(), 'deadline' => now()->addDay()]);
+        [$thursday] = $this->publishedLunch(['date' => today()->addDay()->toDateString(), 'deadline' => now()->addHours(6)]);
+        $user = $this->actAsPanelUser();
+        LunchResponse::create(['lunch_id' => $friday->id, 'user_id' => $user->id, 'lunch_option_id' => $fridayOption->id, 'meal_option_id' => $fridayOption->meal_option_id]);
+
+        Livewire::test(MyLunch::class)
+            ->assertSee('Vote for '.$thursday->date->translatedFormat('D'))
+            ->call('openLunch', $friday->id)
+            ->assertSee('Next: '.$thursday->date->translatedFormat('D j M'));
     }
 }
