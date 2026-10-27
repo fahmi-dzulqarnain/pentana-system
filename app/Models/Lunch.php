@@ -14,12 +14,14 @@ class Lunch extends Model
 
     protected $table = 'lunches';
 
-    protected $fillable = ['date', 'deadline', 'status', 'vote_nudge_sent_at'];
+    protected $fillable = ['date', 'deadline', 'status', 'published_at', 'vote_nudge_sent_at'];
 
     protected $casts = [
         'date' => 'date',
         'deadline' => 'datetime',
         'vote_nudge_sent_at' => 'datetime',
+        'published_at' => 'datetime',
+        'announced_at' => 'datetime',
         'manual_reminder_sent_at' => 'datetime',
         'manual_reminder_sent_by' => 'integer',
     ];

@@ -17,14 +17,14 @@ class EmailBudgetTest extends TestCase
         $this->assertSame(1, EmailBudget::usedToday());
     }
 
-    public function test_the_ninety_ninth_claim_succeeds_and_the_hundredth_is_refused(): void
+    public function test_claims_up_to_the_daily_cap_succeed_and_the_next_is_refused(): void
     {
-        for ($i = 0; $i < 99; $i++) {
+        for ($i = 0; $i < EmailBudget::DAILY_LIMIT; $i++) {
             $this->assertTrue(EmailBudget::claim(), "claim {$i} should succeed");
         }
 
         $this->assertFalse(EmailBudget::claim());
-        $this->assertSame(99, EmailBudget::usedToday());
+        $this->assertSame(EmailBudget::DAILY_LIMIT, EmailBudget::usedToday());
     }
 
     public function test_release_gives_a_slot_back(): void
@@ -44,7 +44,7 @@ class EmailBudgetTest extends TestCase
 
     public function test_a_new_day_gets_a_fresh_budget(): void
     {
-        for ($i = 0; $i < 99; $i++) {
+        for ($i = 0; $i < EmailBudget::DAILY_LIMIT; $i++) {
             EmailBudget::claim();
         }
         $this->assertFalse(EmailBudget::claim());

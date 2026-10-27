@@ -70,7 +70,7 @@ class LunchesTable
                             $published->isEmpty()
                                 ? Notification::make()->title(__('No draft days selected'))->warning()->send()
                                 : Notification::make()
-                                    ->title(trans_choice('Published :count day: members notified|Published :count days: members notified', $published->count()))
+                                    ->title(trans_choice('Published :count day: members will be notified shortly|Published :count days: members will be notified shortly', $published->count()))
                                     ->success()
                                     ->send();
                         }),
