@@ -33,7 +33,7 @@ class EmailBudgetWidgetLocalisedTest extends TestCase
         Livewire::test(EmailBudgetStats::class)
             ->assertSee('Email budget')
             ->assertSee('Email today')
-            ->assertSee('99 remaining today')
+            ->assertSee('100 remaining today')
             ->assertSee('nothing waiting');
     }
 }

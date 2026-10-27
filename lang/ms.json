@@ -701,7 +701,6 @@
     "This lunch is not open for voting.": "Makan tengah hari ini tidak dibuka untuk mengundi.",
     "Selected draft days are published and members get one notification listing them. Days already published are skipped.": "Hari draf yang dipilih akan diterbitkan dan ahli menerima satu pemberitahuan yang menyenaraikan semuanya. Hari yang sudah diterbitkan dilangkau.",
     "No draft days selected": "Tiada hari draf dipilih",
-    "Published :count day: members notified|Published :count days: members notified": ":count hari diterbitkan: ahli telah dimaklumkan",
     "Lunch published for :count days": "Menu makan tengah hari diterbitkan untuk :count hari",
     ":first to :last. Order each day before its deadline.": ":first hingga :last. Pesan setiap hari sebelum tarikh akhirnya.",
     "Menus are published for these days:": "Menu telah diterbitkan untuk hari-hari ini:",
@@ -841,5 +840,8 @@
     "soon": "tidak lama lagi",
     "today :time": "hari ini :time",
     "tomorrow :time": "esok :time",
-    "your pick": "pilihan anda"
+    "your pick": "pilihan anda",
+    "Published: members will be notified shortly": "Diterbitkan: ahli akan dimaklumkan sebentar lagi",
+    "Members get one announcement covering every day you publish in the next :minutes minutes.": "Ahli akan menerima satu pengumuman untuk semua hari yang anda terbitkan dalam :minutes minit seterusnya.",
+    "Published :count day: members will be notified shortly|Published :count days: members will be notified shortly": ":count hari diterbitkan: ahli akan dimaklumkan sebentar lagi"
 }

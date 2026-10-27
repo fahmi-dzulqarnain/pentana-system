@@ -7,6 +7,7 @@ use App\Models\CatererMeal;
 use App\Models\Lunch;
 use App\Models\User;
 use App\Notifications\LunchPublished;
+use App\Services\LunchPublisher;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
@@ -17,6 +18,13 @@ use Tests\TestCase;
 class LunchPublishNotificationTest extends TestCase
 {
     use RefreshDatabase;
+
+    /** Publishing only stamps the day; members hear about it once the burst has gone quiet. */
+    private function announceAfterQuietPeriod(): void
+    {
+        $this->travel(LunchPublisher::QUIET_MINUTES)->minutes();
+        $this->artisan('app:announce-lunches')->assertSuccessful();
+    }
 
     public function test_publishing_notifies_every_user_on_both_channels(): void
     {
@@ -32,6 +40,8 @@ class LunchPublishNotificationTest extends TestCase
 
         Livewire::test(EditLunch::class, ['record' => $lunch->getRouteKey()])
             ->callAction('publish');
+
+        $this->announceAfterQuietPeriod();
 
         $this->assertSame('published', $lunch->fresh()->status);
 
@@ -105,6 +115,7 @@ class LunchPublishNotificationTest extends TestCase
         Filament::setCurrentPanel(Filament::getPanel('account'));
 
         Livewire::test(EditLunch::class, ['record' => $lunch->getRouteKey()])->callAction('publish');
+        $this->announceAfterQuietPeriod();
 
         Notification::assertSentToTimes($admin, LunchPublished::class, 1);
         Notification::assertSentToTimes($member, LunchPublished::class, 1);
