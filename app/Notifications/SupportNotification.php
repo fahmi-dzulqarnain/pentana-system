@@ -14,8 +14,10 @@ use NotificationChannels\Apn\ApnMessage;
 
 /**
  * Shared shape of every support-ticket notice: bell + push, never email (the daily email
- * budget is smaller than the member list). The push carries the custom key `ticket_id` so
- * the iOS app can open the ticket thread; the bell links to the ticket.
+ * budget is smaller than the member list). Member-facing pushes carry the custom key
+ * `ticket_id` so the iOS app can open the ticket thread; admin-facing ones do not, because
+ * the member support API refuses admins (the bell's deep link follows the same rule).
+ * The bell links to the ticket.
  * Subject and message are the sender's own words: escaped, never translated.
  */
 abstract class SupportNotification extends Notification
@@ -33,6 +35,12 @@ abstract class SupportNotification extends Notification
         return 'heroicon-o-chat-bubble-left-right';
     }
 
+    /** Whether the push should deep-link into the member's in-app ticket thread. */
+    protected function deepLinksToThread(): bool
+    {
+        return false;
+    }
+
     /** @return array<int, string> */
     public function via(object $notifiable): array
     {
@@ -41,12 +49,13 @@ abstract class SupportNotification extends Notification
 
     public function toApn(object $notifiable): ApnMessage
     {
-        return ApnMessage::create()
+        $apn = ApnMessage::create()
             ->title($this->title())
             ->body($this->message
                 ? $this->ticket->subject.': '.Str::limit($this->message->body, 120)
-                : $this->ticket->subject)
-            ->custom('ticket_id', $this->ticket->id);
+                : $this->ticket->subject);
+
+        return $this->deepLinksToThread() ? $apn->custom('ticket_id', $this->ticket->id) : $apn;
     }
 
     /** @return array<string, mixed> */
