@@ -52,11 +52,11 @@
      "size": 140,
      "color": "#ffffff",
      "x": 150,
-     "y": 330,
+     "y": 300,
      "w": 1100,
      "align": "left",
      "accentWords": [
-      3
+      4
      ]
     },
     {
@@ -65,7 +65,7 @@
      "size": 40,
      "color": "#c9c6e8",
      "x": 150,
-     "y": 700,
+     "y": 790,
      "w": 1100,
      "align": "left"
     },
@@ -81,7 +81,7 @@
     }
    ],
    "audio": null,
-   "notes": "Heyho, everyone! Give me a few seconds while people are still joining... Okay! Welcome to our Inside Out\nSharing Session. Today is a special one, because we're finally showing you the new PENTANA member app."
+   "notes": "Heyho, everyone! Give me a few seconds while people are still joining... Okay! Welcome to our Inside Out Sharing Session. Today is a special one, because we're finally showing you the new PENTANA member app."
   },
   {
    "id": "welcome",
@@ -118,7 +118,7 @@
     }
    ],
    "audio": null,
-   "notes": "Heyho again, everyone! For those who don't know me, I'm Fahmi. Over the last few months I've been building\nthe PENTANA member app together with the committee. They told me what was painful, I tried to make it\nnot painful. Today I want to show you what came out of that, and by the end of the hour I want you to\nknow exactly how to use it, and hopefully be a little bit excited to try it tonight."
+   "notes": "Heyho again, everyone! For those who don't know me, I'm Fahmi. Over the last few months I've been building the PENTANA member app together with the committee. They told me what was painful, I tried to make it not painful. Today I want to show you what came out of that, and by the end of the hour I want you to know exactly how to use it, and hopefully be a little bit excited to try it tonight."
   },
   {
    "id": "housekeeping",
@@ -185,7 +185,7 @@
     }
    ],
    "audio": null,
-   "notes": "Quick housekeeping before we start. Please keep your mic off so we don't get echo. If you have a question,\ndon't wait for the end, just drop it in the Teams chat and I'll pick them up during the Q&A. We have one\nhour, and the last ten minutes or so are all yours. And yes, this is being recorded, so if you need to\nleave early you can catch up later."
+   "notes": "Quick housekeeping before we start. Please keep your mic off so we don't get echo. If you have a question, don't wait for the end, just drop it in the Teams chat and I'll pick them up during the Q&A. We have one hour, and the last ten minutes or so are all yours. And yes, this is being recorded, so if you need to leave early you can catch up later."
   },
   {
    "id": "icebreaker",
@@ -226,13 +226,13 @@
      "size": 52,
      "color": "#6b6b78",
      "x": 160,
-     "y": 720,
+     "y": 800,
      "w": 1600,
      "align": "left"
     }
    ],
    "audio": null,
-   "notes": "Okay, let's warm up. In the chat, tell me: how did you last pay your PENTANA dues? Bank transfer, cash,\nor... you forgot? Be honest, nobody's checking. [Read a few answers out loud.] I see a lot of transfers,\nand I bet many of you then had to send the receipt to someone on WhatsApp or by email, right? Keep that in\nmind, because that's exactly where we're going next."
+   "notes": "Okay, let's warm up. In the chat, tell me: how did you last pay your PENTANA dues? Bank transfer, cash, or... you forgot? Be honest, nobody's checking. [Read a few answers out loud.] I see a lot of transfers, and I bet many of you then had to send the receipt to someone on WhatsApp or by email, right? Keep that in mind, because that's exactly where we're going next."
   },
   {
    "id": "why-1",
@@ -289,7 +289,7 @@
     }
    ],
    "audio": null,
-   "notes": "Does any of this sound familiar? \"I sent my receipt on WhatsApp... last month, I think?\" \"Which email\nwas it again?\" \"Wait, the lunch order already closed?\" We've all been there. And on the committee side,\nit's even worse: someone has to dig through chats and emails to match every receipt to every member."
+   "notes": "Does any of this sound familiar? \"I sent my receipt on WhatsApp... last month, I think?\" \"Which email was it again?\" \"Wait, the lunch order already closed?\" We've all been there. And on the committee side, it's even worse: someone has to dig through chats and emails to match every receipt to every member."
   },
   {
    "id": "why-2",
@@ -356,7 +356,7 @@
     }
    ],
    "audio": null,
-   "notes": "So the problem was simple: everything was scattered. Receipts lived in chats, updates lived in email,\nand lunch counts were basically guesswork. And when the guess is wrong, food goes to waste, which none\nof us want. We needed one place for all of it."
+   "notes": "So the problem was simple: everything was scattered. Receipts lived in chats, updates lived in email, and lunch counts were basically guesswork. And when the guess is wrong, food goes to waste, which none of us want. We needed one place for all of it."
   },
   {
    "id": "why-3",
@@ -388,7 +388,7 @@
     }
    ],
    "audio": null,
-   "notes": "One place. For your dues, your lunch, your activities, and your questions to the committee. And that place\nis... let's do this properly."
+   "notes": "One place. For your dues, your lunch, your activities, and your questions to the committee. And that place is... let's do this properly."
   },
   {
    "id": "reveal-1",
@@ -428,7 +428,7 @@
      "size": 160,
      "color": "#ffffff",
      "x": 150,
-     "y": 330,
+     "y": 280,
      "w": 1100,
      "align": "left",
      "accentWords": [
@@ -477,7 +477,7 @@
      "size": 160,
      "color": "#ffffff",
      "x": 150,
-     "y": 330,
+     "y": 280,
      "w": 1100,
      "align": "left",
      "accentWords": [
@@ -490,13 +490,13 @@
      "size": 52,
      "color": "#c9c6e8",
      "x": 150,
-     "y": 720,
+     "y": 800,
      "w": 1100,
      "align": "left"
     }
    ],
    "audio": null,
-   "notes": "Here it is, the PENTANA member app. It's on iPhone, on Android, and on the web, so you can use whichever\nyou like. And these are real screens, by the way, not mockups."
+   "notes": "Here it is, the PENTANA member app. It's on iPhone, on Android, and on the web, so you can use whichever you like. And these are real screens, by the way, not mockups."
   },
   {
    "id": "reveal-3",
@@ -582,7 +582,7 @@
     }
    ],
    "audio": null,
-   "notes": "Four things you can do: pay your dues, vote for lunch, RSVP for activities, and ask the committee anything.\nWe'll go through each one, and for each one I'll show you the real app, live. But first, how do you get in?"
+   "notes": "Four things you can do: pay your dues, vote for lunch, RSVP for activities, and ask the committee anything. We'll go through each one, and for each one I'll show you the real app, live. But first, how do you get in?"
   },
   {
    "id": "getting-in-1",
@@ -597,11 +597,11 @@
    "backupFor": null,
    "images": [
     {
-     "file": "assets/screens/claim-page.png",
-     "x": 1060,
-     "y": 300,
-     "w": 760,
-     "h": 475,
+     "file": "assets/claim-crop.png",
+     "x": 1080,
+     "y": 230,
+     "w": 720,
+     "h": 600,
      "rotation": 0,
      "opacity": 100
     }
@@ -639,7 +639,7 @@
     }
    ],
    "audio": null,
-   "notes": "Step one. You don't sign up for PENTANA, because the committee already created an account for every member.\nYou just claim it. Go to pentana.silentmode.net slash claim, type the email you registered with the club,\nand it'll walk you through confirming your details and choosing a password. Takes about a minute."
+   "notes": "Step one. You don't sign up for PENTANA, because the committee already created an account for every member. You just claim it. Go to pentana.silentmode.net slash claim, type the email you registered with the club, and it'll walk you through confirming your details and choosing a password. Takes about a minute."
   },
   {
    "id": "getting-in-2",
@@ -675,23 +675,23 @@
      "align": "left"
     },
     {
-     "text": " iPhone: search “PENTANA” on the App Store",
+     "text": "📱 iPhone: “PENTANA” on the App Store",
      "font": "HelveticaNeue-Medium",
      "size": 52,
      "color": "#111111",
      "x": 160,
      "y": 380,
-     "w": 1000,
+     "w": 1080,
      "align": "left"
     },
     {
-     "text": "🤖 Android: download it from pentana.silentmode.net",
+     "text": "🤖 Android: download from our website",
      "font": "HelveticaNeue-Medium",
      "size": 52,
      "color": "#111111",
      "x": 160,
      "y": 500,
-     "w": 1000,
+     "w": 1080,
      "align": "left"
     },
     {
@@ -701,12 +701,12 @@
      "color": "#111111",
      "x": 160,
      "y": 620,
-     "w": 1000,
+     "w": 1080,
      "align": "left"
     }
    ],
    "audio": null,
-   "notes": "Step two, get the app. On iPhone, search PENTANA on the App Store. On Android, it's a download from our\nwebsite, I'll show you that on the next slide. And if you'd rather not install anything, everything also\nworks on the website."
+   "notes": "Step two, get the app. On iPhone, search PENTANA on the App Store. On Android, it's a download from our website, I'll show you that on the next slide. And if you'd rather not install anything, everything also works on the website."
   },
   {
    "id": "getting-in-android",
@@ -742,13 +742,13 @@
      "align": "left"
     },
     {
-     "text": "1. Open pentana.silentmode.net on your phone",
+     "text": "1. Open pentana.silentmode.net",
      "font": "HelveticaNeue-Medium",
      "size": 52,
      "color": "#111111",
      "x": 160,
      "y": 380,
-     "w": 1000,
+     "w": 1080,
      "align": "left"
     },
     {
@@ -758,17 +758,17 @@
      "color": "#111111",
      "x": 160,
      "y": 500,
-     "w": 1000,
+     "w": 1080,
      "align": "left"
     },
     {
-     "text": "3. Allow the install when Android asks",
+     "text": "3. Allow the install",
      "font": "HelveticaNeue-Medium",
      "size": 52,
      "color": "#111111",
      "x": 160,
      "y": 620,
-     "w": 1000,
+     "w": 1080,
      "align": "left"
     },
     {
@@ -783,7 +783,7 @@
     }
    ],
    "audio": null,
-   "notes": "For Android friends: open pentana.silentmode.net on your phone and tap Download for Android. Android will ask\nif you want to allow the install, because it didn't come from the Play Store. That's expected, it's our own\napp, so go ahead and allow it."
+   "notes": "For Android friends: open pentana.silentmode.net on your phone and tap Download for Android. Android will ask if you want to allow the install, because it didn't come from the Play Store. That's expected, it's our own app, so go ahead and allow it."
   },
   {
    "id": "getting-in-3",
@@ -850,7 +850,7 @@
     }
    ],
    "audio": null,
-   "notes": "Step three, sign in with your email and the password you just chose. Once you're in, you can add a passkey,\nso next time it's just Face ID or your fingerprint, no password. And if you ever forget your password,\nemail hipentana at pentana.silentmode.net and the committee will help you out."
+   "notes": "Step three, sign in with your email and the password you just chose. Once you're in, you can add a passkey, so next time it's just Face ID or your fingerprint, no password. And if you ever forget your password, email hipentana at pentana.silentmode.net and the committee will help you out."
   },
   {
    "id": "demo-getting-in",
@@ -900,7 +900,7 @@
     }
    ],
    "audio": null,
-   "notes": "Let me show you. [Switch to the Simulator.] This is the app on an iPhone. I'm signing in as Ami, our demo\nmember, so I don't show you my real bills. Email, password, sign in... and we're on Home. Look at this:\ndues, the next lunch, activities, payment proofs, and Ask the committee, all on one screen. That little bell\nup there is your notifications. [Switch back to Keynote.]"
+   "notes": "Let me show you. [Switch to the Simulator.] This is the app on an iPhone. I'm signing in as Ami, our demo member, so I don't show you my real bills. Email, password, sign in... and we're on Home. Look at this: dues, the next lunch, activities, payment proofs, and Ask the committee, all on one screen. That little bell up there is your notifications. [Switch back to Keynote.]"
   },
   {
    "id": "backup-getting-in-1",
@@ -1051,7 +1051,7 @@
     }
    ],
    "audio": null,
-   "notes": "Let's start with bills. Open the Bills tab and you see exactly what you owe, month by month, what's paid,\nwhat's not, and if you overpaid before, the credit you have left. No more asking the treasurer \"eh, did I\npay September?\""
+   "notes": "Let's start with bills. Open the Bills tab and you see exactly what you owe, month by month, what's paid, what's not, and if you overpaid before, the credit you have left. No more asking the treasurer \"eh, did I pay September?\""
   },
   {
    "id": "bills-2",
@@ -1127,7 +1127,7 @@
     }
    ],
    "audio": null,
-   "notes": "Paying is three taps. Transfer as usual, then tap Submit payment proof, type the amount, and snap a photo of\nyour receipt. That's it. The committee checks it, and once it's verified you get a notification, and it's\napplied to your oldest bills first. One proof can cover several months."
+   "notes": "Paying is three taps. Transfer as usual, then tap Submit payment proof, type the amount, and snap a photo of your receipt. That's it. The committee checks it, and once it's verified you get a notification, and it's applied to your oldest bills first. One proof can cover several months."
   },
   {
    "id": "demo-bills",
@@ -1177,7 +1177,7 @@
     }
    ],
    "audio": null,
-   "notes": "[Switch to the Simulator.] Bills tab. Ami owes 70 ringgit for September and October, and has 12.50 credit.\nTap Submit payment proof, 70.00, a note, add the receipt photo... submit. Now it shows as pending until the\ncommittee verifies it. [Switch back.]"
+   "notes": "[Switch to the Simulator.] Bills tab. Ami owes 70 ringgit for September and October, and has 12.50 credit. Tap Submit payment proof, 70.00, a note, add the receipt photo... submit. Now it shows as pending until the committee verifies it. [Switch back.]"
   },
   {
    "id": "backup-bills-1",
@@ -1328,7 +1328,7 @@
     }
    ],
    "audio": null,
-   "notes": "Lunch. When the committee publishes a lunch, you get a notification and it shows up here. You pick what you\nwant, chicken, beef, vegetarian, or that you're not coming, before the deadline. That way the caterer cooks\njust enough, and we cut down on food waste."
+   "notes": "Lunch. When the committee publishes a lunch, you get a notification and it shows up here. You pick what you want, chicken, beef, vegetarian, or that you're not coming, before the deadline. That way the caterer cooks just enough, and we cut down on food waste."
   },
   {
    "id": "lunch-2",
@@ -1385,7 +1385,7 @@
     }
    ],
    "audio": null,
-   "notes": "And if you change your mind, no problem. Your pick saves the moment you tap it, and you can change it as\nmany times as you like until the deadline."
+   "notes": "And if you change your mind, no problem. Your pick saves the moment you tap it, and you can change it as many times as you like until the deadline."
   },
   {
    "id": "demo-lunch",
@@ -1435,7 +1435,7 @@
     }
    ],
    "audio": null,
-   "notes": "[Switch to the Simulator.] Lunch tab. Monday's lunch is Nasi Lemak Royale and voting closes Friday at 6 PM.\nTap Vote, chicken rendang... saved, see the little confirmation at the bottom? Done. [Switch back.]"
+   "notes": "[Switch to the Simulator.] Lunch tab. Monday's lunch is Nasi Lemak Royale and voting closes Friday at 6 PM. Tap Vote, chicken rendang... saved, see the little confirmation at the bottom? Done. [Switch back.]"
   },
   {
    "id": "backup-lunch-1",
@@ -1633,7 +1633,7 @@
     }
    ],
    "audio": null,
-   "notes": "Activities. Every club activity shows up here with the date, the place, and how many spots are left. Tap\nRegister and you're in. If your plans change, you can cancel, and someone on the waitlist gets your spot."
+   "notes": "Activities. Every club activity shows up here with the date, the place, and how many spots are left. Tap Register and you're in. If your plans change, you can cancel, and someone on the waitlist gets your spot."
   },
   {
    "id": "activities-2",
@@ -1649,7 +1649,7 @@
    "images": [
     {
      "file": "assets/phone-push-banner.png",
-     "x": 1080,
+     "x": 1150,
      "y": 110,
      "w": 400,
      "h": 840,
@@ -1658,7 +1658,7 @@
     },
     {
      "file": "assets/phone-notifications.png",
-     "x": 1460,
+     "x": 1500,
      "y": 170,
      "w": 400,
      "h": 840,
@@ -1668,13 +1668,13 @@
    ],
    "texts": [
     {
-     "text": "Never miss a thing 🔔",
+     "text": "Never miss out 🔔",
      "font": "Manrope-ExtraBold",
      "size": 120,
      "color": "#111111",
      "x": 160,
      "y": 140,
-     "w": 1600,
+     "w": 1180,
      "align": "left"
     },
     {
@@ -1699,7 +1699,7 @@
     }
    ],
    "audio": null,
-   "notes": "And you won't miss anything. When there's a new lunch, a new activity, or your payment is verified, you get\na notification on your phone, like this one. Everything also lands in the bell on the Home screen, so you\ncan catch up later."
+   "notes": "And you won't miss anything. When there's a new lunch, a new activity, or your payment is verified, you get a notification on your phone, like this one. Everything also lands in the bell on the Home screen, so you can catch up later."
   },
   {
    "id": "demo-activities",
@@ -1749,7 +1749,7 @@
     }
    ],
    "audio": null,
-   "notes": "[Switch to the Simulator.] Activities tab. Ami's already registered for today's session, see? Let's join\nthe Beach Cleanup at Port Dickson on the 7th. Tap Register... and she's in. Now the bell: here are the lunch\nand the new activity notifications. [Switch back.]"
+   "notes": "[Switch to the Simulator.] Activities tab. Ami's already registered for today's session, see? Let's join the Beach Cleanup at Port Dickson on the 7th. Tap Register... and she's in. Now the bell: here are the lunch and the new activity notifications. [Switch back.]"
   },
   {
    "id": "backup-activities-1",
@@ -1906,7 +1906,7 @@
    "images": [
     {
      "file": "assets/phone-support-thread.png",
-     "x": 1260,
+     "x": 1320,
      "y": 110,
      "w": 400,
      "h": 840,
@@ -1918,11 +1918,11 @@
     {
      "text": "Ask the committee 💬",
      "font": "Manrope-ExtraBold",
-     "size": 120,
+     "size": 104,
      "color": "#111111",
      "x": 160,
      "y": 140,
-     "w": 1600,
+     "w": 1100,
      "align": "left"
     },
     {
@@ -1947,7 +1947,7 @@
     }
    ],
    "audio": null,
-   "notes": "Last one, and I think it's my favourite. Ask the committee. Got a question, found a bug, or have an idea?\nOpen Ask the committee on Home and write it. The committee replies right there, and you get notified.\nNo more messages getting lost in a busy group chat."
+   "notes": "Last one, and I think it's my favourite. Ask the committee. Got a question, found a bug, or have an idea? Open Ask the committee on Home and write it. The committee replies right there, and you get notified. No more messages getting lost in a busy group chat."
   },
   {
    "id": "demo-committee",
@@ -1997,7 +1997,7 @@
     }
    ],
    "audio": null,
-   "notes": "[Switch to the Simulator.] Home, Ask the committee. Ami asked if she can pay three months at once, and the\ncommittee replied: yes, upload one proof for the total. You can reply, or mark it as resolved. [Switch back.]"
+   "notes": "[Switch to the Simulator.] Home, Ask the committee. Ami asked if she can pay three months at once, and the committee replied: yes, upload one proof for the total. You can reply, or mark it as resolved. [Switch back.]"
   },
   {
    "id": "backup-committee-1",
@@ -2123,30 +2123,30 @@
      "color": "#ffffff",
      "x": 150,
      "y": 160,
-     "w": 1000,
+     "w": 1300,
      "align": "left"
     },
     {
-     "text": "1  Claim your account: pentana.silentmode.net/claim",
+     "text": "1  Claim: pentana.silentmode.net/claim",
      "font": "HelveticaNeue-Medium",
      "size": 44,
      "color": "#ffffff",
      "x": 170,
      "y": 380,
-     "w": 1050,
+     "w": 1100,
      "align": "left",
      "accentWords": [
       0
      ]
     },
     {
-     "text": "2  Install: App Store, or the Android download",
+     "text": "2  Install: App Store, or Android download",
      "font": "HelveticaNeue-Medium",
      "size": 44,
      "color": "#ffffff",
      "x": 170,
      "y": 490,
-     "w": 1050,
+     "w": 1100,
      "align": "left",
      "accentWords": [
       0
@@ -2159,7 +2159,7 @@
      "color": "#ffffff",
      "x": 170,
      "y": 600,
-     "w": 1050,
+     "w": 1100,
      "align": "left",
      "accentWords": [
       0
@@ -2172,7 +2172,7 @@
      "color": "#ffffff",
      "x": 170,
      "y": 710,
-     "w": 1050,
+     "w": 1100,
      "align": "left",
      "accentWords": [
       0
@@ -2190,7 +2190,7 @@
     }
    ],
    "audio": "assets/sfx/celebrate.m4a",
-   "notes": "[Celebration sound.] So here's your homework, and it takes five minutes. Tonight: one, claim your account at\npentana.silentmode.net slash claim. Two, install the app, App Store on iPhone, or the download on our website\nfor Android. Three, sign in. Four, try one thing: pay, vote for Monday's lunch, or RSVP. You can scan this\nQR code right now to get started. I'll leave it up for a bit."
+   "notes": "[Celebration sound.] So here's your homework, and it takes five minutes. Tonight: one, claim your account at pentana.silentmode.net slash claim. Two, install the app, App Store on iPhone, or the download on our website for Android. Three, sign in. Four, try one thing: pay, vote for Monday's lunch, or RSVP. You can scan this QR code right now to get started. I'll leave it up for a bit."
   },
   {
    "id": "questions",
@@ -2227,7 +2227,7 @@
     }
    ],
    "audio": null,
-   "notes": "Okay, that's the tour! Questions? I'll start with the ones in the chat... [Read and answer.] If you're shy,\nyou can also ask later through Ask the committee in the app, that's literally what it's for."
+   "notes": "Okay, that's the tour! Questions? I'll start with the ones in the chat... [Read and answer.] If you're shy, you can also ask later through Ask the committee in the app, that's literally what it's for."
   },
   {
    "id": "thanks",
@@ -2294,7 +2294,7 @@
     }
    ],
    "audio": null,
-   "notes": "Thank you so much for joining, everyone! If you need help with the app, email hipentana at\npentana.silentmode.net or use Ask the committee. And if you want to reach me directly, my links are here.\nSee you in the app!"
+   "notes": "Thank you so much for joining, everyone! If you need help with the app, email hipentana at pentana.silentmode.net or use Ask the committee. And if you want to reach me directly, my links are here. See you in the app!"
   }
  ]
 }

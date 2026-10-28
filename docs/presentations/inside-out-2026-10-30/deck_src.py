@@ -36,7 +36,7 @@ def slide(id, look, minutes, texts, notes, images=(), transition="dissolve", aud
     slides.append({"id": id, "look": look, "minutes": minutes,
                    "transition": {"effect": transition, "duration": 1.0 if transition == "magic move" else 0.6},
                    "skipped": False, "demo": False, "backupFor": None,
-                   "images": list(images), "texts": texts, "audio": audio, "notes": notes.strip()})
+                   "images": list(images), "texts": texts, "audio": audio, "notes": " ".join(notes.split())})
 
 
 def demo(section, minutes, what, notes, backups):
@@ -46,7 +46,7 @@ def demo(section, minutes, what, notes, backups):
                    "backupFor": None, "images": [image("assets/live-dot.gif", 814, 268, 64, 64)],
                    "texts": [text("Let's see it live!", 160, 420, 1600, 150, H, WHITE, accent=[3], align="center"),
                              text(what, 160, 640, 1600, 48, BODY_M, SOFT, align="center")],
-                   "audio": None, "notes": notes.strip()})
+                   "audio": None, "notes": " ".join(notes.split())})
     for i, (screen, caption) in enumerate(backups, 1):
         slides.append({"id": f"backup-{section}-{i}", "look": "white", "minutes": 0,
                        "transition": {"effect": "dissolve", "duration": 0.4}, "skipped": True, "demo": False,
@@ -60,8 +60,8 @@ def demo(section, minutes, what, notes, backups):
 # ---------------------------------------------------------------- 3:30 Title
 slide("title", "navy", 0.5,
       [text("●  INSIDE OUT SHARING SESSION", 150, 250, 1200, 40, BODY_B, ORANGE),
-       text("Your benefits,\nin your pocket.", 150, 330, 1100, 140, H, WHITE, accent=[3]),
-       text("Fri, 30 Oct 2026  ·  Kelab Sosial & Rekreasi PENTANA", 150, 700, 1100, 40, BODY_M, SOFT),
+       text("Your benefits,\nin your pocket.", 150, 300, 1100, 140, H, WHITE, accent=[4]),
+       text("Fri, 30 Oct 2026  ·  Kelab Sosial & Rekreasi PENTANA", 150, 790, 1100, 40, BODY_M, SOFT),
        text("Silentmode Sdn Bhd – Prepared by Fahmi Dzulqarnain", 150, 940, 1100, 40, BODY, SOFT)],
       """
 Heyho, everyone! Give me a few seconds while people are still joining... Okay! Welcome to our Inside Out
@@ -96,7 +96,7 @@ leave early you can catch up later.
 slide("icebreaker", "white", 3.0,
       [text("Quick one in the chat 💬", 160, 260, 1600, 120, H, INK),
        text("How did you last pay your\nPENTANA dues?", 160, 470, 1600, 84, HB, ORANGE),
-       text("Bank transfer? Cash? Forgot? 😅  Be honest!", 160, 720, 1600, 52, BODY, MUTED)],
+       text("Bank transfer? Cash? Forgot? 😅  Be honest!", 160, 800, 1600, 52, BODY, MUTED)],
       """
 Okay, let's warm up. In the chat, tell me: how did you last pay your PENTANA dues? Bank transfer, cash,
 or... you forgot? Be honest, nobody's checking. [Read a few answers out loud.] I see a lot of transfers,
@@ -137,7 +137,7 @@ is... let's do this properly.
 
 # ---------------------------------------------------------------- 3:40 The reveal
 slide("reveal-1", "navy", 0.5,
-      [text("PENTANA is\nnow online.", 150, 330, 1100, 160, H, WHITE, accent=[3])],
+      [text("PENTANA is\nnow online.", 150, 280, 1100, 160, H, WHITE, accent=[3])],
       """
 [Drum roll plays.] PENTANA... is now online!
 """,
@@ -145,8 +145,8 @@ slide("reveal-1", "navy", 0.5,
       audio="assets/sfx/drumroll.m4a")
 
 slide("reveal-2", "navy", 0.75,
-      [text("PENTANA is\nnow online.", 150, 330, 1100, 160, H, WHITE, accent=[3]),
-       text("On your phone and on the web.", 150, 720, 1100, 52, BODY_M, SOFT)],
+      [text("PENTANA is\nnow online.", 150, 280, 1100, 160, H, WHITE, accent=[3]),
+       text("On your phone and on the web.", 150, 800, 1100, 52, BODY_M, SOFT)],
       """
 Here it is, the PENTANA member app. It's on iPhone, on Android, and on the web, so you can use whichever
 you like. And these are real screens, by the way, not mockups.
@@ -175,13 +175,13 @@ Step one. You don't sign up for PENTANA, because the committee already created a
 You just claim it. Go to pentana.silentmode.net slash claim, type the email you registered with the club,
 and it'll walk you through confirming your details and choosing a password. Takes about a minute.
 """,
-      images=[image("assets/screens/claim-page.png", 1060, 300, 760, 475)])
+      images=[image("assets/claim-crop.png", 1080, 230, 720, 600)])
 
 slide("getting-in-2", "white", 1.0,
       [text("Step 2: Get the app", 160, 140, 1600, 110, H, INK),
-       text(" iPhone: search “PENTANA” on the App Store", 160, 380, 1000, 52, BODY_M, INK),
-       text("🤖 Android: download it from pentana.silentmode.net", 160, 500, 1000, 52, BODY_M, INK),
-       text("🌐 Or just use the website", 160, 620, 1000, 52, BODY_M, INK)],
+       text("📱 iPhone: “PENTANA” on the App Store", 160, 380, 1080, 52, BODY_M, INK),
+       text("🤖 Android: download from our website", 160, 500, 1080, 52, BODY_M, INK),
+       text("🌐 Or just use the website", 160, 620, 1080, 52, BODY_M, INK)],
       """
 Step two, get the app. On iPhone, search PENTANA on the App Store. On Android, it's a download from our
 website, I'll show you that on the next slide. And if you'd rather not install anything, everything also
@@ -191,9 +191,9 @@ works on the website.
 
 slide("getting-in-android", "white", 0.75,
       [text("On Android? 🤖", 160, 140, 1600, 110, H, INK),
-       text("1. Open pentana.silentmode.net on your phone", 160, 380, 1000, 52, BODY_M, INK),
-       text("2. Tap “Download for Android”", 160, 500, 1000, 52, BODY_M, INK),
-       text("3. Allow the install when Android asks", 160, 620, 1000, 52, BODY_M, INK),
+       text("1. Open pentana.silentmode.net", 160, 380, 1080, 52, BODY_M, INK),
+       text("2. Tap “Download for Android”", 160, 500, 1080, 52, BODY_M, INK),
+       text("3. Allow the install", 160, 620, 1080, 52, BODY_M, INK),
        text("It's our own app. Android just asks because it's not from the Play Store.", 160, 780, 1000, 40, BODY, MUTED)],
       """
 For Android friends: open pentana.silentmode.net on your phone and tap Download for Android. Android will ask
@@ -300,7 +300,7 @@ Register and you're in. If your plans change, you can cancel, and someone on the
       images=[phone("activities", 1260, 110)])
 
 slide("activities-2", "white", 1.5,
-      [text("Never miss a thing 🔔", 160, 140, 1600, 120, H, INK),
+      [text("Never miss out 🔔", 160, 140, 1180, 120, H, INK),
        text("New lunch? New activity? Payment verified?\nYou get a notification.", 160, 380, 860, 50, BODY_M, INK),
        text("Everything also lands in the bell 🔔 on Home.", 160, 600, 860, 48, BODY, MUTED)],
       """
@@ -308,7 +308,7 @@ And you won't miss anything. When there's a new lunch, a new activity, or your p
 a notification on your phone, like this one. Everything also lands in the bell on the Home screen, so you
 can catch up later.
 """,
-      images=[phone("push-banner", 1080, 110, -4), phone("notifications", 1460, 170, 4)])
+      images=[phone("push-banner", 1150, 110, -4), phone("notifications", 1500, 170, 4)])
 
 demo("activities", 4.0, "RSVP for the Beach Cleanup",
      """
@@ -322,7 +322,7 @@ and the new activity notifications. [Switch back.]
 
 # ---------------------------------------------------------------- 4:11 Ask the committee
 slide("committee-1", "white", 1.0,
-      [text("Ask the committee 💬", 160, 140, 1600, 120, H, INK),
+      [text("Ask the committee 💬", 160, 140, 1100, 104, H, INK),
        text("Questions, bugs or ideas.\nThe committee replies right in the app.", 160, 380, 980, 52, BODY_M, INK),
        text("No more lost WhatsApp messages.", 160, 600, 980, 48, BODY, MUTED)],
       """
@@ -330,7 +330,7 @@ Last one, and I think it's my favourite. Ask the committee. Got a question, foun
 Open Ask the committee on Home and write it. The committee replies right there, and you get notified.
 No more messages getting lost in a busy group chat.
 """,
-      images=[phone("support-thread", 1260, 110)])
+      images=[phone("support-thread", 1320, 110)])
 
 demo("committee", 2.0, "Reading a reply from the committee",
      """
@@ -342,11 +342,11 @@ committee replied: yes, upload one proof for the total. You can reply, or mark i
 
 # ---------------------------------------------------------------- 4:14 Do this tonight
 slide("tonight", "navy", 3.0,
-      [text("Do this tonight ✨", 150, 160, 1000, 120, H, WHITE),
-       text("1  Claim your account: pentana.silentmode.net/claim", 170, 380, 1050, 44, BODY_M, WHITE, accent=[0]),
-       text("2  Install: App Store, or the Android download", 170, 490, 1050, 44, BODY_M, WHITE, accent=[0]),
-       text("3  Sign in", 170, 600, 1050, 44, BODY_M, WHITE, accent=[0]),
-       text("4  Pay, vote or RSVP. Try one!", 170, 710, 1050, 44, BODY_M, WHITE, accent=[0]),
+      [text("Do this tonight ✨", 150, 160, 1300, 120, H, WHITE),
+       text("1  Claim: pentana.silentmode.net/claim", 170, 380, 1100, 44, BODY_M, WHITE, accent=[0]),
+       text("2  Install: App Store, or Android download", 170, 490, 1100, 44, BODY_M, WHITE, accent=[0]),
+       text("3  Sign in", 170, 600, 1100, 44, BODY_M, WHITE, accent=[0]),
+       text("4  Pay, vote or RSVP. Try one!", 170, 710, 1100, 44, BODY_M, WHITE, accent=[0]),
        text("Scan to start →", 1340, 860, 460, 40, BODY_B, ORANGE, align="center")],
       """
 [Celebration sound.] So here's your homework, and it takes five minutes. Tonight: one, claim your account at
