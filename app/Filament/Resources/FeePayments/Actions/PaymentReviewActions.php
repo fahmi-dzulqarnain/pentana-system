@@ -71,6 +71,7 @@ class PaymentReviewActions
                 $record->update([
                     'status' => 'rejected',
                     'admin_note' => $data['admin_note'],
+                    'rejected_at' => now(),
                 ]);
 
                 self::reportOutcome(__('Payment rejected'), self::notifyMember($record, new PaymentRejected($record)));
