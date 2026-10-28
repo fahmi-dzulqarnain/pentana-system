@@ -14,4 +14,9 @@ class SupportReplyFromCommittee extends SupportNotification
     {
         return $this->ticket->subject;
     }
+
+    protected function deepLinksToThread(): bool
+    {
+        return true;
+    }
 }

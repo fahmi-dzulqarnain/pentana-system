@@ -104,6 +104,19 @@ class PaymentVerificationTest extends TestCase
             ->assertActionHidden('verifyPayment');
     }
 
+    public function test_rejecting_stamps_rejected_at(): void
+    {
+        $proof = $this->proof();
+        $this->actingAs(User::factory()->treasurer()->create());
+
+        Livewire::test(ViewFeePayment::class, ['record' => $proof->getKey()])
+            ->callAction('rejectPayment', data: ['admin_note' => 'Receipt is unreadable']);
+
+        $rejectedAt = $proof->fresh()->rejected_at;
+        $this->assertNotNull($rejectedAt);
+        $this->assertTrue($rejectedAt->diffInSeconds(now(), true) < 5);
+    }
+
     public function test_members_cannot_review_their_own_proof(): void
     {
         $proof = $this->proof();

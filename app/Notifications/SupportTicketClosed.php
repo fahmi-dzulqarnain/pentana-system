@@ -19,4 +19,9 @@ class SupportTicketClosed extends SupportNotification
     {
         return 'heroicon-o-check-circle';
     }
+
+    protected function deepLinksToThread(): bool
+    {
+        return true;
+    }
 }

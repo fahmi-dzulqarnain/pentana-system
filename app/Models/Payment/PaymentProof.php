@@ -15,12 +15,12 @@ class PaymentProof extends Model
 {
     protected $fillable = [
         'user_id', 'proof_image_path', 'member_note', 'amount_claimed',
-        'amount_verified', 'status', 'admin_note', 'verified_at',
+        'amount_verified', 'status', 'admin_note', 'verified_at', 'rejected_at',
     ];
 
     protected function casts(): array
     {
-        return ['verified_at' => 'datetime'];
+        return ['verified_at' => 'datetime', 'rejected_at' => 'datetime'];
     }
 
     protected static function booted(): void
