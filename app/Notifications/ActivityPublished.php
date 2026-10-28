@@ -17,7 +17,12 @@ class ActivityPublished extends ActivityNotification
             ->tone('activity', '🎉', __('Activities'))
             ->subject($this->pushTitle())
             ->greeting(__('A new activity'))
-            ->line(__(':activity is on :when.', ['activity' => $this->activity->title, 'when' => $this->whenLabel()]));
+            ->line($this->activity->isComingSoon()
+                ? __(':activity is coming soon (:timeframe). Registration is open now; we will confirm the exact date later.', [
+                    'activity' => $this->activity->title,
+                    'timeframe' => $this->activity->timeframe ?? __('date to be announced'),
+                ])
+                : __(':activity is on :when.', ['activity' => $this->activity->title, 'when' => $this->whenLabel()]));
 
         if ($this->activity->location) {
             $mail->line(__('Where: :location', ['location' => $this->activity->location]));
@@ -26,7 +31,10 @@ class ActivityPublished extends ActivityNotification
         return $mail->action(__('View activities'), $this->url())
             ->withSymfonyMessage(function (SymfonyEmail $message) {
                 $message->getHeaders()->addTextHeader(QueuedEmail::PRIORITY_HEADER, '10');
-                $message->getHeaders()->addTextHeader(QueuedEmail::EXPIRES_HEADER, $this->activity->starts_at->toIso8601String());
+                // A coming-soon activity has no start yet, so its announcement never goes stale.
+                if ($this->activity->starts_at) {
+                    $message->getHeaders()->addTextHeader(QueuedEmail::EXPIRES_HEADER, $this->activity->starts_at->toIso8601String());
+                }
             });
     }
 

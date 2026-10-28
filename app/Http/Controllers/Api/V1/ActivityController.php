@@ -17,8 +17,7 @@ class ActivityController extends Controller
     {
         $activities = Activity::with('registrations')
             ->where('status', 'published')
-            ->where('starts_at', '>=', now())
-            ->orderBy('starts_at')
+            ->upcoming()
             ->get();
 
         return ActivityResource::collection($activities);

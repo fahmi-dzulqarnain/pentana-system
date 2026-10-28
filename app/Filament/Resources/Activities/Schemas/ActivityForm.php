@@ -46,21 +46,31 @@ class ActivityForm
                     ->columnSpanFull()
                     ->columns(['md' => 2])
                     ->schema([
+                        // Blank start = "coming soon": members can register now and see the
+                        // rough timeframe instead; setting the date later notifies them.
                         DateTimePicker::make('starts_at')
                             ->label(__('Starts at'))
-                            ->required()
                             ->native(false)
-                            ->seconds(false),
+                            ->seconds(false)
+                            ->live()
+                            ->helperText(__('Leave blank if the exact date is not fixed yet: it shows as coming soon.')),
+                        TextInput::make('timeframe')
+                            ->label(__('Timeframe'))
+                            ->placeholder(__('e.g. December 2026'))
+                            ->maxLength(255)
+                            ->visible(fn (Get $get): bool => blank($get('starts_at')))
+                            ->required(fn (Get $get): bool => blank($get('starts_at')))
+                            ->helperText(__('Shown to members as "Coming soon · …" until you set the start date.')),
                         DateTimePicker::make('ends_at')
                             ->label(__('Ends at'))
                             ->native(false)
                             ->seconds(false)
-                            ->after('starts_at'),
+                            ->after(fn (Get $get): ?string => filled($get('starts_at')) ? 'starts_at' : null),
                         DateTimePicker::make('registration_closes_at')
                             ->label(__('Registration closes'))
                             ->native(false)
                             ->seconds(false)
-                            ->before('starts_at')
+                            ->before(fn (Get $get): ?string => filled($get('starts_at')) ? 'starts_at' : null)
                             ->helperText(__('Leave blank to close when the activity starts. Must be before the start time.')),
                     ]),
                 Section::make(__('Registration'))

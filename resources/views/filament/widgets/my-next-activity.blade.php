@@ -7,7 +7,7 @@
         @if ($activity)
             <div style="display:flex; flex-direction:column; gap:0.25rem;">
                 <div style="font-size:0.75rem; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; color:var(--primary-600,#d97706);">
-                    {{ $activity->starts_at->translatedFormat('l, j M · '.\App\Support\TimeFormat::time()) }}
+                    {{ $activity->whenLabel() }}
                 </div>
                 <div style="font-size:1.05rem; font-weight:700;">{{ $activity->title }}</div>
                 @if ($activity->location)

@@ -1,0 +1,52 @@
+<?php
+
+namespace App\Notifications;
+
+use App\Mail\BrandedMail;
+use App\Models\QueuedEmail;
+use Filament\Actions\Action;
+use Filament\Notifications\Notification as FilamentNotification;
+use Illuminate\Notifications\Messages\MailMessage;
+use Symfony\Component\Mime\Email as SymfonyEmail;
+
+/** Sent to people already signed up for a coming-soon activity once its exact date is set. */
+class ActivityDateConfirmed extends ActivityNotification
+{
+    public function toMail(object $notifiable): MailMessage
+    {
+        $mail = (new BrandedMail)
+            ->tone('activity', '📅', __('Activities'))
+            ->subject($this->pushTitle())
+            ->greeting(__('Date confirmed'))
+            ->line(__(':activity is on :when.', ['activity' => $this->activity->title, 'when' => $this->whenLabel()]));
+
+        if ($this->activity->location) {
+            $mail->line(__('Where: :location', ['location' => $this->activity->location]));
+        }
+
+        return $mail->action(__('View activities'), $this->url())
+            ->withSymfonyMessage(function (SymfonyEmail $message) {
+                $message->getHeaders()->addTextHeader(QueuedEmail::PRIORITY_HEADER, '20');
+                $message->getHeaders()->addTextHeader(QueuedEmail::EXPIRES_HEADER, $this->activity->starts_at->toIso8601String());
+            });
+    }
+
+    protected function pushTitle(): string
+    {
+        return __('Date confirmed: :activity', ['activity' => $this->activity->title]);
+    }
+
+    /** @return array<string, mixed> */
+    public function toDatabase(object $notifiable): array
+    {
+        return FilamentNotification::make()
+            ->title($this->pushTitle())
+            ->body($this->pushBody())
+            ->icon('heroicon-o-calendar-days')
+            ->info()
+            ->actions([
+                Action::make('view')->label(__('View'))->url($this->url())->markAsRead(),
+            ])
+            ->getDatabaseMessage();
+    }
+}

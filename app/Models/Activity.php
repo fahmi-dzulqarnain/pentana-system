@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Support\TimeFormat;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -15,6 +17,7 @@ class Activity extends Model
         'title',
         'description',
         'starts_at',
+        'timeframe',
         'location',
         'status',
         'capacity',
@@ -59,8 +62,39 @@ class Activity extends Model
         return $this->registrations->where('attended', true)->count();
     }
 
-    /** Registration closes at an explicit deadline if set, otherwise when the activity starts. */
-    public function registrationClosesAt(): Carbon
+    /** Not yet scheduled: only a rough timeframe is known, so it has no start time. */
+    public function isComingSoon(): bool
+    {
+        return $this->starts_at === null;
+    }
+
+    /** "Sunday, 14 Dec · 9:00 AM", or "Coming soon · December 2026" before the date is set. */
+    public function whenLabel(): string
+    {
+        if ($this->starts_at) {
+            return $this->starts_at->translatedFormat('l, j M · '.TimeFormat::time());
+        }
+
+        return $this->timeframe
+            ? __('Coming soon · :timeframe', ['timeframe' => $this->timeframe])
+            : __('Coming soon');
+    }
+
+    /** Not yet started, including coming-soon activities - dated ones first, soonest first. */
+    public function scopeUpcoming(Builder $query): Builder
+    {
+        return $query
+            ->where(fn (Builder $query) => $query->whereNull('starts_at')->orWhere('starts_at', '>=', now()))
+            // Portable NULLS LAST (Postgres and SQLite disagree on the default).
+            ->orderByRaw('starts_at is null')
+            ->orderBy('starts_at');
+    }
+
+    /**
+     * Registration closes at an explicit deadline if set, otherwise when the activity starts.
+     * Null for a coming-soon activity without a deadline: it stays open until scheduled.
+     */
+    public function registrationClosesAt(): ?Carbon
     {
         return $this->registration_closes_at ?? $this->starts_at;
     }
@@ -80,12 +114,14 @@ class Activity extends Model
 
     public function isPast(): bool
     {
-        return now()->gte($this->starts_at);
+        return $this->starts_at !== null && now()->gte($this->starts_at);
     }
 
     /** Members may register only while published and before registration closes. */
     public function isOpenForRegistration(): bool
     {
-        return $this->status === 'published' && now()->lt($this->registrationClosesAt());
+        $closesAt = $this->registrationClosesAt();
+
+        return $this->status === 'published' && ($closesAt === null || now()->lt($closesAt));
     }
 }

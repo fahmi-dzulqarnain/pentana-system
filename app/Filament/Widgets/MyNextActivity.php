@@ -21,11 +21,10 @@ class MyNextActivity extends Widget
     {
         return Activity::query()
             ->where('status', 'published')
-            ->where('starts_at', '>=', now())
+            ->upcoming()
             ->whereHas('registrations', fn ($query) => $query
                 ->where('user_id', auth()->id())
                 ->where('status', 'registered'))
-            ->orderBy('starts_at')
             ->first();
     }
 }
