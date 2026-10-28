@@ -1,6 +1,6 @@
 <?php
 // Assertions for the Inside Out demo backend. Run:
-//   APP_ENV=insideout php artisan tinker docs/presentations/inside-out-2026-10-30/demo/check-seed.php
+//   (via start-demo.sh, which runs it through run.php)
 // Prints "OK" or throws on the first failed check.
 
 use App\Models\Activity;
@@ -46,7 +46,10 @@ $rsvp = Activity::where('title', 'Beach Cleanup at Port Dickson')->where('status
     ->where('registration_closes_at', '>', Carbon::parse('2026-10-30 16:30'))
     ->whereDoesntHave('registrations', fn ($q) => $q->where('user_id', $ami->id))
     ->first();
-$check($rsvp !== null, 'Beach Cleanup (the live RSVP) is open 5-14 Nov and Ami is not yet registered');
+// Only a fresh (--reset) state must have Ami unregistered; a mid-session restart keeps her live RSVP.
+if (getenv('DEMO_RESET') === '1') {
+    $check($rsvp !== null, 'Beach Cleanup (the live RSVP) is open 5-14 Nov and Ami is not yet registered');
+}
 
 $ticket = SupportTicket::where('user_id', $ami->id)->where('type', 'question')->where('status', 'waiting_on_member')->first();
 $check($ticket !== null, 'Ami question ticket waiting on member');

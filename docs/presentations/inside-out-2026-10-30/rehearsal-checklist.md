@@ -15,7 +15,8 @@ All commands run from the `pentana-system` repo root.
    docs/presentations/inside-out-2026-10-30/demo/build-ios-demo.sh
    ```
    It must end with `demo app installed (my.silentmode.pentana) -> http://127.0.0.1:8765/api/v1`. The app opens on the sign-in screen, because `--reset` signed Ami out.
-3. **Sign in as Ami** in the Simulator: `ami@pentana.test`, with the password in `docs/presentations/inside-out-2026-10-30/demo/.demo-password`. Tap **Not Now** on "Save Password?". Then check that Home shows **Hi, Ami**, **MYR 70.00**, **Mon 2 Nov · Vote now** and Inside Out **Registered**.
+3. **Leave the app on the sign-in screen.** The first demo (slide 15) signs in live, as `ami@pentana.test` / `pentana-demo` (also in `demo/.demo-password`). If the app opens on Home instead, sign out from the avatar (top left). Rehearse the sign-in once, tap **Not Now** on "Save Password?", then run `start-demo.sh --reset` again: the reset signs Ami out.
+   - The Simulator's Photos now holds a sample receipt, `demo-receipt.png`, for the Bills demo ("Add receipt photo" → choose from library).
 4. **Build the deck** (only if you changed `deck_src.py`):
    ```bash
    cd docs/presentations/inside-out-2026-10-30 && python3 deck_src.py && python3 check_deck.py && python3 build_deck.py && osascript -l JavaScript verify_deck.js "$PWD"
@@ -59,7 +60,7 @@ Don't fight it. The backup slides have the real screens, one step each.
 2. In the slide navigator, select that demo's backup slides (table above), right-click → **Unskip Slides**.
 3. Click the first backup slide, then press **Option-Cmd-P** (play from current slide) and talk through the screenshots.
 
-If the demo **server** died, `start-demo.sh` (without `--reset`) brings it back with the same data. Sign in again if the app asks.
+If the demo **server** died, `start-demo.sh` (without `--reset`) brings it back with the same data, including anything you just did live. Sign in again if the app asks.
 
 ## After Friday
 
