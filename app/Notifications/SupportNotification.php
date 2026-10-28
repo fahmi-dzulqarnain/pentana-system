@@ -14,8 +14,8 @@ use NotificationChannels\Apn\ApnMessage;
 
 /**
  * Shared shape of every support-ticket notice: bell + push, never email (the daily email
- * budget is smaller than the member list). The push carries no deep-link data, like every
- * other push, so the released iOS app just opens; the bell links to the ticket.
+ * budget is smaller than the member list). The push carries the custom key `ticket_id` so
+ * the iOS app can open the ticket thread; the bell links to the ticket.
  * Subject and message are the sender's own words: escaped, never translated.
  */
 abstract class SupportNotification extends Notification
@@ -45,7 +45,8 @@ abstract class SupportNotification extends Notification
             ->title($this->title())
             ->body($this->message
                 ? $this->ticket->subject.': '.Str::limit($this->message->body, 120)
-                : $this->ticket->subject);
+                : $this->ticket->subject)
+            ->custom('ticket_id', $this->ticket->id);
     }
 
     /** @return array<string, mixed> */
