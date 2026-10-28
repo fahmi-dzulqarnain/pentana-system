@@ -95,13 +95,14 @@ leave early you can catch up later.
 
 slide("icebreaker", "white", 3.0,
       [text("Quick one in the chat 💬", 160, 260, 1600, 120, H, INK),
-       text("How did you last pay your\nPENTANA dues?", 160, 470, 1600, 84, HB, ORANGE),
-       text("Bank transfer? Cash? Forgot? 😅  Be honest!", 160, 800, 1600, 52, BODY, MUTED)],
+       text("What's your favourite\nPENTANA lunch?", 160, 470, 1600, 84, HB, ORANGE),
+       text("Nasi lemak? Chicken chop? Or you always skip? 😅", 160, 800, 1600, 52, BODY, MUTED)],
       """
-Okay, let's warm up. In the chat, tell me: how did you last pay your PENTANA dues? Bank transfer, cash,
-or... you forgot? Be honest, nobody's checking. [Read a few answers out loud.] I see a lot of transfers,
-and I bet many of you then had to send the receipt to someone on WhatsApp or by email, right? Keep that in
-mind, because that's exactly where we're going next.
+Okay, let's warm up. In the chat, tell me: what's your favourite PENTANA lunch so far? Nasi lemak, chicken
+chop, something else, or are you the one who always forgets to order? [Read a few answers out loud.] Love it.
+Now here's a question for the committee side: how do they know how many of each to order? Honestly, right
+now it's a lot of guessing, and when the guess is wrong, food goes to waste. Keep that in mind, because that's
+exactly where we're going next.
 """)
 
 # ---------------------------------------------------------------- 3:36 Why we built it
