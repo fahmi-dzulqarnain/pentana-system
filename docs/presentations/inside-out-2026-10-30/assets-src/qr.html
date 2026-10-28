@@ -1,0 +1,10 @@
+<!doctype html><html><head><meta charset="utf-8">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script><style>
+html,body{margin:0;width:900px;height:900px;background:#fff;overflow:hidden;display:grid;place-items:center}
+</style></head><body><div id="q"></div><script>
+const qr=qrcode(0,'M');qr.addData('https://pentana.silentmode.net');qr.make();
+const n=qr.getModuleCount(),cell=Math.floor(820/n),pad=(900-cell*n)/2;
+let svg=`<svg xmlns="http://www.w3.org/2000/svg" width="900" height="900"><rect width="900" height="900" fill="#fff"/>`;
+for(let r=0;r<n;r++)for(let c=0;c<n;c++)if(qr.isDark(r,c))svg+=`<rect x="${pad+c*cell}" y="${pad+r*cell}" width="${cell}" height="${cell}" fill="#1b1464"/>`;
+document.getElementById('q').innerHTML=svg+'</svg>';
+</script></body></html>

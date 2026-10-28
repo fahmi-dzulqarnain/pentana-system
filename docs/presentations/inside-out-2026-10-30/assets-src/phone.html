@@ -1,0 +1,11 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+html,body{margin:0;width:600px;height:1260px;background:transparent;overflow:hidden}
+.phone{width:600px;height:1260px;box-sizing:border-box;border-radius:96px;padding:20px;background:#0b0b0f;
+  box-shadow:inset 0 0 0 4px #2a2a33}
+.screen{width:100%;height:100%;border-radius:78px;overflow:hidden;position:relative}
+.screen img{width:100%;height:100%;object-fit:cover;object-position:top;display:block}
+.island{position:absolute;z-index:2;top:22px;left:50%;transform:translateX(-50%);width:184px;height:52px;background:#0b0b0f;border-radius:30px}
+</style></head><body>
+<div class="phone"><div class="screen"><div class="island"></div><img id="s"></div></div>
+<script>document.getElementById('s').src='../assets/screens/'+new URLSearchParams(location.search).get('screen')+'.png'</script>
+</body></html>
