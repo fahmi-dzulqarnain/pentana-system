@@ -1,0 +1,10 @@
+{
+  "Simulator Target Bundle": "my.silentmode.pentana",
+  "aps": {
+    "alert": {
+      "title": "New activity: Beach Cleanup at Port Dickson",
+      "body": "Registration is open. Tap to RSVP."
+    },
+    "sound": "default"
+  }
+}

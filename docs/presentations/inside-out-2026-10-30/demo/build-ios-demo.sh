@@ -36,7 +36,9 @@ xcrun simctl status_bar "$UDID" override --time "9:41" --batteryState charged --
 xcrun simctl ui "$UDID" appearance dark
 xcrun simctl install "$UDID" "$APP"
 BUNDLE="$(/usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' "$APP/Info.plist")"
-xcrun simctl launch "$UDID" "$BUNDLE" >/dev/null
+xcrun simctl terminate "$UDID" "$BUNDLE" 2>/dev/null || true
+# Members are in Malaysia; this Mac may not be. Show every time in MYT, like the real app.
+SIMCTL_CHILD_TZ=Asia/Kuala_Lumpur xcrun simctl launch "$UDID" "$BUNDLE" >/dev/null
 
 [ "$(git -C "$MOBILE" status --porcelain)" = "$before" ] || { echo "guard: main pentana-mobile checkout changed" >&2; exit 1; }
 echo "demo app installed ($BUNDLE) -> $DEMO_URL"
