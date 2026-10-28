@@ -843,5 +843,16 @@
     "your pick": "pilihan Anda",
     "Published: members will be notified shortly": "Diterbitkan: anggota akan segera diberi tahu",
     "Members get one announcement covering every day you publish in the next :minutes minutes.": "Anggota akan menerima satu pengumuman untuk semua hari yang Anda terbitkan dalam :minutes menit ke depan.",
-    "Published :count day: members will be notified shortly|Published :count days: members will be notified shortly": ":count hari diterbitkan: anggota akan segera diberi tahu"
+    "Published :count day: members will be notified shortly|Published :count days: members will be notified shortly": ":count hari diterbitkan: anggota akan segera diberi tahu",
+    "Coming soon": "Segera hadir",
+    "Coming soon · :timeframe": "Segera hadir · :timeframe",
+    ":activity is coming soon (:timeframe). Registration is open now; we will confirm the exact date later.": ":activity segera hadir (:timeframe). Pendaftaran sudah dibuka; kami akan mengonfirmasi tanggal pastinya nanti.",
+    "date to be announced": "tanggal akan diumumkan",
+    ":activity has been cancelled.": ":activity telah dibatalkan.",
+    "Date confirmed": "Tanggal dikonfirmasi",
+    "Date confirmed: :activity": "Tanggal dikonfirmasi: :activity",
+    "Leave blank if the exact date is not fixed yet: it shows as coming soon.": "Kosongkan jika tanggal pastinya belum ditetapkan: akan ditampilkan sebagai segera hadir.",
+    "Timeframe": "Perkiraan waktu",
+    "e.g. December 2026": "mis. Desember 2026",
+    "Shown to members as \"Coming soon · …\" until you set the start date.": "Ditampilkan kepada anggota sebagai \"Segera hadir · …\" sampai Anda menetapkan tanggal mulai."
 }

@@ -90,10 +90,9 @@ class DashboardController extends Controller
 
         $activity = Activity::query()
             ->where('status', 'published')
-            ->where('starts_at', '>=', now())
+            ->upcoming()
             ->whereHas('registrations', $mine)
             ->with(['registrations' => $mine])
-            ->orderBy('starts_at')
             ->first();
 
         if (! $activity) {
@@ -104,6 +103,7 @@ class DashboardController extends Controller
             'id' => $activity->id,
             'title' => $activity->title,
             'starts_at' => $activity->starts_at?->toIso8601String(),
+            'timeframe' => $activity->timeframe,
             'my_status' => $activity->registrations->first()?->status ?? 'none',
         ];
     }
@@ -113,7 +113,7 @@ class DashboardController extends Controller
     {
         return Activity::query()
             ->where('status', 'published')
-            ->where('starts_at', '>=', now())
+            ->upcoming()
             ->whereDoesntHave('registrations', fn ($query) => $query
                 ->where('user_id', $user->id)->where('status', '!=', 'cancelled'))
             ->get()

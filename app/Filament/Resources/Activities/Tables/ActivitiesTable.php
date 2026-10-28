@@ -21,6 +21,8 @@ class ActivitiesTable
                     ->searchable(),
                 TextColumn::make('starts_at')
                     ->dateTime()
+                    ->placeholder(__('Coming soon'))
+                    ->description(fn (Activity $record): ?string => $record->isComingSoon() ? $record->timeframe : null)
                     ->sortable(),
                 TextColumn::make('status')
                     ->badge()

@@ -34,7 +34,9 @@ class ActivityResource extends JsonResource
             'id' => $this->id,
             'title' => $this->title,
             'description' => $this->description,
+            // Null while coming soon; `timeframe` ("December 2026") stands in until it's scheduled.
             'starts_at' => $this->starts_at?->toIso8601String(),
+            'timeframe' => $this->timeframe,
             'location' => $this->location,
             'spots_left' => $this->spotsLeft(),
             'is_open' => $this->isOpenForRegistration(),
