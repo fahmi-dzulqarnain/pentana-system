@@ -1,6 +1,7 @@
 # Inside Out Sharing Session — rehearsal checklist
 
 **Session:** Fri 30 Oct 2026, 3:30–4:30 PM (MYT), Teams · **Rehearsal:** Thu 29 Oct
+**Deck:** `docs/presentations/inside-out-2026-10-30/html/index.html`, presented full-screen in **Google Chrome**. A Keynote version (`build/inside-out.key`) exists as a fallback.
 All commands run from the `pentana-system` repo root.
 
 ## T-30 min: set up
@@ -10,39 +11,53 @@ All commands run from the `pentana-system` repo root.
    docs/presentations/inside-out-2026-10-30/demo/start-demo.sh --reset
    ```
    It must end with `OK` and `login 200`.
-2. **Demo app on the simulator** (rebuilds only what changed):
+2. **Demo app on the simulator:**
    ```bash
    docs/presentations/inside-out-2026-10-30/demo/build-ios-demo.sh
    ```
-   It must end with `demo app installed (my.silentmode.pentana) -> http://127.0.0.1:8765/api/v1`. The app opens on the sign-in screen, because `--reset` signed Ami out.
-3. **Leave the app on the sign-in screen.** The first demo (slide 15) signs in live, as `ami@pentana.test` / `pentana-demo` (also in `demo/.demo-password`). If the app opens on Home instead, sign out from the avatar (top left). Rehearse the sign-in once, tap **Not Now** on "Save Password?", then run `start-demo.sh --reset` again: the reset signs Ami out.
-   - The Simulator's Photos now holds a sample receipt, `demo-receipt.png`, for the Bills demo ("Add receipt photo" → choose from library).
-4. **Build the deck** (only if you changed `deck_src.py`):
+   It must end with `demo app installed (my.silentmode.pentana) -> http://127.0.0.1:8765/api/v1`.
+3. **Leave the app on the sign-in screen.** The first demo (slide 15) signs in live as `ami@pentana.test` / `pentana-demo` (also in `demo/.demo-password`). If the app opens on Home instead, sign out from the avatar (top left).
+   - Rehearse the sign-in once and tap **Not Now** on "Save Password?". Then run `start-demo.sh --reset` again, which signs Ami out.
+   - The Simulator's Photos holds a sample receipt for the Bills demo: "Add receipt photo" → choose from library.
+4. **Open the deck in Chrome:**
    ```bash
-   cd docs/presentations/inside-out-2026-10-30 && python3 deck_src.py && python3 check_deck.py && python3 build_deck.py && osascript -l JavaScript verify_deck.js "$PWD"
+   open -a "Google Chrome" docs/presentations/inside-out-2026-10-30/html/index.html
    ```
-   Then open `docs/presentations/inside-out-2026-10-30/build/inside-out.key`.
-5. **Drop in your photo** (optional): on the last slide (`thanks`), replace the PENTANA mark with your avatar.
+   Drag that window to the **external monitor** and press **F** for full screen. Then press **P** to open the presenter window, and drag it to your **laptop**.
+   - If you changed the slides, regenerate first: `cd docs/presentations/inside-out-2026-10-30 && python3 deck_src.py && python3 check_deck.py`.
 
 ## Screens and Teams
 
-- **Keynote:** Settings → Slideshow → present on the **external monitor**. The presenter display (notes, next slide, timer) goes on the **laptop**.
-- **Simulator:** drag the Simulator window onto the **external monitor** before you start, so it sits behind the slideshow.
-- **Teams:** Share → **Screen** → pick the **external monitor**. Turn on **Include computer sound**, or the drum roll and the celebration sound won't reach anyone.
+- **Monitor:** the deck, full screen. Put the Simulator window on this monitor too, behind Chrome.
+- **Laptop:** the presenter window, with notes (cues in orange), the next slide, the elapsed timer, and the planned clock time with how far ahead or behind you are.
+- **Teams:** Share → **Screen** → the **external monitor**, with **Include computer sound** on. Without it the drum roll and the celebration sound won't reach anyone.
 
-## Rehearsal: check by eye (couldn't be checked automatically)
+## Keys (work in either window)
 
-- [ ] Slides 8 → 9 (reveal): the two phones **glide up** (Magic Move) and the **drum roll** plays on slide 8.
-- [ ] Every "Let's see it live!" slide: the **red dot pulses** in the LIVE DEMO pill.
-- [ ] Slide 39 (Do this tonight): the celebration sound plays, and the QR code scans to pentana.silentmode.net on your phone.
-- [ ] Your laptop shows the speaker notes, and they're readable.
+| Key | Does |
+|---|---|
+| → / Space / click | next |
+| ← | back |
+| **B** | on a "Let's see it live!" slide: open its backup slides |
+| **Esc** | in a backup: back to the demo slide |
+| number + Enter | jump to that slide (backups included) |
+| **F** | full screen (audience window) |
+| **P** | open the presenter window |
+| **R** | restart the timer (press it at 3:30) |
+
+## Rehearsal: check by eye
+
+- [ ] Slides 8 → 9: the phones **glide up** from the bottom, and the **drum roll** plays on slide 8. Click inside the deck once first: browsers only play sound after a click or key press.
+- [ ] Every "Let's see it live!" slide: the **red dot pulses**.
+- [ ] Slide 39 (Do this tonight): the celebration sound plays, and the QR code scans to pentana.silentmode.net.
+- [ ] The presenter window follows every slide change, and pressing → in it advances the deck.
 - [ ] Teams viewers can read the slides (ask someone to watch from their laptop).
 
 ## During the session: switching to a demo
 
-On a **"Let's see it live!"** slide: **Cmd-Tab → Simulator**, do the demo, then **Cmd-Tab → Keynote** and press **→** to continue. The slideshow keeps running while the Simulator is in front.
+On a **"Let's see it live!"** slide: **Cmd-Tab → Simulator**, do the demo, then **Cmd-Tab → Chrome** and press **→**. What each demo does is in the presenter notes. The live RSVP is the **Beach Cleanup at Port Dickson**; the live vote is **Mon 2 Nov, Nasi Lemak Royale**.
 
-| Demo | Slide | Backup slides (hidden) |
+| Demo | Slide | Backups (press B) |
 |---|---|---|
 | Getting in (sign in) | 15 | 16–17 |
 | Bills (submit proof) | 20 | 21–22 |
@@ -50,15 +65,9 @@ On a **"Let's see it live!"** slide: **Cmd-Tab → Simulator**, do the demo, the
 | Activities (RSVP + bell) | 31 | 32–34 |
 | Ask the committee | 36 | 37–38 |
 
-What each demo does is in that slide's speaker notes. The live RSVP is the **Beach Cleanup at Port Dickson**; the live vote is **Mon 2 Nov, Nasi Lemak Royale**.
-
 ## If a demo breaks
 
-Don't fight it. The backup slides have the real screens, one step each.
-
-1. Press **Esc** to leave the slideshow.
-2. In the slide navigator, select that demo's backup slides (table above), right-click → **Unskip Slides**.
-3. Click the first backup slide, then press **Option-Cmd-P** (play from current slide) and talk through the screenshots.
+Press **B** on the demo slide and talk through the real screens, using → to step through them. Then press **Esc**, then → to carry on.
 
 If the demo **server** died, `start-demo.sh` (without `--reset`) brings it back with the same data, including anything you just did live. Sign in again if the app asks.
 

@@ -1,0 +1,85 @@
+:root {
+  --navy: #1b1464;
+  --navy-deep: #120d4a;
+  --orange: #f7931e;
+  --ink: #111111;
+  --live: #ef4444;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+[hidden] { display: none !important; }
+html, body { height: 100%; background: #000; overflow: hidden; }
+body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+
+/* Audience view: a 1920x1080 stage scaled to fit the window. */
+#viewport { position: fixed; inset: 0; overflow: hidden; }
+#stage { position: absolute; left: 50%; top: 50%; width: 1920px; height: 1080px; overflow: hidden; background: #fff; transform-origin: center; }
+#bg, .slide { position: absolute; inset: 0; }
+#bg img { position: absolute; inset: 0; width: 100%; height: 100%; transition: opacity .45s ease; }
+.slide { pointer-events: none; }
+
+.el { position: absolute; transform-origin: center; will-change: transform, opacity; }
+.el.img { object-fit: cover; }
+.el.txt { white-space: pre-line; overflow-wrap: break-word; }
+.el.txt.display { line-height: 1.02; letter-spacing: -0.02em; }
+.el.txt.body { line-height: 1.32; }
+.accent { color: var(--orange); }
+
+/* Pulsing LIVE dot, sits in the pill drawn into bg-glow.png. */
+.live-dot { position: absolute; width: 64px; height: 64px; display: grid; place-items: center; }
+.live-dot i { width: 30px; height: 30px; border-radius: 50%; background: var(--live); animation: pulse 1.6s infinite; }
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, .65); }
+  70% { box-shadow: 0 0 0 22px rgba(239, 68, 68, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+/* Backup slides get a small tag so you know you're off the main path. */
+.backup-tag { position: absolute; right: 40px; top: 32px; font: 600 26px 'Helvetica Neue', sans-serif;
+  color: #fff; background: #6b6b78; padding: 8px 18px; border-radius: 999px; }
+
+#jump { position: fixed; right: 24px; bottom: 24px; font: 700 28px 'Helvetica Neue', sans-serif; color: #fff;
+  background: rgba(0, 0, 0, .7); padding: 10px 18px; border-radius: 10px; }
+
+/* Presenter view (laptop). */
+#presenter { position: fixed; inset: 0; background: #0e0d1a; color: #eceaf7; display: flex; flex-direction: column;
+  font-family: 'Helvetica Neue', sans-serif; }
+#presenter header { display: flex; gap: 36px; align-items: baseline; padding: 18px 28px; border-bottom: 1px solid #2a2840; }
+#p-clock { font: 700 44px 'Manrope', sans-serif; color: #fff; font-variant-numeric: tabular-nums; }
+#p-plan { font-size: 22px; color: #b6b2d6; }
+#p-plan.late { color: var(--orange); }
+#p-pos { margin-left: auto; font-size: 20px; color: #8f8ab3; }
+#presenter main { flex: 1; display: grid; grid-template-columns: 1.25fr 1fr; grid-template-rows: auto 1fr; gap: 20px; padding: 20px 28px; min-height: 0; }
+.p-label { font-size: 15px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: #8f8ab3; margin-bottom: 8px; }
+.p-frame { position: relative; aspect-ratio: 16 / 9; background: #000; border-radius: 8px; overflow: hidden; }
+.p-frame > .mini { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; transform-origin: 0 0; background: #fff; overflow: hidden; }
+.p-next .p-frame { opacity: .85; }
+.p-keys { margin-top: 10px; font-size: 14px; color: #8f8ab3; }
+.p-notes { grid-column: 1 / -1; min-height: 0; overflow: auto; }
+#p-notes { font-size: 30px; line-height: 1.45; color: #fff; max-width: 70ch; }
+#p-notes .cue { color: var(--orange); }
+
+/* ------------------------------------------------------------------ design layer (browser only) */
+/* White slides: soft tint and two quiet colour fields, like the banner's world but light. */
+.look-white { background:
+  radial-gradient(circle at 86% 32%, rgba(247, 147, 30, .13), transparent 38%),
+  radial-gradient(circle at 6% 96%, rgba(27, 20, 100, .07), transparent 42%),
+  linear-gradient(180deg, #fdfcff, #f4f2fb) !important; }
+.el.img[src*="phone-"] { filter: drop-shadow(0 34px 48px rgba(27, 20, 100, .30)); }
+.look-white .el.img[src*="phone-"] { filter: drop-shadow(0 30px 44px rgba(27, 20, 100, .22)); }
+.el.img[src*="claim-crop"] { border-radius: 22px; box-shadow: 0 30px 60px rgba(27, 20, 100, .18); }
+
+/* Panels hug their text (width becomes a maximum). */
+.s-card, .s-bubble, .s-bubble-alt, .s-pill, .s-pill-dark, .s-step, .s-step-dark { width: fit-content !important; }
+.s-card, .s-step { max-width: 1080px; background: #fff; border: 1px solid rgba(27, 20, 100, .08);
+  border-radius: 26px; padding: 22px 34px; box-shadow: 0 14px 34px rgba(27, 20, 100, .08); }
+.s-bubble, .s-bubble-alt { max-width: 1100px; background: #fff; border-radius: 34px 34px 34px 8px; padding: 26px 38px;
+  box-shadow: 0 18px 40px rgba(27, 20, 100, .12); border: 1px solid rgba(27, 20, 100, .06); }
+.s-bubble-alt { background: var(--navy); color: #fff !important; border-radius: 34px 34px 8px 34px; }
+.s-pill { background: rgba(247, 147, 30, .12); border-radius: 999px; padding: 14px 30px; }
+.s-pill-dark { background: rgba(255, 255, 255, .09); border: 1.5px solid rgba(255, 255, 255, .16);
+  border-radius: 999px; padding: 14px 34px; }
+.s-step, .s-step-dark { display: flex; align-items: center; gap: 24px; }
+.s-step-dark { background: rgba(255, 255, 255, .08); border: 1.5px solid rgba(255, 255, 255, .14);
+  border-radius: 999px; padding: 14px 32px 14px 16px; }
+.badge { flex: none; display: grid; place-items: center; width: 1.6em; height: 1.6em; border-radius: 50%;
+  background: var(--orange); color: #fff; font-family: 'Manrope', sans-serif; font-weight: 800; font-size: .9em; }

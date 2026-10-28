@@ -88,3 +88,11 @@ Introduce the new PENTANA member app to members who are seeing it for the first 
 - Which extra screenshots to capture from the demo backend (Lunch tab, Activities, Submit proof, Login, Notifications, claim page on the web).
 - The QR code target for "Do this tonight" (the landing page is the natural choice).
 - File location and name for the deck and checklist (suggestion: `docs/presentations/inside-out-2026-10-30/`).
+
+## Change (2026-10-28, after the first build)
+
+Fahmi saw the scripted Keynote deck and preferred the HTML look of the banner and mockups. **The deck is now presented full-screen from a browser** (`html/index.html`), not Keynote. It keeps the same slides, script, timing, demo backend and backups. What this changes:
+- Motion is real CSS animation: shared items glide between consecutive slides (Magic Move-style) and new items fade up in sequence. The LIVE dot pulses in CSS.
+- A presenter window (laptop) shows speaker notes, the next slide and a timer, synced to the audience window (monitor).
+- Backups stay out of the normal flow, but you can jump to them directly from a demo slide.
+- The Keynote build (`build_deck.py`) stays as a fallback.

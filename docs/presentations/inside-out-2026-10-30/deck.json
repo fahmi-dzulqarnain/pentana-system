@@ -151,7 +151,8 @@
      "x": 220,
      "y": 420,
      "w": 1500,
-     "align": "left"
+     "align": "left",
+     "style": "card"
     },
     {
      "text": "💬  Questions? Drop them in the chat anytime",
@@ -161,7 +162,8 @@
      "x": 220,
      "y": 530,
      "w": 1500,
-     "align": "left"
+     "align": "left",
+     "style": "card"
     },
     {
      "text": "⏱️  60 minutes, Q&A at the end",
@@ -171,7 +173,8 @@
      "x": 220,
      "y": 640,
      "w": 1500,
-     "align": "left"
+     "align": "left",
+     "style": "card"
     },
     {
      "text": "📼  This session is recorded",
@@ -181,7 +184,8 @@
      "x": 220,
      "y": 750,
      "w": 1500,
-     "align": "left"
+     "align": "left",
+     "style": "card"
     }
    ],
    "audio": null,
@@ -265,7 +269,8 @@
      "x": 200,
      "y": 400,
      "w": 1100,
-     "align": "left"
+     "align": "left",
+     "style": "bubble"
     },
     {
      "text": "“Which email did I use again?”",
@@ -275,7 +280,8 @@
      "x": 700,
      "y": 560,
      "w": 1100,
-     "align": "left"
+     "align": "left",
+     "style": "bubble-alt"
     },
     {
      "text": "“Wait, lunch order closed already?”",
@@ -285,7 +291,8 @@
      "x": 300,
      "y": 720,
      "w": 1100,
-     "align": "left"
+     "align": "left",
+     "style": "bubble"
     }
    ],
    "audio": null,
@@ -322,7 +329,8 @@
      "x": 200,
      "y": 420,
      "w": 760,
-     "align": "left"
+     "align": "left",
+     "style": "card"
     },
     {
      "text": "📧 Updates in email",
@@ -332,7 +340,8 @@
      "x": 1000,
      "y": 420,
      "w": 760,
-     "align": "left"
+     "align": "left",
+     "style": "card"
     },
     {
      "text": "🍱 Lunch counts by guesswork",
@@ -342,7 +351,8 @@
      "x": 200,
      "y": 600,
      "w": 1600,
-     "align": "left"
+     "align": "left",
+     "style": "card"
     },
     {
      "text": "…and food that goes to waste.",
@@ -548,7 +558,8 @@
      "x": 170,
      "y": 400,
      "w": 1000,
-     "align": "left"
+     "align": "left",
+     "style": "pill-dark"
     },
     {
      "text": "🍴  Vote for lunch",
@@ -558,7 +569,8 @@
      "x": 170,
      "y": 520,
      "w": 1000,
-     "align": "left"
+     "align": "left",
+     "style": "pill-dark"
     },
     {
      "text": "📅  RSVP for activities",
@@ -568,7 +580,8 @@
      "x": 170,
      "y": 640,
      "w": 1000,
-     "align": "left"
+     "align": "left",
+     "style": "pill-dark"
     },
     {
      "text": "💬  Ask the committee",
@@ -578,7 +591,8 @@
      "x": 170,
      "y": 760,
      "w": 1000,
-     "align": "left"
+     "align": "left",
+     "style": "pill-dark"
     }
    ],
    "audio": null,
@@ -635,7 +649,8 @@
      "x": 160,
      "y": 560,
      "w": 900,
-     "align": "left"
+     "align": "left",
+     "style": "pill"
     }
    ],
    "audio": null,
@@ -682,7 +697,8 @@
      "x": 160,
      "y": 380,
      "w": 1080,
-     "align": "left"
+     "align": "left",
+     "style": "card"
     },
     {
      "text": "🤖 Android: download from our website",
@@ -692,7 +708,8 @@
      "x": 160,
      "y": 500,
      "w": 1080,
-     "align": "left"
+     "align": "left",
+     "style": "card"
     },
     {
      "text": "🌐 Or just use the website",
@@ -702,7 +719,8 @@
      "x": 160,
      "y": 620,
      "w": 1080,
-     "align": "left"
+     "align": "left",
+     "style": "card"
     }
    ],
    "audio": null,
@@ -749,7 +767,8 @@
      "x": 160,
      "y": 380,
      "w": 1080,
-     "align": "left"
+     "align": "left",
+     "style": "step"
     },
     {
      "text": "2. Tap “Download for Android”",
@@ -759,7 +778,8 @@
      "x": 160,
      "y": 500,
      "w": 1080,
-     "align": "left"
+     "align": "left",
+     "style": "step"
     },
     {
      "text": "3. Allow the install",
@@ -769,7 +789,8 @@
      "x": 160,
      "y": 620,
      "w": 1080,
-     "align": "left"
+     "align": "left",
+     "style": "step"
     },
     {
      "text": "It's our own app. Android just asks because it's not from the Play Store.",
@@ -826,7 +847,8 @@
      "x": 160,
      "y": 380,
      "w": 1000,
-     "align": "left"
+     "align": "left",
+     "style": "card"
     },
     {
      "text": "🔑 Next time: sign in with a passkey,\nno password to type",
@@ -836,7 +858,8 @@
      "x": 160,
      "y": 500,
      "w": 1000,
-     "align": "left"
+     "align": "left",
+     "style": "card"
     },
     {
      "text": "Forgot it? hipentana@pentana.silentmode.net",
@@ -1097,7 +1120,8 @@
      "align": "left",
      "accentWords": [
       0
-     ]
+     ],
+     "style": "step"
     },
     {
      "text": "2  Enter the amount you transferred",
@@ -1110,7 +1134,8 @@
      "align": "left",
      "accentWords": [
       0
-     ]
+     ],
+     "style": "step"
     },
     {
      "text": "3  Snap your receipt. Done ✨",
@@ -1123,7 +1148,8 @@
      "align": "left",
      "accentWords": [
       0
-     ]
+     ],
+     "style": "step"
     }
    ],
    "audio": null,
@@ -1356,11 +1382,11 @@
     {
      "text": "Changed your mind?",
      "font": "Manrope-ExtraBold",
-     "size": 120,
+     "size": 104,
      "color": "#111111",
      "x": 160,
      "y": 140,
-     "w": 1600,
+     "w": 1080,
      "align": "left"
     },
     {
@@ -1371,7 +1397,8 @@
      "x": 160,
      "y": 380,
      "w": 980,
-     "align": "left"
+     "align": "left",
+     "style": "card"
     },
     {
      "text": "Change it any time until the deadline.",
@@ -1381,7 +1408,8 @@
      "x": 160,
      "y": 500,
      "w": 980,
-     "align": "left"
+     "align": "left",
+     "style": "card"
     }
    ],
    "audio": null,
@@ -2137,7 +2165,8 @@
      "align": "left",
      "accentWords": [
       0
-     ]
+     ],
+     "style": "step-dark"
     },
     {
      "text": "2  Install: App Store, or Android download",
@@ -2150,7 +2179,8 @@
      "align": "left",
      "accentWords": [
       0
-     ]
+     ],
+     "style": "step-dark"
     },
     {
      "text": "3  Sign in",
@@ -2163,7 +2193,8 @@
      "align": "left",
      "accentWords": [
       0
-     ]
+     ],
+     "style": "step-dark"
     },
     {
      "text": "4  Pay, vote or RSVP. Try one!",
@@ -2176,7 +2207,8 @@
      "align": "left",
      "accentWords": [
       0
-     ]
+     ],
+     "style": "step-dark"
     },
     {
      "text": "Scan to start →",

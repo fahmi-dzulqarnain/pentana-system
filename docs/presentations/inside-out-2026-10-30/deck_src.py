@@ -270,7 +270,7 @@ just enough, and we cut down on food waste.
       images=[phone("lunch", 1260, 110)])
 
 slide("lunch-2", "white", 1.5,
-      [text("Changed your mind?", 160, 140, 1600, 120, H, INK),
+      [text("Changed your mind?", 160, 140, 1080, 104, H, INK),
        text("Your pick saves the moment you tap it.", 160, 380, 980, 56, BODY_M, INK),
        text("Change it any time until the deadline.", 160, 500, 980, 56, BODY_M, INK)],
       """
@@ -378,7 +378,29 @@ See you in the app!
       images=[image("assets/pentana-mark.png", 1460, 300, 300, 300)])
 
 
+# Browser-deck styling (the Keynote build ignores it): slide id -> {text index: style}.
+# bubble/card/pill/pill-dark render as rounded panels; step turns a leading "1" into an orange badge.
+STYLES = {
+    "housekeeping": {1: "card", 2: "card", 3: "card", 4: "card"},
+    "why-1": {1: "bubble", 2: "bubble-alt", 3: "bubble"},
+    "why-2": {1: "card", 2: "card", 3: "card"},
+    "reveal-3": {1: "pill-dark", 2: "pill-dark", 3: "pill-dark", 4: "pill-dark"},
+    "getting-in-1": {2: "pill"},
+    "getting-in-2": {1: "card", 2: "card", 3: "card"},
+    "getting-in-android": {1: "step", 2: "step", 3: "step"},
+    "getting-in-3": {1: "card", 2: "card"},
+    "bills-2": {1: "step", 2: "step", 3: "step"},
+    "lunch-2": {1: "card", 2: "card"},
+    "tonight": {1: "step-dark", 2: "step-dark", 3: "step-dark", 4: "step-dark"},
+}
+for _s in slides:
+    for _i, _style in STYLES.get(_s["id"], {}).items():
+        _s["texts"][_i]["style"] = _style
+
 if __name__ == "__main__":
     json.dump({"size": [1920, 1080], "slides": slides}, open(os.path.join(HERE, "deck.json"), "w"), indent=1,
               ensure_ascii=False)
-    print(f"wrote deck.json ({len(slides)} slides)")
+    os.makedirs(os.path.join(HERE, "html"), exist_ok=True)
+    with open(os.path.join(HERE, "html", "deck-data.js"), "w") as f:   # the browser deck loads this (file:// safe)
+        f.write("window.DECK = " + json.dumps({"size": [1920, 1080], "slides": slides}, ensure_ascii=False) + ";\n")
+    print(f"wrote deck.json + html/deck-data.js ({len(slides)} slides)")
