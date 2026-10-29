@@ -35,7 +35,7 @@ xcrun simctl boot "$UDID" 2>/dev/null || true
 xcrun simctl status_bar "$UDID" override --time "9:41" --batteryState charged --batteryLevel 100 --cellularBars 4 --wifiBars 3
 xcrun simctl ui "$UDID" appearance dark
 # A receipt photo for the live "Submit payment proof" demo.
-RECEIPT="$(cd "$(dirname "$0")/.." && pwd)/assets/demo-receipt.png"
+RECEIPT="$(cd "$(dirname "$0")" && pwd)/demo-receipt.png"
 [ -f "$RECEIPT" ] && xcrun simctl addmedia "$UDID" "$RECEIPT"
 xcrun simctl install "$UDID" "$APP"
 BUNDLE="$(/usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' "$APP/Info.plist")"

@@ -29,5 +29,4 @@ Thumbs.db
 # Inside Out demo backend + deck build output
 /.env.insideout
 /storage/insideout.*
-docs/presentations/*/build/
 docs/presentations/*/demo/.demo-password
