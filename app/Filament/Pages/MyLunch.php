@@ -59,7 +59,7 @@ class MyLunch extends Page
     {
         return $this->cachedLunches ??= Lunch::query()
             ->with(['menus.caterer', 'menus.catererMeal', 'menus.options.mealOption'])
-            ->where('status', 'published')
+            ->visibleToMembers()
             // From Monday, so earlier days this week (closed, read-only) still show what was ordered.
             ->whereDate('date', '>=', today()->startOfWeek())
             ->whereDate('date', '<=', today()->addDays(14))
