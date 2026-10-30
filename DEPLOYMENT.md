@@ -207,6 +207,26 @@ server {
 }
 ```
 
+Size the PHP-FPM worker pool. Homebrew's default pool, like Ubuntu's, has only **5 workers**, and
+every request reads its session from the remote Supabase. On 2026-10-30 a few slow database
+calls held all 5 workers on the production server and the whole site answered 504. Give it
+20 workers (about 40 MB each) and a 30 s per-request limit, so a hung request frees its worker
+before Cloudflare's 60 s timeout (see `docs/deployment-internal-server.md`, *Worker pool*):
+
+```bash
+POOL="$(brew --prefix)/etc/php/$(php -r 'echo PHP_MAJOR_VERSION.".".PHP_MINOR_VERSION;')/php-fpm.d/www.conf"
+cp "$POOL" "$POOL.bak"
+sed -i '' -E \
+  -e 's/^[[:space:]]*;?[[:space:]]*pm\.max_children[[:space:]]*=.*/pm.max_children = 20/' \
+  -e 's/^[[:space:]]*;?[[:space:]]*pm\.start_servers[[:space:]]*=.*/pm.start_servers = 4/' \
+  -e 's/^[[:space:]]*;?[[:space:]]*pm\.min_spare_servers[[:space:]]*=.*/pm.min_spare_servers = 2/' \
+  -e 's/^[[:space:]]*;?[[:space:]]*pm\.max_spare_servers[[:space:]]*=.*/pm.max_spare_servers = 6/' \
+  -e 's/^[[:space:]]*;?[[:space:]]*request_terminate_timeout[[:space:]]*=.*/request_terminate_timeout = 30s/' \
+  "$POOL"
+grep -q '^request_terminate_timeout' "$POOL" || echo 'request_terminate_timeout = 30s' >> "$POOL"
+php-fpm -t                     # test config; the restart below picks it up
+```
+
 Make sure the main `nginx.conf` includes `servers/*.conf` (Homebrew's default does), then:
 
 ```bash

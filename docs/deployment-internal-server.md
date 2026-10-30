@@ -57,7 +57,8 @@ ssh -t pentana 'sudo bash /tmp/provision-server.sh'
 
 It installs PHP 8.3 + extensions (`pgsql mbstring xml curl zip bcmath intl gd`), Composer
 (checksum-verified), Node 22 from NodeSource, and nginx; sets upload limits to 20 MB to match
-the payment-proof uploads; writes the nginx site; and creates `/var/www/pentana` owned by
+the payment-proof uploads; sizes the php-fpm worker pool (20 workers, 30 s request limit; see
+*Worker pool* in section 6); writes the nginx site; and creates `/var/www/pentana` owned by
 `fahmi:www-data`.
 
 ## 2. TLS
@@ -246,6 +247,49 @@ echo "Deployed $(git rev-parse --short HEAD)"
 curl -I https://<hostname>
 php artisan about
 ```
+
+**Worker pool**
+
+php-fpm runs `pm = dynamic` with **20 workers** and **`request_terminate_timeout = 30s`**
+(`/etc/php/8.4/fpm/pool.d/www.conf`, set by `provision-server.sh`).
+
+Why: the stock pool has only 5 workers, and every request reads its session from the remote
+Supabase. On 2026-10-30 a few slow database calls held all 5, so every other request queued
+until Cloudflare gave up and the whole site answered **504** after 60 s. The database itself
+was fine (`select 1` answered); php-fpm showed `Processes active: 5, idle: 0`. 20 workers at
+about 40 MB each fit easily in the 4 GB container. The 30 s limit kills a hung request before
+Cloudflare's 60 s timeout, so one stuck request frees its worker instead of holding it.
+
+| Setting | Value |
+|---|---|
+| `pm.max_children` | 20 |
+| `pm.start_servers` / `pm.min_spare_servers` / `pm.max_spare_servers` | 4 / 2 / 6 |
+| `request_terminate_timeout` | 30s |
+
+Check it, or spot the same outage again:
+
+```bash
+systemctl status php8.4-fpm --no-pager | grep Status   # "idle: 0" with active = max_children means saturated
+```
+
+Apply to a server provisioned before this (or after a PHP upgrade that reset the pool file).
+It backs up the file, validates, and only restarts on a passing test:
+
+```bash
+CONF=/etc/php/8.4/fpm/pool.d/www.conf
+sudo cp "$CONF" "$CONF.bak-$(date +%F)"
+sudo sed -i -E \
+  -e 's/^\s*;?\s*pm\.max_children\s*=.*/pm.max_children = 20/' \
+  -e 's/^\s*;?\s*pm\.start_servers\s*=.*/pm.start_servers = 4/' \
+  -e 's/^\s*;?\s*pm\.min_spare_servers\s*=.*/pm.min_spare_servers = 2/' \
+  -e 's/^\s*;?\s*pm\.max_spare_servers\s*=.*/pm.max_spare_servers = 6/' \
+  -e 's/^\s*;?\s*request_terminate_timeout\s*=.*/request_terminate_timeout = 30s/' \
+  "$CONF"
+grep -q '^request_terminate_timeout' "$CONF" || echo 'request_terminate_timeout = 30s' | sudo tee -a "$CONF" >/dev/null
+sudo php-fpm8.4 -t && sudo systemctl restart php8.4-fpm
+```
+
+Roll back with `sudo cp "$CONF.bak-<date>" "$CONF" && sudo systemctl restart php8.4-fpm`.
 
 **Backups**
 - **Database**: Supabase automatic backups — verify retention on the plan. Manual dumps via
