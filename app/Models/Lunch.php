@@ -53,6 +53,16 @@ class Lunch extends Model
         return User::enabled()->whereNotIn('id', $this->responses()->select('user_id'));
     }
 
+    /**
+     * Lunches members see: published, and closed ones too. app:close-lunch-orders flips a lunch to
+     * 'closed' once its deadline passes, and members still need it to see what they ordered.
+     * Drafts stay hidden.
+     */
+    public function scopeVisibleToMembers(Builder $query): Builder
+    {
+        return $query->whereIn('status', ['published', 'closed']);
+    }
+
     /** Members may vote only while a lunch is published and the deadline instant has not yet passed. */
     public function isOpenForVoting(): bool
     {

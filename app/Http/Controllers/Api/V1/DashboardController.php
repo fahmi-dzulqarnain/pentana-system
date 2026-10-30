@@ -63,7 +63,7 @@ class DashboardController extends Controller
     {
         $lunches = Lunch::query()
             ->with(['menus.caterer', 'menus.catererMeal', 'responses' => fn ($query) => $query->where('user_id', $user->id)])
-            ->where('status', 'published')
+            ->visibleToMembers()
             ->whereDate('date', '>=', today())
             ->whereDate('date', '<=', today()->addDays(14))
             ->orderBy('date')
