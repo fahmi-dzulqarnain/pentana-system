@@ -18,7 +18,7 @@ class FeePaymentForm
         return $schema
             ->components([
                 Section::make(__('Submit fee payment'))
-                    ->description(__('Please enter the total amount transferred and upload your bank receipt.'))
+                    ->description(__('Use reference :code when you transfer, then enter the total amount and upload your bank receipt.', ['code' => Auth::user()->payment_reference]))
                     ->schema([
                         // Automatically associate with the logged-in member
                         Hidden::make('user_id')

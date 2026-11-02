@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 use Symfony\Component\Mailer\Envelope;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
@@ -22,12 +24,17 @@ class QueuedEmail extends Model
 
     public const PRIORITY_HEADER = 'X-Pentana-Priority';
 
+    /** ISO-8601 instant after which the message is no longer worth sending (e.g. a lunch deadline). */
+    public const EXPIRES_HEADER = 'X-Pentana-Expires';
+
+    public const EXPIRED_ERROR = 'Expired before it could be sent.';
+
     /** Minutes to wait before attempt N+1. Three attempts therefore span ~40 minutes. */
     public const BACKOFF_MINUTES = [1 => 10, 2 => 30];
 
     protected $fillable = [
         'mime', 'recipients', 'sender', 'subject',
-        'priority', 'attempts', 'last_error', 'failed_at', 'sent_at', 'next_attempt_at',
+        'priority', 'attempts', 'last_error', 'failed_at', 'sent_at', 'next_attempt_at', 'expires_at',
     ];
 
     protected function casts(): array
@@ -39,6 +46,7 @@ class QueuedEmail extends Model
             'failed_at' => 'datetime',
             'sent_at' => 'datetime',
             'next_attempt_at' => 'datetime',
+            'expires_at' => 'datetime',
         ];
     }
 
@@ -52,6 +60,7 @@ class QueuedEmail extends Model
 
         $priority = self::DEFAULT_PRIORITY;
         $subject = null;
+        $expiresAt = null;
 
         if ($message instanceof Email) {
             $subject = $message->getSubject();
@@ -59,6 +68,12 @@ class QueuedEmail extends Model
 
             if ($header !== null) {
                 $priority = (int) $header->getBodyAsString();
+            }
+
+            $expires = $message->getHeaders()->get(self::EXPIRES_HEADER);
+
+            if ($expires !== null) {
+                $expiresAt = Carbon::parse($expires->getBodyAsString());
             }
         }
 
@@ -70,7 +85,29 @@ class QueuedEmail extends Model
             'priority' => $priority,
             'attempts' => $error === null ? 0 : 1,
             'last_error' => $error,
+            'expires_at' => $expiresAt,
         ]);
+    }
+
+    /**
+     * Mail the provider refused on every attempt - actually lost. Rows marked failed on
+     * purpose (expired, or cancelled by an admin) never used an attempt, so they don't count.
+     */
+    public function scopeLost(Builder $query): Builder
+    {
+        return $query->whereNotNull('failed_at')->where('attempts', '>=', self::MAX_ATTEMPTS);
+    }
+
+    /**
+     * Fail every pending message whose moment has passed, so the drain never spends a slot
+     * on it. Marked failed rather than deleted: the admin's email stats still show it.
+     */
+    public static function failExpired(): int
+    {
+        return static::whereNull('sent_at')
+            ->whereNull('failed_at')
+            ->where('expires_at', '<=', now())
+            ->update(['failed_at' => now(), 'last_error' => self::EXPIRED_ERROR]);
     }
 
     /**
@@ -86,6 +123,7 @@ class QueuedEmail extends Model
             ->where('attempts', '<', self::MAX_ATTEMPTS)
             ->when($skip !== [], fn ($query) => $query->whereNotIn('id', $skip))
             ->where(fn ($query) => $query->whereNull('next_attempt_at')->orWhere('next_attempt_at', '<=', now()))
+            ->where(fn ($query) => $query->whereNull('expires_at')->orWhere('expires_at', '>', now()))
             ->orderBy('priority')
             ->orderBy('created_at')
             ->first();

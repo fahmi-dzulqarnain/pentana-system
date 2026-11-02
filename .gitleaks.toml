@@ -1,0 +1,10 @@
+# Matched by file and value rather than by commit fingerprint, because the
+# GitLab copy of this repo is rewritten and its commit SHAs differ.
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Fake password in an account-hijack test, not a real credential."
+condition = "AND"
+paths = ['''^tests/Feature/Finance/UserRoleManagementTest\.php$''']
+regexes = ['''^hijacked-pass-123$''']

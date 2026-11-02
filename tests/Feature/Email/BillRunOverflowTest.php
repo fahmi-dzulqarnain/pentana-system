@@ -60,16 +60,16 @@ class BillRunOverflowTest extends TestCase
         }
     }
 
-    public function test_a_hundred_and_fifty_member_bill_run_sends_ninety_nine_and_queues_the_rest(): void
+    public function test_a_hundred_and_fifty_member_bill_run_sends_the_daily_cap_and_queues_the_rest(): void
     {
         $transport = $this->countingTransport();
         $this->seedMembersWithBills(150);
 
         $this->artisan('app:send-bill-reminders')->assertSuccessful();
 
-        $this->assertSame(99, $transport->count, 'exactly the daily cap should have been sent');
-        $this->assertSame(99, EmailBudget::usedToday());
-        $this->assertSame(51, QueuedEmail::whereNull('sent_at')->count());
+        $this->assertSame(EmailBudget::DAILY_LIMIT, $transport->count, 'exactly the daily cap should have been sent');
+        $this->assertSame(EmailBudget::DAILY_LIMIT, EmailBudget::usedToday());
+        $this->assertSame(150 - EmailBudget::DAILY_LIMIT, QueuedEmail::whereNull('sent_at')->count());
 
         // The in-app bell is unaffected by the cap.
         $this->assertSame(150, DB::table('notifications')->count());
@@ -81,11 +81,11 @@ class BillRunOverflowTest extends TestCase
         $this->seedMembersWithBills(150);
 
         $this->artisan('app:send-bill-reminders')->assertSuccessful();
-        $this->assertSame(51, QueuedEmail::whereNull('sent_at')->count());
+        $this->assertSame(150 - EmailBudget::DAILY_LIMIT, QueuedEmail::whereNull('sent_at')->count());
 
         $this->travel(1)->day();
 
-        // 51 queued, 25 per run, so three runs clear it.
+        // 50 queued, 25 per run, so two runs clear it (a third is a harmless no-op).
         $this->artisan('app:drain-email-queue')->assertSuccessful();
         $this->artisan('app:drain-email-queue')->assertSuccessful();
         $this->artisan('app:drain-email-queue')->assertSuccessful();

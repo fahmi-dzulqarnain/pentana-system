@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Api;
 
+use App\Enums\SupportTicketStatus;
 use App\Models\Activity;
 use App\Models\ActivityRegistration;
 use App\Models\CatererMeal;
@@ -10,6 +11,7 @@ use App\Models\LunchMenu;
 use App\Models\LunchResponse;
 use App\Models\Payment\FeePeriod;
 use App\Models\Payment\PaymentProof;
+use App\Models\SupportTicket;
 use App\Models\User;
 use App\Services\FinanceService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -153,6 +155,120 @@ class DashboardApiTest extends TestCase
             ->assertJsonPath('data.next_activity', null)
             ->assertJsonPath('data.open_activities_count', 0)
             ->assertJsonPath('data.pending_proofs_count', 0)
-            ->assertJsonPath('data.bills.total_outstanding', '0.00');
+            ->assertJsonPath('data.bills.total_outstanding', '0.00')
+            ->assertJsonPath('data.bills.pending_proofs_amount', '0.00')
+            ->assertJsonPath('data.other_lunch', null)
+            ->assertJsonPath('data.rejected_proof', null)
+            ->assertJsonPath('data.support_reply_ticket', null);
+    }
+
+    private function proof(User $member, string $status, float $amount, array $extra = []): PaymentProof
+    {
+        return PaymentProof::create([
+            'user_id' => $member->id, 'proof_image_path' => 'receipts/x.jpg',
+            'amount_claimed' => $amount, 'status' => $status,
+        ] + $extra);
+    }
+
+    public function test_bills_include_pending_proofs_amount(): void
+    {
+        $member = User::factory()->create();
+        $this->proof($member, 'pending', 20);
+        $this->proof($member, 'pending', 15.5);
+        $this->proof($member, 'rejected', 99);
+        $this->proof(User::factory()->create(), 'pending', 1000);
+
+        $this->getJsonAs($member)->assertJsonPath('data.bills.pending_proofs_amount', '35.50');
+    }
+
+    public function test_next_lunch_includes_vote_deadline_as_iso8601(): void
+    {
+        $member = User::factory()->create();
+        $lunch = Lunch::factory()->create([
+            'status' => 'published', 'date' => today()->addDay(), 'deadline' => '2026-11-05 10:00:00',
+        ]);
+
+        $this->getJsonAs($member)
+            ->assertJsonPath('data.next_lunch.vote_deadline', $lunch->fresh()->deadline->toIso8601String());
+    }
+
+    public function test_other_lunch_is_the_earliest_upcoming_lunch_that_is_not_next_lunch(): void
+    {
+        $member = User::factory()->create();
+        $tomorrow = Lunch::factory()->create([
+            'status' => 'published', 'date' => today()->addDay(), 'deadline' => now()->addDays(2),
+        ]);
+        LunchResponse::factory()->create(['lunch_id' => $tomorrow->id, 'user_id' => $member->id]);
+
+        $this->getJsonAs($member)->assertJsonPath('data.other_lunch', null);
+
+        $friday = Lunch::factory()->create([
+            'status' => 'published', 'date' => today()->addDays(4), 'deadline' => now()->addDays(3),
+        ]);
+
+        $this->getJsonAs($member)
+            ->assertJsonPath('data.next_lunch.id', $friday->id)
+            ->assertJsonPath('data.other_lunch.id', $tomorrow->id)
+            ->assertJsonPath('data.other_lunch.responded', true)
+            ->assertJsonPath('data.other_lunch.vote_deadline', $tomorrow->fresh()->deadline->toIso8601String());
+    }
+
+    public function test_rejected_proof_is_the_latest_proof_when_rejected_within_14_days(): void
+    {
+        $member = User::factory()->create();
+        $rejectedAt = now()->subDays(3);
+        $proof = $this->proof($member, 'rejected', 42, ['admin_note' => 'Blurry', 'rejected_at' => $rejectedAt]);
+
+        $this->getJsonAs($member)
+            ->assertJsonPath('data.rejected_proof.id', $proof->id)
+            ->assertJsonPath('data.rejected_proof.amount_claimed', '42.00')
+            ->assertJsonPath('data.rejected_proof.admin_note', 'Blurry')
+            ->assertJsonPath('data.rejected_proof.rejected_at', $rejectedAt->toIso8601String());
+    }
+
+    public function test_rejected_proof_hidden_when_a_newer_proof_exists(): void
+    {
+        $member = User::factory()->create();
+        $old = $this->proof($member, 'rejected', 42, ['rejected_at' => now()->subDay()]);
+        $old->forceFill(['created_at' => now()->subDays(2)])->save();
+        $this->proof($member, 'pending', 42);
+
+        $this->getJsonAs($member)->assertJsonPath('data.rejected_proof', null);
+    }
+
+    public function test_rejected_proof_hidden_after_14_days(): void
+    {
+        $member = User::factory()->create();
+        $this->proof($member, 'rejected', 42, ['rejected_at' => now()->subDays(15)]);
+
+        $this->getJsonAs($member)->assertJsonPath('data.rejected_proof', null);
+    }
+
+    public function test_rejected_proof_without_rejected_at_is_not_shown(): void
+    {
+        $member = User::factory()->create();
+        $this->proof($member, 'rejected', 42, ['rejected_at' => null]);
+
+        $this->getJsonAs($member)->assertJsonPath('data.rejected_proof', null);
+    }
+
+    public function test_support_reply_ticket_is_the_oldest_waiting_ticket(): void
+    {
+        $member = User::factory()->create();
+        SupportTicket::factory()->create([
+            'user_id' => $member->id, 'status' => SupportTicketStatus::WaitingOnMember,
+            'subject' => 'Newer', 'last_message_at' => now()->subHour(),
+        ]);
+        $older = SupportTicket::factory()->create([
+            'user_id' => $member->id, 'status' => SupportTicketStatus::WaitingOnMember,
+            'subject' => 'Older', 'last_message_at' => now()->subDays(2),
+        ]);
+        SupportTicket::factory()->create([
+            'user_id' => $member->id, 'status' => SupportTicketStatus::NeedsReply,
+            'last_message_at' => now()->subDays(5),
+        ]);
+
+        $this->getJsonAs($member)
+            ->assertJsonPath('data.support_reply_ticket', ['id' => $older->id, 'subject' => 'Older']);
     }
 }

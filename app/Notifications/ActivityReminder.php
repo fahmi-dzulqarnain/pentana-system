@@ -26,6 +26,10 @@ class ActivityReminder extends ActivityNotification
         return $mail->action(__('View activities'), $this->url())
             ->withSymfonyMessage(function (SymfonyEmail $message) {
                 $message->getHeaders()->addTextHeader(QueuedEmail::PRIORITY_HEADER, '20');
+                // A coming-soon activity has no start yet, so its announcement never goes stale.
+                if ($this->activity->starts_at) {
+                    $message->getHeaders()->addTextHeader(QueuedEmail::EXPIRES_HEADER, $this->activity->starts_at->toIso8601String());
+                }
             });
     }
 

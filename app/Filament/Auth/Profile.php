@@ -69,6 +69,12 @@ class Profile extends EditProfile
                     ->disabled()
                     ->dehydrated(false)
                     ->helperText(__('Contact an admin to update your birthday.')),
+                TextInput::make('payment_reference')
+                    ->label(__('Payment reference'))
+                    ->formatStateUsing(fn ($record): ?string => $record?->payment_reference)
+                    ->disabled()
+                    ->dehydrated(false)
+                    ->helperText(__('Use this reference when you transfer your fees.')),
                 $this->getPasswordFormComponent()
                     ->belowContent(fn (): Htmlable => PasswordStrengthMeter::make([$this->getUser()->email, $this->getUser()->name, $this->getUser()->nickname])),
                 $this->getPasswordConfirmationFormComponent(),

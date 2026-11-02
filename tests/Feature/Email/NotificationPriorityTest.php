@@ -3,9 +3,11 @@
 namespace Tests\Feature\Email;
 
 use App\Models\EmailBudget;
+use App\Models\Lunch;
 use App\Models\QueuedEmail;
 use App\Models\User;
 use App\Notifications\BillReminder;
+use App\Notifications\LunchVoteNudge;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Symfony\Component\Mailer\Envelope;
@@ -57,5 +59,25 @@ class NotificationPriorityTest extends TestCase
         User::factory()->create()->notify(new BillReminder(50.0, 1));
 
         $this->assertSame(80, QueuedEmail::first()->priority);
+    }
+
+    public function test_a_vote_nudge_expires_at_the_lunch_deadline(): void
+    {
+        $lunch = Lunch::factory()->create([
+            'date' => today()->addDay()->toDateString(),
+            'status' => 'published',
+            'deadline' => now()->addHours(5)->startOfMinute(),
+        ]);
+
+        User::factory()->create()->notify(new LunchVoteNudge($lunch));
+
+        $this->assertTrue(QueuedEmail::first()->expires_at->equalTo($lunch->deadline));
+    }
+
+    public function test_a_bill_reminder_never_expires(): void
+    {
+        User::factory()->create()->notify(new BillReminder(50.0, 1));
+
+        $this->assertNull(QueuedEmail::first()->expires_at);
     }
 }

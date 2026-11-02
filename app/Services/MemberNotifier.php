@@ -37,4 +37,25 @@ class MemberNotifier
             }
         });
     }
+
+    /**
+     * Same as sendAfterResponse(), for when each member gets their own notification.
+     *
+     * @param  Collection<int, array{0: User, 1: Notification}>  $notifications
+     */
+    public function sendEachAfterResponse(Collection $notifications): void
+    {
+        defer(function () use ($notifications): void {
+            ignore_user_abort(true);
+            set_time_limit(300);
+
+            foreach ($notifications as [$user, $notification]) {
+                try {
+                    $user->notify($notification);
+                } catch (Throwable $e) {
+                    report($e);
+                }
+            }
+        });
+    }
 }

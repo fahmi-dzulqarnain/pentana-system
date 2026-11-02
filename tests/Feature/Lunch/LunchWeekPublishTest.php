@@ -8,6 +8,7 @@ use App\Models\Lunch;
 use App\Models\User;
 use App\Notifications\LunchesPublished;
 use App\Notifications\LunchPublished;
+use App\Services\LunchPublisher;
 use Carbon\Carbon;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -19,6 +20,13 @@ use Tests\TestCase;
 class LunchWeekPublishTest extends TestCase
 {
     use RefreshDatabase;
+
+    /** Publishing only stamps the day; members hear about it once the burst has gone quiet. */
+    private function announceAfterQuietPeriod(): void
+    {
+        $this->travel(LunchPublisher::QUIET_MINUTES)->minutes();
+        $this->artisan('app:announce-lunches')->assertSuccessful();
+    }
 
     private User $admin;
 
@@ -49,6 +57,8 @@ class LunchWeekPublishTest extends TestCase
 
         Livewire::test(ListLunches::class)->callTableBulkAction('publish', $week)->assertNotified();
 
+        $this->announceAfterQuietPeriod();
+
         $week->each(fn (Lunch $lunch) => $this->assertSame('published', $lunch->fresh()->status));
 
         Notification::assertNotSentTo($member, LunchPublished::class);
@@ -72,6 +82,8 @@ class LunchWeekPublishTest extends TestCase
 
         Livewire::test(ListLunches::class)->callTableBulkAction('publish', [...$drafts, $published, $closed]);
 
+        $this->announceAfterQuietPeriod();
+
         $this->assertSame('closed', $closed->fresh()->status);
         Notification::assertSentTo($this->admin, LunchesPublished::class, fn (LunchesPublished $n) => $n->lunches->pluck('id')->all() === $drafts->pluck('id')->all());
     }
@@ -85,6 +97,8 @@ class LunchWeekPublishTest extends TestCase
 
         Livewire::test(ListLunches::class)->callTableBulkAction('publish', [$lunch]);
 
+        $this->announceAfterQuietPeriod();
+
         Notification::assertSentToTimes($this->admin, LunchPublished::class, 1);
         Notification::assertNotSentTo($this->admin, LunchesPublished::class);
     }
@@ -97,6 +111,8 @@ class LunchWeekPublishTest extends TestCase
         $published = Lunch::factory()->create(['status' => 'published', 'deadline' => now()->addDay()]);
 
         Livewire::test(ListLunches::class)->callTableBulkAction('publish', [$published]);
+
+        $this->announceAfterQuietPeriod();
 
         Notification::assertNothingSent();
     }

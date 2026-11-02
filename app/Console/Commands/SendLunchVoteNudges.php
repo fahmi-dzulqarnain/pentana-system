@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Lunch;
+use App\Models\User;
 use App\Notifications\LunchVoteNudge;
 use Illuminate\Console\Command;
 use Throwable;
@@ -20,22 +21,30 @@ class SendLunchVoteNudges extends Command
             ->whereBetween('deadline', [now(), now()->addDay()])
             ->get();
 
+        // One nudge per member listing every day they haven't answered, not one per day:
+        // a published week shares a deadline, and five emails each blew the budget for days.
+        $pending = [];
+
         foreach ($lunches as $lunch) {
-            $nonResponders = $lunch->nonResponders()->get();
-
-            foreach ($nonResponders as $user) {
-                try {
-                    $user->notify(new LunchVoteNudge($lunch));
-                } catch (Throwable $e) {
-                    report($e); // one bad APNs token must not abort the whole run
-                }
+            foreach ($lunch->nonResponders()->pluck('id') as $userId) {
+                $pending[$userId][] = $lunch;
             }
+        }
 
-            // Stamp so a re-run the same day doesn't double-nudge (same guard as activity reminders).
+        foreach (User::whereKey(array_keys($pending))->get() as $user) {
+            try {
+                $user->notify(new LunchVoteNudge(collect($pending[$user->id])));
+            } catch (Throwable $e) {
+                report($e); // one bad APNs token must not abort the whole run
+            }
+        }
+
+        // Stamp so a re-run the same day doesn't double-nudge (same guard as activity reminders).
+        foreach ($lunches as $lunch) {
             $lunch->forceFill(['vote_nudge_sent_at' => now()])->save();
         }
 
-        $this->info("Sent vote nudges for {$lunches->count()} lunch(es).");
+        $this->info('Sent '.count($pending)." vote nudge(s) for {$lunches->count()} lunch(es).");
 
         return self::SUCCESS;
     }

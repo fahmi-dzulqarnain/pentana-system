@@ -3,6 +3,7 @@
 use App\Http\Controllers\AndroidDownloadController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\LunchPrintController;
+use App\Http\Controllers\SupportAttachmentController;
 use App\Livewire\ClaimAccount;
 use App\Models\AndroidRelease;
 use Illuminate\Support\Facades\Route;
@@ -24,6 +25,10 @@ Route::get('/android', fn () => view('android-install', ['androidRelease' => And
 Route::get('/lunches/{lunch}/print', LunchPrintController::class)
     ->middleware('auth')
     ->name('lunches.print');
+
+Route::get('/support/messages/{message}/attachment', SupportAttachmentController::class)
+    ->middleware('auth')
+    ->name('support.attachment');
 
 Route::get('/claim', ClaimAccount::class)->name('claim');
 Route::post('/locale', [LocaleController::class, 'update'])->name('locale.update');

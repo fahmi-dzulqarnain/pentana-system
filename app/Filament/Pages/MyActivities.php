@@ -50,14 +50,13 @@ class MyActivities extends Page
         return __('My Activities');
     }
 
-    /** Published, not-yet-started activities, with all registrations loaded for counts. */
+    /** Published, not-yet-started (or not-yet-scheduled) activities, with all registrations loaded for counts. */
     public function upcomingActivities(): Collection
     {
         return $this->cachedUpcoming ??= Activity::query()
             ->with('registrations')
             ->where('status', 'published')
-            ->where('starts_at', '>=', now())
-            ->orderBy('starts_at')
+            ->upcoming()
             ->get();
     }
 

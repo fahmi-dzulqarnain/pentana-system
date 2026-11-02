@@ -82,6 +82,18 @@ class EmailBudgetStatsTest extends TestCase
         $this->assertSame('danger', $widget->queueColour(), 'lost mail must be visible');
     }
 
+    public function test_expired_and_cancelled_mail_is_not_reported_as_lost(): void
+    {
+        $this->queueOne()->forceFill(['expires_at' => now()->subMinute()])->save();
+        QueuedEmail::failExpired();
+        $this->queueOne()->forceFill(['failed_at' => now(), 'last_error' => 'Cancelled by admin'])->save();
+
+        $widget = new EmailBudgetStats;
+
+        $this->assertSame(0, $widget->failedCount());
+        $this->assertSame('gray', $widget->queueColour());
+    }
+
     public function test_monthly_colour_warns_on_projection_before_going_over(): void
     {
         $widget = new EmailBudgetStats;

@@ -171,7 +171,8 @@ class EditLunch extends EditRecord
                     $this->refreshFormData(['status']);
 
                     FilamentNotification::make()
-                        ->title(__('Published: members notified'))
+                        ->title(__('Published: members will be notified shortly'))
+                        ->body(__('Members get one announcement covering every day you publish in the next :minutes minutes.', ['minutes' => LunchPublisher::QUIET_MINUTES]))
                         ->success()
                         ->send();
                 }),

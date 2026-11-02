@@ -15,7 +15,9 @@ class ActivityCancelled extends ActivityNotification
             ->tone('alert', '📅', __('Activities'))
             ->subject($this->pushTitle())
             ->greeting(__('Activity cancelled'))
-            ->line(__(':activity scheduled for :when has been cancelled.', ['activity' => $this->activity->title, 'when' => $this->whenLabel()]))
+            ->line($this->activity->isComingSoon()
+                ? __(':activity has been cancelled.', ['activity' => $this->activity->title])
+                : __(':activity scheduled for :when has been cancelled.', ['activity' => $this->activity->title, 'when' => $this->whenLabel()]))
             ->action(__('View activities'), $this->url());
     }
 

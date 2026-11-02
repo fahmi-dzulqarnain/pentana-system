@@ -36,10 +36,12 @@ class LunchApiTest extends TestCase
         $this->getJson('/api/v1/lunches')->assertStatus(401);
     }
 
-    public function test_it_lists_only_upcoming_published_lunches_with_options(): void
+    public function test_it_lists_only_this_weeks_published_lunches_with_options(): void
     {
+        $this->travelTo(now()->next('Wednesday')->setTime(9, 0));
         [$open, $option] = $this->openLunchWithOption();
-        Lunch::factory()->create(['date' => today()->subDay()->toDateString(), 'status' => 'published', 'deadline' => now()->subDays(2)]);
+        // Last week's Sunday: before this week's Monday, so excluded.
+        Lunch::factory()->create(['date' => today()->startOfWeek()->subDay()->toDateString(), 'status' => 'published', 'deadline' => now()->subDays(4)]);
         // Different date (lunches.date is unique); excluded by status, not date.
         Lunch::factory()->create(['date' => today()->addDays(2)->toDateString(), 'status' => 'draft', 'deadline' => now()->addDay()]);
 
@@ -58,6 +60,27 @@ class LunchApiTest extends TestCase
             ->assertJsonPath('data.0.my_lunch_option_id', null);
 
         $this->assertNotNull($this->getJson('/api/v1/lunches')->json('data.0.menus.0.options.0.lunch_option_id'));
+    }
+
+    public function test_earlier_days_this_week_still_show_my_closed_pick(): void
+    {
+        $this->travelTo(now()->next('Wednesday')->setTime(9, 0));
+        $monday = Lunch::factory()->create([
+            'date' => today()->startOfWeek()->toDateString(),
+            'status' => 'published',
+            'deadline' => today()->startOfWeek()->subDay()->setTime(18, 0),
+        ]);
+        $option = MealOption::factory()->create(['name' => 'Beef']);
+        $lunchOption = LunchOption::factory()->create(['lunch_id' => $monday->id, 'meal_option_id' => $option->id, 'enabled' => true]);
+        $member = User::factory()->create();
+        LunchResponse::create(['lunch_id' => $monday->id, 'user_id' => $member->id, 'lunch_option_id' => $lunchOption->id, 'meal_option_id' => $option->id]);
+        Sanctum::actingAs($member);
+
+        $this->getJson('/api/v1/lunches')
+            ->assertOk()
+            ->assertJsonPath('data.0.id', $monday->id)
+            ->assertJsonPath('data.0.is_open', false)
+            ->assertJsonPath('data.0.my_lunch_option_id', $lunchOption->id);
     }
 
     public function test_member_can_vote_for_an_option(): void

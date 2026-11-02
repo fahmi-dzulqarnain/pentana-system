@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Activities\Pages;
 use App\Filament\Resources\Activities\ActivityResource;
 use App\Models\User;
 use App\Notifications\ActivityCancelled;
+use App\Notifications\ActivityDateConfirmed;
 use App\Notifications\ActivityPublished;
 use App\Services\MemberNotifier;
 use Filament\Actions\Action;
@@ -15,6 +16,29 @@ use Filament\Resources\Pages\EditRecord;
 class EditActivity extends EditRecord
 {
     protected static string $resource = ActivityResource::class;
+
+    /** Whether the record was coming soon (no start date) before this save. */
+    private bool $wasComingSoon = false;
+
+    protected function beforeSave(): void
+    {
+        $this->wasComingSoon = $this->record->isComingSoon();
+    }
+
+    /** Scheduling a coming-soon activity tells everyone already signed up for it. */
+    protected function afterSave(): void
+    {
+        if (! $this->wasComingSoon || $this->record->isComingSoon() || $this->record->status !== 'published') {
+            return;
+        }
+
+        $recipients = User::enabled()->whereIn(
+            'id',
+            $this->record->registrations()->whereIn('status', ['registered', 'waitlisted'])->pluck('user_id'),
+        )->get();
+
+        app(MemberNotifier::class)->sendAfterResponse($recipients, new ActivityDateConfirmed($this->record->fresh()));
+    }
 
     protected function getHeaderActions(): array
     {

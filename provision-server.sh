@@ -38,12 +38,27 @@ apt-get install -y -qq \
     "php${PHP_VER}-curl" "php${PHP_VER}-zip" "php${PHP_VER}-bcmath" \
     "php${PHP_VER}-intl" "php${PHP_VER}-gd"
 
-echo "==> 3/7  PHP upload limits (payment proofs / lunch images)"
+echo "==> 3/7  PHP upload limits (payment proofs / lunch images) + worker pool"
 cat > "/etc/php/${PHP_VER}/fpm/conf.d/99-pentana.ini" <<EOF
 upload_max_filesize = ${UPLOAD_MAX}
 post_max_size = ${POST_MAX}
 memory_limit = 256M
 EOF
+
+# The stock pool has 5 workers. Every request reads its session from the remote Supabase, so
+# a few slow database calls held all 5 and the whole site answered 504 (2026-10-30). 20 workers
+# (~40 MB each) leave room, and a hung request is killed at 30 s instead of holding a worker
+# until Cloudflare gives up at 60 s. Idempotent: re-running sets the same values.
+POOL="/etc/php/${PHP_VER}/fpm/pool.d/www.conf"
+sed -i -E \
+    -e 's/^\s*;?\s*pm\.max_children\s*=.*/pm.max_children = 20/' \
+    -e 's/^\s*;?\s*pm\.start_servers\s*=.*/pm.start_servers = 4/' \
+    -e 's/^\s*;?\s*pm\.min_spare_servers\s*=.*/pm.min_spare_servers = 2/' \
+    -e 's/^\s*;?\s*pm\.max_spare_servers\s*=.*/pm.max_spare_servers = 6/' \
+    -e 's/^\s*;?\s*request_terminate_timeout\s*=.*/request_terminate_timeout = 30s/' \
+    "$POOL"
+grep -q '^request_terminate_timeout' "$POOL" || echo 'request_terminate_timeout = 30s' >> "$POOL"
+"php-fpm${PHP_VER}" -t
 
 echo "==> 4/7  Composer"
 if ! command -v composer >/dev/null 2>&1; then

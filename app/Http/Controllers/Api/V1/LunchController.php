@@ -22,8 +22,9 @@ class LunchController extends Controller
                 'menus.options.mealOption',
                 'responses' => fn ($query) => $query->where('user_id', $request->user()->id),
             ])
-            ->where('status', 'published')
-            ->whereDate('date', '>=', today())
+            ->visibleToMembers()
+            // From Monday, so earlier days this week (closed, read-only) still show what was ordered.
+            ->whereDate('date', '>=', today()->startOfWeek())
             ->whereDate('date', '<=', today()->addDays(14))
             ->orderBy('date')
             ->get();

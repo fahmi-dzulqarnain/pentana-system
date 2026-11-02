@@ -34,6 +34,33 @@ class SendLunchVoteNudgesTest extends TestCase
         $this->assertNotNull($lunch->fresh()->vote_nudge_sent_at);
     }
 
+    public function test_a_week_closing_together_is_one_nudge_per_member_listing_only_unanswered_days(): void
+    {
+        Notification::fake();
+        $deadline = now()->addHours(12);
+        $mon = Lunch::factory()->create(['date' => today()->addDays(4)->toDateString(), 'status' => 'published', 'deadline' => $deadline]);
+        $tue = Lunch::factory()->create(['date' => today()->addDays(5)->toDateString(), 'status' => 'published', 'deadline' => $deadline]);
+        $wed = Lunch::factory()->create(['date' => today()->addDays(6)->toDateString(), 'status' => 'published', 'deadline' => $deadline]);
+
+        $partly = User::factory()->create();
+        LunchResponse::create(['lunch_id' => $tue->id, 'user_id' => $partly->id, 'meal_option_id' => null]);
+        $silent = User::factory()->create();
+
+        $this->artisan('app:send-lunch-vote-nudges')->assertSuccessful();
+
+        Notification::assertSentToTimes($silent, LunchVoteNudge::class, 1);
+        Notification::assertSentToTimes($partly, LunchVoteNudge::class, 1);
+        Notification::assertSentTo($partly, LunchVoteNudge::class,
+            fn (LunchVoteNudge $n) => $n->lunches->pluck('id')->all() === [$mon->id, $wed->id]);
+        Notification::assertSentTo($silent, LunchVoteNudge::class, function (LunchVoteNudge $n) use ($silent) {
+            $mail = $n->toMail($silent);
+
+            return $n->lunches->count() === 3
+                && str_contains($mail->subject, ', ')
+                && count(array_filter($mail->introLines, fn ($line) => str_contains($line, 'order by'))) === 3;
+        });
+    }
+
     public function test_does_not_nudge_twice(): void
     {
         Notification::fake();

@@ -98,7 +98,8 @@ class NeedsAttention extends StatsOverviewWidget
     private function waitlists(): Stat
     {
         $waiting = ActivityRegistration::where('status', 'waitlisted')
-            ->whereHas('activity', fn ($query) => $query->where('status', 'published')->where('starts_at', '>=', now()));
+            ->whereHas('activity', fn ($query) => $query->where('status', 'published')
+                ->where(fn ($query) => $query->whereNull('starts_at')->orWhere('starts_at', '>=', now())));
         $count = (clone $waiting)->count();
         $activities = (clone $waiting)->distinct()->count('activity_id');
 

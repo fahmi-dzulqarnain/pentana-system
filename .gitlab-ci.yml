@@ -1,5 +1,5 @@
-# Security scanning only. The repo is mirrored here from GitHub, so
-# development (PRs, reviews) still happens there.
+# Security scanning only. Branches are pushed here directly alongside
+# GitHub, where development (PRs, reviews) still happens.
 #
 # Required CI/CD variables (Settings > CI/CD > Variables, masked):
 #   SONAR_HOST_URL  e.g. https://sonarqube.example.internal

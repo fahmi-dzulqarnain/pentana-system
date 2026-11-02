@@ -52,6 +52,7 @@ class BillReminder extends Notification
             ->subject(__('Reminder: outstanding dues'))
             ->greeting(__('Friendly reminder'))
             ->line(__('You have MYR :amount outstanding across :count bill(s).', $this->amounts()))
+            ->line(__('Use reference :code when you transfer.', ['code' => $notifiable->payment_reference]))
             ->line(__('Once you have transferred, upload a payment proof and an admin will verify it.'))
             ->action(__('View my bills'), $this->url())
             ->withSymfonyMessage(function (SymfonyEmail $message) {

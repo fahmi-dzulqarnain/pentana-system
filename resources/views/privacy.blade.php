@@ -46,9 +46,9 @@
 
     <main class="w">
         <h1>{{ __('Privacy Policy') }}</h1>
-        <p class="updated">{{ __('Last updated: :date', ['date' => \Illuminate\Support\Carbon::create(2026, 7, 7)->locale(app()->getLocale())->translatedFormat('j F Y')]) }}</p>
+        <p class="updated">{{ __('Last updated: :date', ['date' => \Illuminate\Support\Carbon::create(2026, 10, 29)->locale(app()->getLocale())->translatedFormat('j F Y')]) }}</p>
 
-        <p>{!! __('PENTANA Mobile (“the app”) is the member companion to a welfare & membership fund operated by :org (“we”, “us”, “our”). This policy explains what personal information we handle when you use PENTANA and the PENTANA web portal, and your rights over it. We handle personal data in line with Malaysia’s Personal Data Protection Act 2010 (PDPA).', ['org' => '<strong>Pentana Org</strong>']) !!}</p>
+        <p>{!! __('PENTANA Mobile (“the app”) is the member companion to a welfare & membership fund operated by :org (“we”, “us”, “our”). This policy explains what personal information we handle when you use PENTANA and the PENTANA web portal, and your rights over it.', ['org' => '<strong>Kelab Sosial &amp; Rekreasi PENTANA</strong>']) !!}</p>
 
         <h2>{{ __('Information we collect') }}</h2>
         <p>{{ __('We only collect what’s needed to run your membership:') }}</p>

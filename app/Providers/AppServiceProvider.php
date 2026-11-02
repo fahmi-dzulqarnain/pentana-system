@@ -4,7 +4,10 @@ namespace App\Providers;
 
 use App\Http\Middleware\SetLocale;
 use App\Mail\BudgetedTransport;
+use App\Models\DeviceToken;
 use App\Models\User;
+use App\Services\BankStatements\PdftotextExtractor;
+use App\Services\BankStatements\StatementTextExtractor;
 use App\Support\TimeFormat;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
@@ -26,6 +29,7 @@ use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 use Livewire\Livewire;
+use NotificationChannels\Apn\ApnChannel;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -34,7 +38,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->bind(StatementTextExtractor::class, PdftotextExtractor::class);
     }
 
     /**
@@ -113,6 +117,14 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(NotificationSent::class, fn () => TimeFormat::useRecipient(null));
         Event::listen(NotificationFailed::class, fn () => TimeFormat::useRecipient(null));
 
+        // A token APNs says is dead (app deleted, push turned off) would otherwise keep the
+        // member off email for good, since routine notices go push-only to token holders.
+        Event::listen(NotificationFailed::class, function (NotificationFailed $e): void {
+            if ($e->channel === ApnChannel::class && in_array($e->data['error'] ?? null, self::DEAD_APN_TOKEN_ERRORS, true)) {
+                DeviceToken::where('token', $e->data['token'])->delete();
+            }
+        });
+
         // FilePond has no Malay locale, so its English idle prompt leaked into the ms UI.
         // Resolved per render (closure) so it follows the viewer's language.
         FileUpload::configureUsing(fn (FileUpload $upload) => $upload->placeholder(fn (): string => __('Drag & drop your file or :browse', [
@@ -127,6 +139,9 @@ class AppServiceProvider extends ServiceProvider
     }
 
     public const PASSWORD_MIN_LENGTH = 12;
+
+    /** APNs reasons that mean the token will never deliver again. */
+    public const DEAD_APN_TOKEN_ERRORS = ['Unregistered', 'BadDeviceToken', 'DeviceTokenNotForTopic'];
 
     public const DATE_FORMAT = 'j M Y';
 

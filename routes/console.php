@@ -15,5 +15,6 @@ Schedule::command('app:send-activity-reminders')->dailyAt('09:00');
 Schedule::command('app:send-bill-reminders')->monthlyOn(15, '09:00');
 Schedule::command('app:send-bill-reminders')->lastDayOfMonth('09:00');
 Schedule::command('app:send-lunch-vote-nudges')->dailyAt('09:00');
+Schedule::command('app:announce-lunches')->everyMinute()->withoutOverlapping(5);
 
 Schedule::command('app:drain-email-queue')->everyMinute()->withoutOverlapping(5);

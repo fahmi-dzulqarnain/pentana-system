@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\DB;
  */
 class EmailBudget extends Model
 {
-    public const DAILY_LIMIT = 99;
+    public const DAILY_LIMIT = 100;
 
     public const MONTHLY_LIMIT = 3000;
 

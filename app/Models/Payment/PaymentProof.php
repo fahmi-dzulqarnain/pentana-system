@@ -2,6 +2,7 @@
 
 namespace App\Models\Payment;
 
+use App\Enums\StatementLineOutcome;
 use App\Models\User;
 use App\Services\FinanceService;
 use App\Services\ReceiptService;
@@ -14,12 +15,12 @@ class PaymentProof extends Model
 {
     protected $fillable = [
         'user_id', 'proof_image_path', 'member_note', 'amount_claimed',
-        'amount_verified', 'status', 'admin_note', 'verified_at',
+        'amount_verified', 'status', 'admin_note', 'verified_at', 'rejected_at',
     ];
 
     protected function casts(): array
     {
-        return ['verified_at' => 'datetime'];
+        return ['verified_at' => 'datetime', 'rejected_at' => 'datetime'];
     }
 
     protected static function booted(): void
@@ -27,6 +28,11 @@ class PaymentProof extends Model
         // Covers every delete path (admin action, bulk delete, code), not just one page.
         static::deleting(function (PaymentProof $payment) {
             app(ReceiptService::class)->voidFor($payment);
+            // The credit stays in the ledger; the treasurer reviews it again.
+            $payment->bankStatementLine()->update([
+                'payment_proof_id' => null,
+                'outcome' => StatementLineOutcome::NeedsReview,
+            ]);
             app(FinanceService::class)->releasePayment($payment);
         });
     }
@@ -54,6 +60,11 @@ class PaymentProof extends Model
     public function receipt(): HasOne
     {
         return $this->hasOne(PaymentReceipt::class);
+    }
+
+    public function bankStatementLine(): HasOne
+    {
+        return $this->hasOne(BankStatementLine::class);
     }
 
     // Helper to see which months this proof paid for

@@ -14,12 +14,14 @@ class Lunch extends Model
 
     protected $table = 'lunches';
 
-    protected $fillable = ['date', 'deadline', 'status', 'vote_nudge_sent_at'];
+    protected $fillable = ['date', 'deadline', 'status', 'published_at', 'vote_nudge_sent_at'];
 
     protected $casts = [
         'date' => 'date',
         'deadline' => 'datetime',
         'vote_nudge_sent_at' => 'datetime',
+        'published_at' => 'datetime',
+        'announced_at' => 'datetime',
         'manual_reminder_sent_at' => 'datetime',
         'manual_reminder_sent_by' => 'integer',
     ];
@@ -49,6 +51,16 @@ class Lunch extends Model
     public function nonResponders(): Builder
     {
         return User::enabled()->whereNotIn('id', $this->responses()->select('user_id'));
+    }
+
+    /**
+     * Lunches members see: published, and closed ones too. app:close-lunch-orders flips a lunch to
+     * 'closed' once its deadline passes, and members still need it to see what they ordered.
+     * Drafts stay hidden.
+     */
+    public function scopeVisibleToMembers(Builder $query): Builder
+    {
+        return $query->whereIn('status', ['published', 'closed']);
     }
 
     /** Members may vote only while a lunch is published and the deadline instant has not yet passed. */
