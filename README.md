@@ -63,12 +63,40 @@ php artisan tinker --execute="\App\Models\User::create([
 ]);"
 ```
 
+## Run with Docker
+
+An alternative to the steps above, and to the server setup in [`DEPLOYMENT.md`](DEPLOYMENT.md)
+(which stays the production runbook). The stack mirrors production: **nginx + PHP-FPM**,
+PostgreSQL, and the scheduler in place of the cron entry.
+
+```bash
+# Compose reads APP_KEY from .env; generate one if you don't have it yet
+php artisan key:generate --show      # copy the value into .env as APP_KEY=...
+
+docker compose up --build            # http://localhost:8080 — migrations run on start
+```
+
+| Service | Image | Role |
+|---|---|---|
+| `db` | `postgres:17-alpine` | Database (`db-data` volume) |
+| `app` | `Dockerfile`, target `app` | PHP-FPM 8.4, runs as `www-data`; migrates when `RUN_MIGRATIONS=true` |
+| `web` | `Dockerfile`, target `web` | Unprivileged nginx on `:8080`, the same server block as `provision-server.sh` |
+| `scheduler` | same as `app` | `php artisan schedule:work` |
+
+Uploads live in the shared `storage` volume. Logs, including "sent" mail on the `log` driver,
+go to `docker compose logs app`. Create an admin with the same `tinker` command, prefixed with
+`docker compose exec app`.
+
 ## Testing & style
 
 ```bash
 php artisan test        # full suite (SQLite in-memory)
 vendor/bin/pint         # code style
 ```
+
+CI ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs on every push to `main` and
+every pull request: Pint, the Vite build and PHPUnit on PHP 8.4 and 8.5, a build of both
+Docker images, and the MCP server's lint, typecheck and tests. It needs no secrets.
 
 > Tests run on SQLite while production is PostgreSQL — verify DB-specific behavior
 > (string-vs-int casts, row locks) against Supabase when relevant.
@@ -91,6 +119,14 @@ Recurring jobs run via a single per-minute `php artisan schedule:run` (see
 - **Mail is on the `log` driver** until SMTP is configured — "sent" mail lands in
   `storage/logs/laravel.log`; the in-app notification bell works today.
 - **Payments are intentionally manual** (proof-upload + admin verify); no payment gateway.
+
+## AI assistant (MCP)
+
+[`mcp/`](mcp/) is an MCP server that lets an AI assistant such as Claude act for **one
+member** through the existing `/api/v1` API: bills, lunches and activities, with voting and
+registration only when writes are switched on and the member confirms. It never touches the
+database and has no admin capabilities. Setup and the safety design are in
+[`mcp/README.md`](mcp/README.md).
 
 ## Deployment
 

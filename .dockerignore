@@ -1,0 +1,29 @@
+# Allowlist: the build context is only what the running app needs. Anything new in the repo
+# folder (local databases, uploads, .env, editor or agent state) stays out unless listed here.
+*
+
+!app/
+!bootstrap/
+!config/
+!database/
+!lang/
+!public/
+!resources/
+!routes/
+!storage/
+!docker/
+!artisan
+!composer.json
+!composer.lock
+!package.json
+!package-lock.json
+!vite.config.js
+
+# Inside the allowed folders: local and generated state
+**/.DS_Store
+database/*.sqlite*
+bootstrap/cache/*.php
+public/build
+public/hot
+public/storage
+storage/**

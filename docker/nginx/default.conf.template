@@ -1,0 +1,29 @@
+# The production server block from provision-server.sh, with FastCGI to the app container.
+# ${PHP_FPM_HOST} is filled in by the nginx image's envsubst step at start-up.
+server {
+    listen 8080;
+    server_name _;
+    root /var/www/html/public;
+    index index.php;
+    charset utf-8;
+    client_max_body_size 64M;
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location = /favicon.ico { access_log off; log_not_found off; }
+    location = /robots.txt  { access_log off; log_not_found off; }
+
+    error_page 404 /index.php;
+
+    location ~ \.php$ {
+        fastcgi_pass ${PHP_FPM_HOST};
+        fastcgi_index index.php;
+        # The app container has the same code at the same path, so this resolves there.
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        include fastcgi_params;
+    }
+
+    location ~ /\.(?!well-known).* { deny all; }
+}

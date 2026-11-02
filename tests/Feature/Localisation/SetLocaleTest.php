@@ -3,6 +3,7 @@
 namespace Tests\Feature\Localisation;
 
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\View;
@@ -123,7 +124,7 @@ class SetLocaleTest extends TestCase
         // middleware) must run as `ms` too, or a re-render falls back to English mid-form.
         // The initial GET left `ms` on the shared app instance; reset so only the update request can set it.
         app()->setLocale('en');
-        \Carbon\Carbon::setLocale('en');
+        Carbon::setLocale('en');
 
         $response = $this->withUnencryptedCookie('locale', 'ms')
             ->withHeaders(['X-Livewire' => 'true'])

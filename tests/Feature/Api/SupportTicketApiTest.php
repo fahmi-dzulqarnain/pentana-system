@@ -12,6 +12,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Testing\TestResponse;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
@@ -110,7 +111,7 @@ class SupportTicketApiTest extends TestCase
         $this->getJson("/api/v1/support-tickets/{$ticket->id}")->assertForbidden();
     }
 
-    private function openTicket(array $fields): \Illuminate\Testing\TestResponse
+    private function openTicket(array $fields): TestResponse
     {
         return $this->post('/api/v1/support-tickets', $fields, ['Accept' => 'application/json']);
     }

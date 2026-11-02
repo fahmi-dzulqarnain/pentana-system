@@ -2,8 +2,10 @@
 
 namespace Tests\Feature\Api;
 
+use App\Models\Payment\FeePeriod;
 use App\Models\Payment\PaymentProof;
 use App\Models\User;
+use App\Services\FinanceService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -84,14 +86,14 @@ class PaymentProofsTest extends TestCase
 
     private function verifiedProof(User $member): PaymentProof
     {
-        \App\Models\Payment\FeePeriod::create([
+        FeePeriod::create([
             'user_id' => $member->id,
             'month_date' => now()->startOfMonth()->toDateString(),
             'amount_due' => 50,
             'status' => 'unpaid',
         ]);
         $proof = PaymentProof::create(['user_id' => $member->id, 'proof_image_path' => 'p/v.jpg', 'amount_claimed' => 50, 'status' => 'pending']);
-        app(\App\Services\FinanceService::class)->verifyAndAllocate($proof, 50);
+        app(FinanceService::class)->verifyAndAllocate($proof, 50);
 
         return $proof->fresh();
     }
