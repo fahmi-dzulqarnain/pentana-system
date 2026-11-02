@@ -41,7 +41,9 @@ jobs:
           key: composer-${{ runner.os }}-${{ matrix.php }}-${{ hashFiles('composer.lock') }}
           restore-keys: composer-${{ runner.os }}-${{ matrix.php }}-
 
-      - run: composer install --no-interaction --no-progress --prefer-dist
+      # --no-scripts: package:discover boots the app, and AppServiceProvider resolves
+      # Vite::asset() at boot, which throws until the manifest is built below.
+      - run: composer install --no-interaction --no-progress --prefer-dist --no-scripts
 
       - uses: actions/setup-node@v4
         with:
@@ -52,6 +54,9 @@ jobs:
 
       - name: Build Vite assets
         run: npm run build
+
+      - name: Composer scripts
+        run: composer run-script post-autoload-dump
 
       - name: Pint
         run: vendor/bin/pint --test

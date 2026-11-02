@@ -34,6 +34,10 @@ class LunchWeekPublishTest extends TestCase
     {
         parent::setUp();
 
+        // The drafts below are the week of 2 Nov 2026; pin the clock before it so their
+        // deadlines stay in the future and the publisher still announces them.
+        $this->travelTo(Carbon::parse('2026-10-30 09:00'));
+
         $this->admin = User::factory()->admin()->create();
         $this->actingAs($this->admin);
         Filament::setCurrentPanel(Filament::getPanel('account'));
