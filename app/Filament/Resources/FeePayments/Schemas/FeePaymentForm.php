@@ -2,11 +2,13 @@
 
 namespace App\Filament\Resources\FeePayments\Schemas;
 
+use App\Support\PaymentDetails;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
 use Filament\Support\RawJs;
 use Illuminate\Support\Facades\Auth;
@@ -20,6 +22,9 @@ class FeePaymentForm
                 Section::make(__('Submit fee payment'))
                     ->description(__('Use reference :code when you transfer, then enter the total amount and upload your bank receipt.', ['code' => Auth::user()->payment_reference]))
                     ->schema([
+                        View::make('filament.support.payment-details')
+                            ->viewData(fn (): array => ['details' => PaymentDetails::for(Auth::user())]),
+
                         // Automatically associate with the logged-in member
                         Hidden::make('user_id')
                             ->default(fn () => Auth::id()),
