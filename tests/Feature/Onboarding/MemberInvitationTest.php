@@ -6,6 +6,7 @@ use App\Filament\Resources\Users\Pages\ListUsers;
 use App\Models\MemberCategory;
 use App\Models\User;
 use App\Notifications\MemberInvitation;
+use App\Services\AccountClaimService;
 use App\Services\MemberInviter;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -42,19 +43,22 @@ class MemberInvitationTest extends TestCase
         $this->assertNull($claimed->fresh()->invited_at);
     }
 
-    public function test_the_email_links_to_the_claim_page_without_putting_the_email_in_the_url(): void
+    public function test_the_email_carries_the_members_own_signed_claim_link_without_their_email(): void
     {
-        $member = User::factory()->create(['name' => 'Aisyah', 'email' => 'aisyah@example.com', 'activated_at' => null]);
+        $member = User::factory()->create(['name' => 'Aisyah', 'email' => 'aisyah@example.com', 'activated_at' => null, 'invited_at' => now()]);
 
         $mail = (new MemberInvitation)->toMail($member);
         $html = view($mail->view['html'], $mail->viewData)->render();
         $text = view($mail->view['text'], $mail->viewData)->render();
 
-        $this->assertSame(route('claim'), $mail->viewData['url']);
-        $this->assertStringContainsString('href="'.route('claim').'"', $html);
+        $url = $mail->viewData['url'];
+        $this->assertSame(app(AccountClaimService::class)->link($member), $url);
+        $this->assertStringContainsString('signature=', $url);
+        $this->assertStringNotContainsString('aisyah', $url);
+        $this->assertStringContainsString('href="'.e($url).'"', $html);
         $this->assertStringContainsString('aisyah@example.com', $html);
         $this->assertStringContainsString('Join PENTANA, Aisyah!', $html);
-        $this->assertStringContainsString('Join now: '.route('claim'), $text);
+        $this->assertStringContainsString('Join now: '.$url, $text);
     }
 
     public function test_the_email_follows_the_member_language(): void

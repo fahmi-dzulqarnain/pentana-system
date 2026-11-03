@@ -4,6 +4,7 @@ namespace App\Providers\Filament;
 
 use App\Filament\Auth\Login;
 use App\Filament\Auth\Profile;
+use App\Filament\Auth\RequestPasswordReset;
 use App\Http\Middleware\EnsureAdminMultiFactorAuthentication;
 use App\Http\Middleware\SetLocale;
 use App\Models\User;
@@ -40,6 +41,7 @@ class AccountPanelProvider extends PanelProvider
             ->id('account')
             ->path('account')
             ->login(Login::class)
+            ->passwordReset(RequestPasswordReset::class)
             ->profile(Profile::class, isSimple: false)
             // Required panel-wide so Filament registers the set-up page; the middleware narrows it
             // to admins past config('auth.admin_mfa_enforced_from'). Passkey sign-in skips the

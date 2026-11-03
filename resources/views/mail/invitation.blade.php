@@ -25,7 +25,7 @@
 @section('content')
     <p style="margin:0 0 22px;">{{ __('Your organisation has set up a :app membership for you. Here is what it includes and what it costs.', ['app' => config('app.name')]) }}</p>
 
-    {{-- The offer: their fee, then the address they will type on the claim page. --}}
+    {{-- The offer: their fee, then the address the account belongs to. --}}
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 28px;">
         <tr>
             <td class="em-ticket" bgcolor="#fffbeb" style="background:#fffbeb;border:2px dashed #d97706;border-radius:16px;padding:20px 22px;">
@@ -64,7 +64,7 @@
     <p class="em-strong" style="margin:0 0 12px;font-weight:700;font-size:17px;color:#1c1917;">{{ __('How to join') }}</p>
     <table role="presentation" cellpadding="0" cellspacing="0" border="0">
         @foreach ([
-            __('Open the claim page and enter the email above.'),
+            __('Tap Join now. The link is yours alone, so please don\'t forward this email.'),
             __('Confirm your date of birth and choose a password.'),
             __('Pay your monthly fee in the app by uploading your payment proof.'),
         ] as $step)

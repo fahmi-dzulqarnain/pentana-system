@@ -6,9 +6,11 @@ use App\Http\Middleware\SetLocale;
 use App\Mail\BudgetedTransport;
 use App\Models\DeviceToken;
 use App\Models\User;
+use App\Notifications\PasswordResetLink;
 use App\Services\BankStatements\PdftotextExtractor;
 use App\Services\BankStatements\StatementTextExtractor;
 use App\Support\TimeFormat;
+use Filament\Auth\Notifications\ResetPassword as FilamentResetPassword;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Field;
@@ -20,6 +22,7 @@ use Filament\Support\Facades\FilamentAsset;
 use Filament\Tables\Columns\Column;
 use Filament\Tables\Filters\BaseFilter;
 use Filament\Tables\Table;
+use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Notifications\Events\NotificationFailed;
 use Illuminate\Notifications\Events\NotificationSending;
 use Illuminate\Notifications\Events\NotificationSent;
@@ -39,6 +42,8 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(StatementTextExtractor::class, PdftotextExtractor::class);
+        // Filament's reset email is ShouldQueue, which never sends here (no queue worker).
+        $this->app->bind(FilamentResetPassword::class, PasswordResetLink::class);
     }
 
     /**
@@ -116,6 +121,13 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(NotificationSending::class, fn (NotificationSending $e) => TimeFormat::useRecipient($e->notifiable instanceof User ? $e->notifiable : null));
         Event::listen(NotificationSent::class, fn () => TimeFormat::useRecipient(null));
         Event::listen(NotificationFailed::class, fn () => TimeFormat::useRecipient(null));
+
+        // A reset is often the answer to "someone else knows my password": sign the phones out too.
+        Event::listen(PasswordReset::class, function (PasswordReset $e): void {
+            if ($e->user instanceof User) {
+                $e->user->tokens()->delete();
+            }
+        });
 
         // A token APNs says is dead (app deleted, push turned off) would otherwise keep the
         // member off email for good, since routine notices go push-only to token holders.

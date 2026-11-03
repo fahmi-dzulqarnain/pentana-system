@@ -4,9 +4,9 @@ namespace Tests\Feature\Onboarding;
 
 use App\Filament\Auth\Login;
 use App\Filament\Resources\Users\Pages\ListUsers;
-use App\Livewire\ClaimAccount;
 use App\Models\Payment\FeePeriod;
 use App\Models\User;
+use App\Services\AccountClaimService;
 use App\Services\MemberAccess;
 use App\Services\MemberInviter;
 use Filament\Facades\Filament;
@@ -16,6 +16,7 @@ use Tests\TestCase;
 
 class ManualDisableTest extends TestCase
 {
+    use OpensClaimLinks;
     use RefreshDatabase;
 
     private function member(array $attributes = []): User
@@ -78,11 +79,9 @@ class ManualDisableTest extends TestCase
         $this->assertFalse(FeePeriod::where('user_id', $claimed->id)->exists());
 
         $this->assertFalse(app(MemberInviter::class)->canInvite($unclaimed));
-        Livewire::test(ClaimAccount::class)
-            ->set('email', 'new@example.com')
-            ->call('lookup')
-            ->assertSet('stage', 'lookup')
-            ->assertSet('lookupMessage', 'This account has been disabled. Please contact your admin.');
+        $this->assertNull(app(AccountClaimService::class)->claimable('new@example.com'));
+        $unclaimed->forceFill(['invited_at' => now()])->save();
+        $this->openClaimLink($unclaimed)->assertSet('linkValid', false);
     }
 
     public function test_admins_can_disable_and_enable_from_the_users_table(): void

@@ -17,7 +17,7 @@ class ClaimPageBrandingTest extends TestCase
             ->assertSee('class="guest-header"', false)
             ->assertSee('images/pentana-mark.png', false)
             ->assertSee('href="/" aria-label="PENTANA home"', false)
-            ->assertSee('Next, you will confirm your details and choose a password.')
+            ->assertSee('We will email you a link to set your password.')
             ->assertSee('Already activated your account?')
             ->assertSee('href="/account/login"', false);
     }

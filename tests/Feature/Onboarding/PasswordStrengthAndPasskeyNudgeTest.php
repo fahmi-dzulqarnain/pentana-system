@@ -4,7 +4,6 @@ namespace Tests\Feature\Onboarding;
 
 use App\Filament\Auth\Profile;
 use App\Filament\Pages\Welcome;
-use App\Livewire\ClaimAccount;
 use App\Livewire\PasskeyNudge;
 use App\Livewire\PasskeyWelcome;
 use App\Models\User;
@@ -19,6 +18,7 @@ use Tests\TestCase;
 
 class PasswordStrengthAndPasskeyNudgeTest extends TestCase
 {
+    use OpensClaimLinks;
     use RefreshDatabase;
 
     private const BANNER = 'Add a passkey for faster sign-in';
@@ -32,14 +32,12 @@ class PasswordStrengthAndPasskeyNudgeTest extends TestCase
 
     private function unclaimed(): User
     {
-        return User::factory()->create(['email' => 'aisyah@example.com', 'password' => null, 'activated_at' => null]);
+        return User::factory()->create(['email' => 'aisyah@example.com', 'password' => null, 'activated_at' => null, 'invited_at' => now()]);
     }
 
     private function claimWith(string $password)
     {
-        return Livewire::test(ClaimAccount::class)
-            ->set('email', 'aisyah@example.com')
-            ->call('lookup')
+        return $this->openClaimLink(User::where('email', 'aisyah@example.com')->sole())
             ->fillForm(['birthday' => '1995-04-12', 'password' => $password, 'password_confirmation' => $password])
             ->call('submit');
     }
@@ -122,10 +120,7 @@ class PasswordStrengthAndPasskeyNudgeTest extends TestCase
 
     public function test_the_claim_and_profile_pages_show_the_meter_and_its_credit(): void
     {
-        $this->unclaimed();
-        Livewire::test(ClaimAccount::class)
-            ->set('email', 'aisyah@example.com')
-            ->call('lookup')
+        $this->openClaimLink($this->unclaimed())
             ->assertSee('At least 12 characters')
             ->assertSee('Checked against known breaches when you continue')
             ->assertSeeHtml('https://pages.nist.gov/800-63-4/sp800-63b.html');

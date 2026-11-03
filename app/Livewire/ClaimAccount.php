@@ -23,22 +23,32 @@ class ClaimAccount extends Component implements HasSchemas
 {
     use InteractsWithSchemas;
 
-    public string $email = '';
+    /** Session keys holding the member a valid link pointed at. Server-side, so the client can't swap them. */
+    private const SESSION_USER = 'claim.user_id';
 
-    /** @var 'lookup'|'claim' */
-    public string $stage = 'lookup';
+    private const SESSION_INVITED = 'claim.invited_at';
 
-    public ?string $lookupMessage = null;
-
-    public ?int $userId = null;
+    public bool $linkValid = false;
 
     public string $memberName = '';
 
     /** @var array<string, mixed> */
     public array $data = [];
 
-    public function mount(): void
+    /** Reached only through the signed link in the invitation email (the route checks the signature). */
+    public function mount(int $user): void
     {
+        $invited = (int) request()->query('invited');
+        $member = app(AccountClaimService::class)->userForLink($user, $invited);
+
+        session()->forget([self::SESSION_USER, self::SESSION_INVITED]);
+
+        if ($member !== null) {
+            session()->put([self::SESSION_USER => $member->id, self::SESSION_INVITED => $invited]);
+            $this->linkValid = true;
+            $this->memberName = $member->name;
+        }
+
         // Initialize the form state up front so the Wizard's fields have resolvable
         // Livewire properties. The native(false) date picker uses
         // $wire.entangle('data.birthday') in the browser, which throws
@@ -46,30 +56,12 @@ class ClaimAccount extends Component implements HasSchemas
         $this->claimForm->fill();
     }
 
-    public function lookup(): void
+    /** The member this session's link proved, re-checked so a claimed or superseded link stops working. */
+    private function member(): ?User
     {
-        $this->validate(['email' => 'required|email']);
+        $id = session(self::SESSION_USER);
 
-        $user = app(AccountClaimService::class)->claimable($this->email);
-
-        if ($user) {
-            $this->userId = $user->id;
-            $this->memberName = $user->name;
-            $this->stage = 'claim';
-            $this->lookupMessage = null;
-
-            return;
-        }
-
-        $existing = User::where('email', trim($this->email))->first();
-        $this->lookupMessage = match (true) {
-            (bool) $existing?->isManuallyDisabled() => __('This account has been disabled. Please contact your admin.'),
-            (bool) $existing?->invitationExpired() => __('Your invitation expired on :date. Ask your admin to send you a new one.', [
-                'date' => $existing->invitationExpiresAt()->translatedFormat('j F Y'),
-            ]),
-            $existing !== null => __('This account is already active. Please log in.'),
-            default => __("We couldn't find that email. Please check with your admin."),
-        };
+        return $id === null ? null : app(AccountClaimService::class)->userForLink((int) $id, (int) session(self::SESSION_INVITED));
     }
 
     public function claimForm(Schema $schema): Schema
@@ -95,7 +87,7 @@ class ClaimAccount extends Component implements HasSchemas
                                 ->password()
                                 ->required()
                                 ->rule(Password::defaults())
-                                ->belowContent(fn (): Htmlable => PasswordStrengthMeter::make([$this->email, $this->memberName]))
+                                ->belowContent(fn (): Htmlable => PasswordStrengthMeter::make(array_filter([$this->member()?->email, $this->memberName])))
                                 ->confirmed(),
                             TextInput::make('password_confirmation')
                                 ->password()
@@ -111,16 +103,16 @@ class ClaimAccount extends Component implements HasSchemas
 
     public function submit(): void
     {
-        // Never trust client-controllable state (e.g. $userId) for WHO gets claimed: re-resolve
-        // the target from the validated email at submit time. This keeps a claim strictly at
-        // "the owner of this email" and blocks activating an arbitrary account by tampering the id.
-        $user = app(AccountClaimService::class)->claimable($this->email);
+        // WHO gets claimed comes from the session the signed link set up, never from component
+        // state the browser can change.
+        $user = $this->member();
         abort_if($user === null, 403);
 
         $state = $this->claimForm->getState();
 
         app(AccountClaimService::class)->claim($user, $state['birthday'], $state['password']);
 
+        session()->forget([self::SESSION_USER, self::SESSION_INVITED]);
         Auth::login($user);
 
         // Freshly-activated members are offered a passkey before anything else.

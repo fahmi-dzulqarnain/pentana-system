@@ -54,50 +54,20 @@
         }
     </style>
 
-    @if ($stage === 'lookup')
+    @if (! $linkValid)
         <div style="width:100%;max-width:28rem;margin:0 auto;padding:3rem 1.5rem;box-sizing:border-box;">
             <h1 style="font-size:1.5rem;font-weight:700;margin:0 0 0.25rem;color:#111827;">
-                {{ __('Activate your account') }}
+                {{ __('This link no longer works') }}
             </h1>
 
             <p style="margin:0 0 1.5rem;color:#6b7280;">
-                {{ __('Enter the email your admin registered for you.') }}
+                {{ __('It may have expired, been replaced by a newer invitation, or the account is already active.') }}
             </p>
 
-            <form wire:submit="lookup">
-                <label for="claim-email" style="display:block;font-size:0.875rem;font-weight:500;margin-bottom:0.375rem;color:#374151;">
-                    {{ __('Email address') }}
-                </label>
-                <input
-                    id="claim-email"
-                    type="email"
-                    wire:model="email"
-                    autocomplete="email"
-                    style="width:100%;box-sizing:border-box;padding:0.625rem 0.75rem;border:1px solid #d1d5db;border-radius:0.5rem;font-size:0.95rem;"
-                >
-                @error('email')
-                    <p style="margin:0.375rem 0 0;color:#dc2626;font-size:0.8125rem;">{{ $message }}</p>
-                @enderror
-
-                @if ($lookupMessage)
-                    <div style="margin-top:1rem;padding:0.75rem 1rem;border:1px solid #fcd34d;background-color:#fffbeb;border-radius:0.5rem;color:#92400e;font-size:0.875rem;">
-                        {{ $lookupMessage }}
-                        <a href="/account/login" wire:navigate style="color:inherit;font-weight:600;text-decoration:underline;">{{ __('Go to sign in') }}</a>
-                    </div>
-                @endif
-
-                <button
-                    type="submit"
-                    style="margin-top:1.5rem;width:100%;padding:0.625rem 1rem;border:none;border-radius:0.5rem;background-color:#f59e0b;color:#ffffff;font-size:0.95rem;font-weight:600;cursor:pointer;"
-                >
-                    <span wire:loading.remove wire:target="lookup">{{ __('Find my account') }}</span>
-                    <span wire:loading wire:target="lookup">{{ __('Searching…') }}</span>
-                </button>
-
-                <p style="margin:0.75rem 0 0;font-size:0.8125rem;color:#6b7280;">
-                    {{ __('Next, you will confirm your details and choose a password.') }}
-                </p>
-            </form>
+            <a href="{{ route('claim') }}" wire:navigate
+                style="display:block;text-align:center;padding:0.625rem 1rem;border-radius:0.5rem;background-color:#f59e0b;color:#ffffff;font-size:0.95rem;font-weight:600;text-decoration:none;">
+                {{ __('Email me a new link') }}
+            </a>
 
             <p style="margin:2rem 0 0;padding-top:1.25rem;border-top:1px solid #e5e7eb;text-align:center;font-size:0.875rem;color:#4b5563;">
                 {{ __('Already activated your account?') }}

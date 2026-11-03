@@ -5,6 +5,7 @@ use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\LunchPrintController;
 use App\Http\Controllers\SupportAttachmentController;
 use App\Livewire\ClaimAccount;
+use App\Livewire\RequestClaimLink;
 use App\Models\AndroidRelease;
 use Illuminate\Support\Facades\Route;
 
@@ -30,7 +31,12 @@ Route::get('/support/messages/{message}/attachment', SupportAttachmentController
     ->middleware('auth')
     ->name('support.attachment');
 
-Route::get('/claim', ClaimAccount::class)->name('claim');
+Route::get('/claim', RequestClaimLink::class)->name('claim');
+// The signed link from the invitation email; the signature carries the proof of inbox ownership.
+Route::get('/claim/{user}', ClaimAccount::class)
+    ->whereNumber('user')
+    ->middleware(['signed', 'throttle:30,1'])
+    ->name('claim.accept');
 Route::post('/locale', [LocaleController::class, 'update'])->name('locale.update');
 
 // spatie/laravel-passkeys route macro. NOT auto-registered by the package -
