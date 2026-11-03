@@ -866,5 +866,14 @@
     "Use a different email": "Gunakan email lain",
     "Enter the email your admin registered for you. We will email you a link to set your password.": "Masukkan email yang didaftarkan admin untuk Anda. Kami akan mengirimkan tautan untuk mengatur kata sandi Anda.",
     "Email me my link": "Kirimi saya tautan",
-    "Sending…": "Mengirim…"
+    "Sending…": "Mengirim…",
+    "Bank": "Bank",
+    "Account number": "Nomor rekening",
+    "Account name": "Nama rekening",
+    "Copy": "Salin",
+    "Copied": "Tersalin",
+    "DuitNow QR for :name": "DuitNow QR untuk :name",
+    "How to pay": "Cara membayar",
+    "Transfer to this account or scan the DuitNow QR, using your reference.": "Transfer ke rekening ini atau pindai DuitNow QR, dengan menggunakan referensi Anda.",
+    "Download": "Unduh"
 }

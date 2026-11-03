@@ -64,4 +64,18 @@ class BillsTest extends TestCase
             ->assertJsonPath('data.bill_count', 2)
             ->assertJsonPath('data.unpaid_count', 2);
     }
+
+    public function test_summary_carries_the_bank_transfer_details_and_the_members_reference(): void
+    {
+        $member = User::factory()->create();
+        Sanctum::actingAs($member);
+
+        $this->getJson('/api/v1/bills/summary')
+            ->assertOk()
+            ->assertJsonPath('data.payment_details.bank_name', 'CIMB Bank')
+            ->assertJsonPath('data.payment_details.account_number', '8605765606')
+            ->assertJsonPath('data.payment_details.account_name', 'KELAB PENTANA')
+            ->assertJsonPath('data.payment_details.reference', $member->payment_reference)
+            ->assertJsonPath('data.payment_details.qr_url', asset('images/duitnow-qr.jpg'));
+    }
 }

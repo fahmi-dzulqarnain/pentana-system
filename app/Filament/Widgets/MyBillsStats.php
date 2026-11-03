@@ -10,7 +10,7 @@ use Illuminate\Support\Collection;
 
 class MyBillsStats extends StatsOverviewWidget
 {
-    protected static ?int $sort = -4;
+    protected static ?int $sort = -5;
 
     protected ?Collection $bills = null;
 

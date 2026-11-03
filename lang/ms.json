@@ -866,5 +866,14 @@
     "Use a different email": "Guna e-mel lain",
     "Enter the email your admin registered for you. We will email you a link to set your password.": "Masukkan e-mel yang didaftarkan untuk anda oleh pentadbir. Kami akan menghantar pautan untuk menetapkan kata laluan anda.",
     "Email me my link": "E-melkan pautan saya",
-    "Sending…": "Menghantar…"
+    "Sending…": "Menghantar…",
+    "Bank": "Bank",
+    "Account number": "Nombor akaun",
+    "Account name": "Nama akaun",
+    "Copy": "Salin",
+    "Copied": "Disalin",
+    "DuitNow QR for :name": "DuitNow QR untuk :name",
+    "How to pay": "Cara membayar",
+    "Transfer to this account or scan the DuitNow QR, using your reference.": "Pindahkan ke akaun ini atau imbas DuitNow QR, dengan menggunakan rujukan anda.",
+    "Download": "Muat turun"
 }
