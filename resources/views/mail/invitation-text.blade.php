@@ -19,7 +19,7 @@ MYR {!! $fee !!} {!! __('/ month') !!}
 - {!! __('Everything in one app') !!}: {!! __('Dues, receipts and reminders on the web, iPhone and iPad.') !!}
 
 {!! __('How to join') !!}
-1. {!! __('Open the claim page and enter the email above.') !!}
+1. {!! __('Tap Join now. The link is yours alone, so please don\'t forward this email.') !!}
 2. {!! __('Confirm your date of birth and choose a password.') !!}
 3. {!! __('Pay your monthly fee in the app by uploading your payment proof.') !!}
 

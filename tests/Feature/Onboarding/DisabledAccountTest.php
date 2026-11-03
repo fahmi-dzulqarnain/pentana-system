@@ -4,7 +4,6 @@ namespace Tests\Feature\Onboarding;
 
 use App\Filament\Auth\Login;
 use App\Filament\Resources\Users\Pages\ListUsers;
-use App\Livewire\ClaimAccount;
 use App\Models\Lunch;
 use App\Models\Payment\FeePeriod;
 use App\Models\User;
@@ -22,6 +21,7 @@ use Tests\TestCase;
 
 class DisabledAccountTest extends TestCase
 {
+    use OpensClaimLinks;
     use RefreshDatabase;
 
     protected function setUp(): void
@@ -66,11 +66,9 @@ class DisabledAccountTest extends TestCase
 
         $this->assertNull(app(AccountClaimService::class)->claimable('late@example.com'));
 
-        Livewire::test(ClaimAccount::class)
-            ->set('email', 'late@example.com')
-            ->call('lookup')
-            ->assertSet('stage', 'lookup')
-            ->assertSet('lookupMessage', 'Your invitation expired on '.$user->invitationExpiresAt()->translatedFormat('j F Y').'. Ask your admin to send you a new one.');
+        // An old link stops working with the invitation, even with a signature that hadn't expired yet.
+        $this->openClaimLink($user)->assertSet('linkValid', false)->call('submit')->assertForbidden();
+        $this->assertNull($user->fresh()->activated_at);
     }
 
     public function test_a_disabled_member_is_told_why_they_cannot_log_in(): void

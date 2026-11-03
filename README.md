@@ -31,9 +31,9 @@ Admins and members share a single Filament panel (`/account`), gated per-resourc
   **check-in**, optional per-activity **registration questions**, and ~1-day reminders.
 - **Welfare** — auto-emails (birthday + one-off, RichEditor body); member birthday on the
   profile (admin-editable) and a daily birthday-email send.
-- **Onboarding** — bulk member import, **self-claim** at `/claim` (email lookup → set
-  birthday + password), **passkeys**, and login gating with a friendly "claim your account"
-  nudge.
+- **Onboarding** — bulk member import, **self-claim** through the signed link in the
+  invitation email (`/claim` re-sends it; set birthday + password), **forgot password**,
+  **passkeys**, and login gating with a friendly "claim your account" nudge.
 - **Member API** (`/api/v1`) — Sanctum-token auth (`login`/`logout`/`me`), `bills` +
   `bills/summary`, and payment-proof list + multipart submit. Consumed by the mobile app.
 
