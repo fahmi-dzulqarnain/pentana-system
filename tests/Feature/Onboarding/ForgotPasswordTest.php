@@ -3,6 +3,7 @@
 namespace Tests\Feature\Onboarding;
 
 use App\Filament\Auth\RequestPasswordReset;
+use App\Models\DeviceToken;
 use App\Models\QueuedEmail;
 use App\Models\User;
 use App\Notifications\MemberInvitation;
@@ -68,6 +69,19 @@ class ForgotPasswordTest extends TestCase
         }
         $this->assertSame('10', $email->getHeaders()->get(QueuedEmail::PRIORITY_HEADER)->getBodyAsString());
         $this->assertNotNull($email->getHeaders()->get(QueuedEmail::EXPIRES_HEADER));
+    }
+
+    public function test_account_emails_still_go_by_email_when_the_member_has_push_on(): void
+    {
+        // Routine notices go push-instead-of-email to members with the app; these must not:
+        // the link is the point, and only email proves the inbox.
+        config(['broadcasting.connections.apn.key_id' => 'test-key']);
+        $user = $this->member();
+        DeviceToken::create(['user_id' => $user->id, 'token' => str_repeat('a', 64), 'platform' => 'ios']);
+        $this->assertNotEmpty($user->routeNotificationForApn());
+
+        $this->assertSame(['mail'], (new PasswordResetLink('token'))->via($user));
+        $this->assertSame(['mail'], (new MemberInvitation)->via($user));
     }
 
     public function test_an_unknown_address_gets_the_same_answer_and_no_email(): void
