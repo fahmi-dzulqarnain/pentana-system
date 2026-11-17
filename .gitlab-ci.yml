@@ -5,6 +5,19 @@
 #   SONAR_HOST_URL  e.g. https://sonarqube.example.internal
 #   SONAR_TOKEN     project analysis token from SonarQube
 
+# ── SonarQube Analysis ───────────────────────────────────────────────
+# needs: [] is deliberate — this is a source-only scan. No coverage report
+# is produced in this pipeline, so there is nothing for the job to wait on
+# or import.
+include:
+  - component: $CI_SERVER_FQDN/silentmode/components/sonarqube@1.0.0
+    inputs:
+      stage: scan
+      needs: []
+      # Report-only until the first baseline is reviewed; flip to false to
+      # make a failing quality gate fail the pipeline.
+      allow-failure: true
+
 stages:
   - scan
 
@@ -26,24 +39,3 @@ dependencies:
   script:
     # Abandoned packages are listed but only security advisories fail the job.
     - composer audit --locked --no-interaction --abandoned=report
-
-sonarqube:
-  stage: scan
-  image:
-    name: sonarsource/sonar-scanner-cli:11
-    entrypoint: [""]
-  variables:
-    SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"
-  cache:
-    key: sonar
-    paths:
-      - .sonar/cache
-  script:
-    - sonar-scanner -Dsonar.qualitygate.wait=true
-  # Report-only until the first baseline is reviewed; flip to false to
-  # make a failing quality gate fail the pipeline.
-  allow_failure: true
-  rules:
-    # Community Build only keeps one branch; analysing other branches
-    # would overwrite main's results.
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
