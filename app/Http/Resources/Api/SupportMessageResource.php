@@ -23,7 +23,17 @@ class SupportMessageResource extends JsonResource
             'from_committee' => $this->from_committee,
             'is_mine' => $this->user_id === $request->user()?->id,
             'created_at' => $this->created_at?->toIso8601String(),
-            'attachment_url' => $this->attachment_path ? route('api.support-tickets.attachment', $this->resource) : null,
+            // Images only: app builds before PDF support decode this URL as an image.
+            'attachment_url' => $this->attachment_path && ! $this->attachmentIsPdf() ? $this->attachmentUrl() : null,
+            'attachment' => $this->attachment_path ? [
+                'url' => $this->attachmentUrl(),
+                'type' => $this->attachmentIsPdf() ? 'pdf' : 'image',
+            ] : null,
         ];
+    }
+
+    private function attachmentUrl(): string
+    {
+        return route('api.support-tickets.attachment', $this->resource);
     }
 }

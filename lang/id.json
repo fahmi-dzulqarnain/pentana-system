@@ -875,5 +875,8 @@
     "DuitNow QR for :name": "DuitNow QR untuk :name",
     "How to pay": "Cara membayar",
     "Transfer to this account or scan the DuitNow QR, using your reference.": "Transfer ke rekening ini atau pindai DuitNow QR, dengan menggunakan referensi Anda.",
-    "Download": "Unduh"
+    "Download": "Unduh",
+    "Attachment (optional)": "Lampiran (opsional)",
+    "An image or a PDF, up to 10 MB.": "Gambar atau PDF, maksimal 10 MB.",
+    "PDF attachment": "Lampiran PDF"
 }

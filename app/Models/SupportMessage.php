@@ -21,6 +21,18 @@ class SupportMessage extends Model
         return ['from_committee' => 'boolean'];
     }
 
+    /** Members attach screenshots; admins may also attach a PDF (a receipt, a form). */
+    public function attachmentIsPdf(): bool
+    {
+        return $this->attachment_path !== null && str_ends_with(strtolower($this->attachment_path), '.pdf');
+    }
+
+    /** A readable name for the browser's save dialog instead of the random stored one. */
+    public function attachmentDownloadName(): string
+    {
+        return "ticket-{$this->support_ticket_id}-attachment.".pathinfo($this->attachment_path, PATHINFO_EXTENSION);
+    }
+
     public function ticket(): BelongsTo
     {
         return $this->belongsTo(SupportTicket::class, 'support_ticket_id');
