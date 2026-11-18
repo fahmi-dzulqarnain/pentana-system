@@ -115,6 +115,8 @@ class AppServiceProvider extends ServiceProvider
         }
         DatePicker::configureUsing(fn (DatePicker $picker) => $picker->displayFormat(self::DATE_FORMAT));
         DateTimePicker::configureUsing(fn (DateTimePicker $picker) => $picker->displayFormat(fn (): string => self::dateTimeFormat()));
+        // 12-hour times read "2:30 PM" in every language, whatever Carbon's locale files say.
+        TimeFormat::keepAmPm();
 
         // Each notification is rendered once per recipient (inside their language); render its
         // times in their clock too, then fall back to the signed-in user.
