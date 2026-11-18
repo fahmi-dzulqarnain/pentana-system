@@ -14,6 +14,7 @@ class ActivityFactory extends Factory
     {
         return [
             'title' => fake()->sentence(3),
+            'overview' => fake()->sentence(),
             'description' => fake()->paragraph(),
             'starts_at' => now()->addWeek(),
             'location' => fake()->city(),
