@@ -39,8 +39,8 @@ class NotificationsLocalisedTest extends TestCase
 
         $this->assertSame('en', app()->getLocale(), 'locale leaked out of the send');
 
-        // Day/month names follow the recipient; the meridiem stays AM/PM, matching the portal's
-        // translatedFormat() output (Carbon keeps the 'en' fallback meridiem under a global locale).
+        // Day/month names follow the recipient; the meridiem stays AM/PM in every language
+        // (TimeFormat::keepAmPm()), matching the portal.
         $text = fn (User $u) => json_encode($u->notifications()->first()->data, JSON_UNESCAPED_UNICODE);
         $this->assertStringContainsString('"title":"Menu makan tengah hari diterbitkan: ', $text($ms));
         $this->assertStringContainsString('"body":"Pesan sebelum 12:00 PM, Jum 6 Nov."', $text($ms));

@@ -10,6 +10,7 @@ use App\Notifications\ActivityPublished;
 use App\Support\TimeFormat;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Notification;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -95,5 +96,26 @@ class TimeFormatPreferenceTest extends TestCase
 
         // After the send, the signed-in admin's own clock applies again.
         $this->assertSame('H:i', TimeFormat::time());
+    }
+
+    public function test_the_twelve_hour_clock_says_am_and_pm_in_every_language(): void
+    {
+        // Carbon's own ms/id locales would say "9:00 pagi", "12:00 tengah hari", "2:30 siang".
+        foreach (['en', 'ms', 'id'] as $locale) {
+            app()->setLocale($locale);
+
+            foreach (['09:00' => '9:00 AM', '12:00' => '12:00 PM', '14:30' => '2:30 PM', '00:15' => '12:15 AM'] as $time => $expected) {
+                $at = Carbon::parse("2026-10-24 $time");
+
+                $this->assertSame($expected, $at->translatedFormat('g:i A'), "$locale $time");
+                $this->assertSame(strtolower($expected), $at->translatedFormat('g:i a'), "$locale $time lowercase");
+                // The same through a date given its own language rather than the app's.
+                $this->assertSame($expected, $at->copy()->locale($locale)->translatedFormat('g:i A'), "$locale $time own locale");
+            }
+        }
+
+        // Day and month names are still translated.
+        app()->setLocale('ms');
+        $this->assertSame('Sabtu, 24 Okt · 2:30 PM', Carbon::parse('2026-10-24 14:30')->translatedFormat('l, j M · g:i A'));
     }
 }
