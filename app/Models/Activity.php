@@ -68,7 +68,7 @@ class Activity extends Model
         $cut = mb_substr($text, 0, $limit - 1);
         $lastSpace = mb_strrpos($cut, ' ');
 
-        return rtrim($lastSpace ? mb_substr($cut, 0, $lastSpace) : $cut, " ,.;:-").'…';
+        return rtrim($lastSpace ? mb_substr($cut, 0, $lastSpace) : $cut, ' ,.;:-').'…';
     }
 
     /** The short summary for lists and cards: the admin's overview, else an excerpt of the full description. */
