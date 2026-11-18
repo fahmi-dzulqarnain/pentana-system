@@ -60,7 +60,7 @@
             @endif
 
             <div class="ma-foot">
-                @if(filled($activity->description))
+                @if($activity->hasFullDescription())
                     <button type="button" class="ma-btn" wire:click="viewDetails({{ $activity->id }})">{{ __('View details') }}</button>
                 @endif
                 @if($status === 'registered')
@@ -133,7 +133,7 @@
                 @if($viewing->location)
                     <div class="ma-meta" style="margin:-0.5rem 0 1rem;">📍 {{ $viewing->location }}</div>
                 @endif
-                <div class="ma-rich">{!! str($viewing->fullDescriptionHtml())->sanitizeHtml() !!}</div>
+                <div class="ma-rich">{{-- fullDescriptionHtml() is already sanitised --}}{!! $viewing->fullDescriptionHtml() !!}</div>
                 <div class="ma-modal-actions">
                     <button type="button" class="ma-btn" wire:click="closeDetails">{{ __('Close') }}</button>
                 </div>

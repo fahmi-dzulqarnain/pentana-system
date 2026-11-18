@@ -78,16 +78,27 @@ class Activity extends Model
     }
 
     /**
-     * The full description HTML with every uploaded image pointed at its current public-disk URL
+     * True when the full description has real content. An editor left empty still saves
+     * "<p></p>", which must not count (no empty "View details", null in the API).
+     */
+    public function hasFullDescription(): bool
+    {
+        return filled($this->description)
+            && (self::plainTextExcerpt($this->description) !== null || stripos($this->description, '<img') !== false);
+    }
+
+    /**
+     * The full description HTML, sanitised (no scripts or event handlers, for the web page and
+     * any app WebView alike), with every uploaded image pointed at its current public-disk URL
      * (rebuilt from the stored `data-id` path, so a changed APP_URL never breaks old images).
      */
     public function fullDescriptionHtml(): ?string
     {
-        if (blank($this->description)) {
+        if (! $this->hasFullDescription()) {
             return null;
         }
 
-        return preg_replace_callback('~<img\b[^>]*>~i', function (array $match): string {
+        $html = preg_replace_callback('~<img\b[^>]*>~i', function (array $match): string {
             $tag = $match[0];
 
             if (! preg_match('~\sdata-id\s*=\s*"([^"]*)"~i', $tag, $id) || $id[1] === '') {
@@ -100,6 +111,8 @@ class Activity extends Model
                 ? preg_replace('~(\s)src\s*=\s*"[^"]*"~i', '$1'.$src, $tag, 1)
                 : preg_replace('~^<img\b~i', '<img '.$src, $tag, 1);
         }, $this->description);
+
+        return (string) str($html)->sanitizeHtml();
     }
 
     public function registrations(): HasMany

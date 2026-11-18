@@ -282,4 +282,14 @@ class MyActivitiesPageTest extends TestCase
             ->call('viewDetails', $draft->id)
             ->assertDontSee('Secret plans');
     }
+
+    public function test_an_activity_saved_without_a_full_description_has_no_details(): void
+    {
+        $this->published(['overview' => 'Only a blurb', 'description' => '<p></p>']);
+        $this->actAsPanelUser();
+
+        Livewire::test(MyActivities::class)
+            ->assertSee('Only a blurb')
+            ->assertDontSee(__('View details'));
+    }
 }

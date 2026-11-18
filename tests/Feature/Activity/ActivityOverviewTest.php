@@ -88,4 +88,25 @@ class ActivityOverviewTest extends TestCase
         $this->assertSame("Tom's & friends", DB::table('activities')->find($id)->overview);
         $this->assertSame('Written by an admin', DB::table('activities')->find($kept)->overview);
     }
+
+    public function test_an_empty_editor_paragraph_counts_as_no_full_description(): void
+    {
+        $empty = Activity::factory()->make(['description' => '<p></p>']);
+        $imageOnly = Activity::factory()->make(['description' => '<p><img src="x" data-id="activity-images/a.jpg"></p>']);
+
+        $this->assertNull($empty->fullDescriptionHtml());
+        $this->assertFalse($empty->hasFullDescription());
+        $this->assertTrue($imageOnly->hasFullDescription());
+    }
+
+    public function test_full_description_is_sanitised_for_every_client(): void
+    {
+        $html = Activity::factory()->make([
+            'description' => '<p>Hi</p><img src="https://example.com/x.png" onerror="alert(1)"><script>alert(2)</script>',
+        ])->fullDescriptionHtml();
+
+        $this->assertStringContainsString('https://example.com/x.png', $html);
+        $this->assertStringNotContainsString('onerror', $html);
+        $this->assertStringNotContainsString('alert(2)', $html);
+    }
 }

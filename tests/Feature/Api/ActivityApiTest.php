@@ -172,4 +172,12 @@ class ActivityApiTest extends TestCase
             ->assertJsonPath('data.0.description', 'Bring water & shoes')
             ->assertJsonPath('data.0.overview', 'Bring water & shoes');
     }
+
+    public function test_full_description_is_null_when_the_editor_was_left_empty(): void
+    {
+        $this->published(['overview' => 'Blurb', 'description' => '<p></p>']);
+        Sanctum::actingAs(User::factory()->create());
+
+        $this->getJson('/api/v1/activities')->assertOk()->assertJsonPath('data.0.full_description', null);
+    }
 }
