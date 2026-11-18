@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Notifications\ActivityCancelled;
 use App\Notifications\ActivityPublished;
 use Filament\Facades\Filament;
+use Filament\Forms\Components\RichEditor;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Livewire\Livewire;
@@ -41,6 +42,7 @@ class ActivityAdminTest extends TestCase
         Livewire::test(CreateActivity::class)
             ->fillForm([
                 'title' => 'Annual Dinner',
+                'overview' => 'A short summary.',
                 'starts_at' => now()->addMonth(),
                 'capacity' => 50,
                 'location' => 'Grand Hall',
@@ -55,11 +57,56 @@ class ActivityAdminTest extends TestCase
         ]);
     }
 
+    public function test_overview_is_required_and_capped_at_200_characters(): void
+    {
+        Livewire::test(CreateActivity::class)
+            ->fillForm(['title' => 'Annual Dinner', 'starts_at' => now()->addMonth(), 'overview' => null])
+            ->call('create')
+            ->assertHasFormErrors(['overview' => 'required']);
+
+        Livewire::test(CreateActivity::class)
+            ->fillForm(['title' => 'Annual Dinner', 'starts_at' => now()->addMonth(), 'overview' => str_repeat('a', 201)])
+            ->call('create')
+            ->assertHasFormErrors(['overview' => 'max']);
+    }
+
+    public function test_full_description_uploads_images_to_the_public_disk(): void
+    {
+        Livewire::test(CreateActivity::class)
+            ->assertFormFieldExists('description', function (RichEditor $editor): bool {
+                return $editor->getFileAttachmentsDiskName() === 'public'
+                    && $editor->getFileAttachmentsDirectory() === 'activity-images'
+                    && $editor->getFileAttachmentsVisibility() === 'public'
+                    && $editor->hasToolbarButton('attachFiles')
+                    && $editor->getFileAttachmentsMaxSize() === 5120
+                    && ! in_array('application/pdf', $editor->getFileAttachmentsAcceptedFileTypes() ?? ['application/pdf'], true);
+            });
+    }
+
+    public function test_admin_saves_overview_and_full_description(): void
+    {
+        Livewire::test(CreateActivity::class)
+            ->fillForm([
+                'title' => 'Family Day',
+                'overview' => 'A short summary.',
+                'starts_at' => now()->addMonth(),
+                'overview' => "Games, food and a lucky draw for everyone's family.",
+                'description' => '<p>The full programme.</p>',
+            ])
+            ->call('create')
+            ->assertHasNoFormErrors();
+
+        $activity = Activity::firstWhere('title', 'Family Day');
+        $this->assertSame("Games, food and a lucky draw for everyone's family.", $activity->overview);
+        $this->assertStringContainsString('The full programme.', $activity->description);
+    }
+
     public function test_registration_deadline_must_be_before_the_start(): void
     {
         Livewire::test(CreateActivity::class)
             ->fillForm([
                 'title' => 'Late Reg',
+                'overview' => 'A short summary.',
                 'starts_at' => now()->addMonth(),
                 'registration_closes_at' => now()->addMonth()->addDay(), // after the start
             ])
@@ -72,6 +119,7 @@ class ActivityAdminTest extends TestCase
         Livewire::test(CreateActivity::class)
             ->fillForm([
                 'title' => 'Good Reg',
+                'overview' => 'A short summary.',
                 'starts_at' => now()->addMonth(),
                 'registration_closes_at' => now()->addWeeks(3), // before the start
             ])
@@ -86,6 +134,7 @@ class ActivityAdminTest extends TestCase
         Livewire::test(CreateActivity::class)
             ->fillForm([
                 'title' => 'Workshop',
+                'overview' => 'A short summary.',
                 'starts_at' => now()->addMonth(),
                 'registration_fields' => [
                     ['key' => 'diet', 'label' => 'Dietary needs', 'type' => 'text', 'required' => true, 'options' => []],

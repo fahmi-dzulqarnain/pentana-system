@@ -30,6 +30,9 @@ class MyActivities extends Page
     /** @var array<string, mixed> answers bound to the modal inputs */
     public array $answers = [];
 
+    /** Activity whose full description is open in the details modal (null = closed). */
+    public ?int $viewingActivityId = null;
+
     public static function canAccess(): bool
     {
         return auth()->check();
@@ -181,6 +184,28 @@ class MyActivities extends Page
             ?? Activity::find($this->registeringActivityId);
 
         return $activity?->registration_fields ?? [];
+    }
+
+    /** Open the details modal for one of the listed activities. */
+    public function viewDetails(int $activityId): void
+    {
+        $this->viewingActivityId = $activityId;
+    }
+
+    public function closeDetails(): void
+    {
+        $this->viewingActivityId = null;
+    }
+
+    /**
+     * The activity in the details modal. Resolved from the listed (published, upcoming) activities
+     * only - the id is a tamperable public prop, so a draft's id must never reveal its content.
+     */
+    public function viewingActivity(): ?Activity
+    {
+        return $this->viewingActivityId
+            ? $this->upcomingActivities()->firstWhere('id', $this->viewingActivityId)
+            : null;
     }
 
     public function register(int $activityId): void

@@ -6,6 +6,7 @@ use App\Models\Activity;
 use App\Models\ActivityRegistration;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
@@ -131,5 +132,52 @@ class ActivityApiTest extends TestCase
         Sanctum::actingAs(User::factory()->create());
 
         $this->postJson("/api/v1/activities/{$activity->id}/register", [])->assertStatus(422);
+    }
+
+    public function test_description_is_the_plain_overview_for_older_app_releases(): void
+    {
+        $this->published(['overview' => "Tom's day out", 'description' => '<p>The <b>full</b> programme.</p>']);
+        Sanctum::actingAs(User::factory()->create());
+
+        $response = $this->getJson('/api/v1/activities')
+            ->assertOk()
+            ->assertJsonPath('data.0.description', "Tom's day out")
+            ->assertJsonPath('data.0.overview', "Tom's day out");
+
+        $this->assertStringNotContainsString('&#39;', $response->getContent());
+        $this->assertStringNotContainsString('&apos;', $response->getContent());
+    }
+
+    public function test_full_description_returns_html_with_current_image_urls(): void
+    {
+        $this->published([
+            'description' => '<p>Hi</p><img src="http://old-host/storage/activity-images/a.jpg" data-id="activity-images/a.jpg">',
+        ]);
+        Sanctum::actingAs(User::factory()->create());
+
+        $html = $this->getJson('/api/v1/activities')->assertOk()->json('data.0.full_description');
+
+        $this->assertStringContainsString('<p>Hi</p>', $html);
+        $this->assertStringContainsString(Storage::disk('public')->url('activity-images/a.jpg'), $html);
+        $this->assertStringNotContainsString('old-host', $html);
+    }
+
+    public function test_overview_falls_back_to_an_excerpt_of_the_full_description(): void
+    {
+        $this->published(['overview' => null, 'description' => '<p>Bring water &amp; shoes</p>']);
+        Sanctum::actingAs(User::factory()->create());
+
+        $this->getJson('/api/v1/activities')
+            ->assertOk()
+            ->assertJsonPath('data.0.description', 'Bring water & shoes')
+            ->assertJsonPath('data.0.overview', 'Bring water & shoes');
+    }
+
+    public function test_full_description_is_null_when_the_editor_was_left_empty(): void
+    {
+        $this->published(['overview' => 'Blurb', 'description' => '<p></p>']);
+        Sanctum::actingAs(User::factory()->create());
+
+        $this->getJson('/api/v1/activities')->assertOk()->assertJsonPath('data.0.full_description', null);
     }
 }

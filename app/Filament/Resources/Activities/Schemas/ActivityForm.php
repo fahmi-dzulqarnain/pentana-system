@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Activities\Schemas;
 
+use App\Models\Activity;
 use App\Support\StatusLabel;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Hidden;
@@ -9,6 +10,7 @@ use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TagsInput;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
@@ -29,14 +31,32 @@ class ActivityForm
                         TextInput::make('title')
                             ->required()
                             ->maxLength(255),
-                        // An event blurb needs emphasis, links and lists; headings, tables, colours
-                        // and attachments only make descriptions inconsistent.
+                        // Plain text on purpose: lists, cards, the mobile apps and push previews
+                        // all show it as-is, so no markup or images to strip.
+                        Textarea::make('overview')
+                            ->label(__('Overview'))
+                            ->required()
+                            ->maxLength(Activity::OVERVIEW_MAX)
+                            ->rows(2)
+                            ->helperText(__('A short summary shown on activity lists and cards.')),
+                        // The full write-up needs emphasis, links, lists and images (posters, maps);
+                        // headings, tables and colours only make descriptions inconsistent. Images go
+                        // to the public disk like meal photos, so the web page and the apps load them
+                        // without auth.
                         RichEditor::make('description')
+                            ->label(__('Full description'))
+                            ->helperText(__('Shown when members open the activity. You can add images.'))
                             ->toolbarButtons([
                                 ['bold', 'italic', 'link'],
                                 ['bulletList', 'orderedList'],
+                                ['attachFiles'],
                                 ['undo', 'redo'],
-                            ]),
+                            ])
+                            ->fileAttachmentsDisk('public')
+                            ->fileAttachmentsDirectory('activity-images')
+                            ->fileAttachmentsVisibility('public')
+                            ->fileAttachmentsAcceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
+                            ->fileAttachmentsMaxSize(5120),
                         TextInput::make('location')
                             ->maxLength(255),
                     ]),

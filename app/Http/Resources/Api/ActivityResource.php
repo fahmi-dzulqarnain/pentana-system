@@ -33,7 +33,12 @@ class ActivityResource extends JsonResource
         return [
             'id' => $this->id,
             'title' => $this->title,
-            'description' => $this->description,
+            // Back-compat: released apps show `description` as a 3-line card blurb, so it now
+            // carries the plain-text overview. New apps read `overview` for cards and
+            // `full_description` (rich HTML, absolute image URLs) for the detail screen.
+            'description' => $this->overviewText(),
+            'overview' => $this->overviewText(),
+            'full_description' => $this->fullDescriptionHtml(),
             // Null while coming soon; `timeframe` ("December 2026") stands in until it's scheduled.
             'starts_at' => $this->starts_at?->toIso8601String(),
             'timeframe' => $this->timeframe,

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Storage;
 
 class Activity extends Model
 {
@@ -15,6 +16,7 @@ class Activity extends Model
 
     protected $fillable = [
         'title',
+        'overview',
         'description',
         'starts_at',
         'timeframe',
@@ -35,6 +37,83 @@ class Activity extends Model
         'capacity' => 'integer',
         'registration_fields' => 'array',
     ];
+
+    /** Longest plain-text overview, in characters (the admin form enforces the same limit). */
+    public const OVERVIEW_MAX = 200;
+
+    /**
+     * Plain-text excerpt of rich HTML: tags stripped, entities decoded (so "Tom's" never reads
+     * "Tom&#39;s"), whitespace collapsed, cut at a word boundary. Null when there's no text,
+     * e.g. a description that is only an image.
+     */
+    public static function plainTextExcerpt(?string $html, int $limit = self::OVERVIEW_MAX): ?string
+    {
+        if (blank($html)) {
+            return null;
+        }
+
+        // Keep block boundaries as spaces so "<p>A</p><p>B</p>" reads "A B", not "AB".
+        $html = preg_replace('~<(?:br|/p|/li|/h[1-6]|/div|/blockquote)\b[^>]*>~i', '$0 ', $html);
+        $text = html_entity_decode(strip_tags($html), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $text = trim(preg_replace('/[\s\x{00A0}]+/u', ' ', $text));
+
+        if ($text === '') {
+            return null;
+        }
+
+        if (mb_strlen($text) <= $limit) {
+            return $text;
+        }
+
+        $cut = mb_substr($text, 0, $limit - 1);
+        $lastSpace = mb_strrpos($cut, ' ');
+
+        return rtrim($lastSpace ? mb_substr($cut, 0, $lastSpace) : $cut, ' ,.;:-').'…';
+    }
+
+    /** The short summary for lists and cards: the admin's overview, else an excerpt of the full description. */
+    public function overviewText(): ?string
+    {
+        return filled($this->overview) ? $this->overview : self::plainTextExcerpt($this->description);
+    }
+
+    /**
+     * True when the full description has real content. An editor left empty still saves
+     * "<p></p>", which must not count (no empty "View details", null in the API).
+     */
+    public function hasFullDescription(): bool
+    {
+        return filled($this->description)
+            && (self::plainTextExcerpt($this->description) !== null || stripos($this->description, '<img') !== false);
+    }
+
+    /**
+     * The full description HTML, sanitised (no scripts or event handlers, for the web page and
+     * any app WebView alike), with every uploaded image pointed at its current public-disk URL
+     * (rebuilt from the stored `data-id` path, so a changed APP_URL never breaks old images).
+     */
+    public function fullDescriptionHtml(): ?string
+    {
+        if (! $this->hasFullDescription()) {
+            return null;
+        }
+
+        $html = preg_replace_callback('~<img\b[^>]*>~i', function (array $match): string {
+            $tag = $match[0];
+
+            if (! preg_match('~\sdata-id\s*=\s*"([^"]*)"~i', $tag, $id) || $id[1] === '') {
+                return $tag;
+            }
+
+            $src = 'src="'.e(Storage::disk('public')->url(html_entity_decode($id[1], ENT_QUOTES | ENT_HTML5))).'"';
+
+            return preg_match('~\ssrc\s*=\s*"[^"]*"~i', $tag)
+                ? preg_replace('~(\s)src\s*=\s*"[^"]*"~i', '$1'.$src, $tag, 1)
+                : preg_replace('~^<img\b~i', '<img '.$src, $tag, 1);
+        }, $this->description);
+
+        return (string) str($html)->sanitizeHtml();
+    }
 
     public function registrations(): HasMany
     {

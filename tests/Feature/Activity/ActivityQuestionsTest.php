@@ -44,9 +44,9 @@ class ActivityQuestionsTest extends TestCase
         ])->hasRegistrationFields());
     }
 
-    public function test_member_page_renders_description_as_html(): void
+    public function test_member_page_renders_the_full_description_as_html_in_details(): void
     {
-        Activity::factory()->create([
+        $activity = Activity::factory()->create([
             'status' => 'published',
             'starts_at' => now()->addWeek(),
             'title' => 'Gala',
@@ -55,6 +55,9 @@ class ActivityQuestionsTest extends TestCase
         $this->actingAs(User::factory()->create());
         Filament::setCurrentPanel(Filament::getPanel('account'));
 
-        Livewire::test(MyActivities::class)->assertSeeHtml('<strong>World</strong>');
+        Livewire::test(MyActivities::class)
+            ->assertDontSeeHtml('<strong>World</strong>')
+            ->call('viewDetails', $activity->id)
+            ->assertSeeHtml('<strong>World</strong>');
     }
 }

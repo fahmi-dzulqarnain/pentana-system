@@ -37,6 +37,14 @@
         .ma-modal h3 { font-size:1.125rem; font-weight:700; margin:0 0 1rem; color:#111827; }
         .dark .ma-modal h3 { color:#fafafa; }
         .ma-modal-actions { display:flex; justify-content:flex-end; gap:0.5rem; margin-top:1rem; }
+        .ma-modal--wide { max-width:40rem; }
+        .ma-rich { font-size:0.875rem; line-height:1.6; color:#374151; }
+        .dark .ma-rich { color:#d1d5db; }
+        .ma-rich p, .ma-rich ul, .ma-rich ol { margin:0 0 0.75rem; }
+        .ma-rich ul { list-style:disc; padding-left:1.25rem; }
+        .ma-rich ol { list-style:decimal; padding-left:1.25rem; }
+        .ma-rich a { color:var(--primary-600,#d97706); text-decoration:underline; }
+        .ma-rich img { display:block; max-width:100%; height:auto; border-radius:0.5rem; margin:0.75rem 0; }
     </style>
 
     @forelse($this->upcomingActivities() as $activity)
@@ -47,12 +55,14 @@
             @if($activity->location)
                 <div class="ma-meta">📍 {{ $activity->location }}</div>
             @endif
-            @if($activity->description)
-                {{-- Admin-authored RichEditor HTML (trusted), rendered like the email body. --}}
-                <div class="ma-desc">{!! str($activity->description)->sanitizeHtml() !!}</div>
+            @if($overview = $activity->overviewText())
+                <div class="ma-desc">{{ $overview }}</div>
             @endif
 
             <div class="ma-foot">
+                @if($activity->hasFullDescription())
+                    <button type="button" class="ma-btn" wire:click="viewDetails({{ $activity->id }})">{{ __('View details') }}</button>
+                @endif
                 @if($status === 'registered')
                     <span class="ma-badge ma-badge--ok">{{ __('Registered') }}</span>
                     <button type="button" class="ma-btn" wire:click="cancelRegistration({{ $activity->id }})">{{ __('Cancel') }}</button>
@@ -112,6 +122,23 @@
                 </div>
             </div>
         @endforeach
+    @endif
+
+    {{-- Full description modal: admin-authored RichEditor HTML, sanitised, images allowed --}}
+    @if($viewing = $this->viewingActivity())
+        <div class="ma-modal-overlay" wire:key="details-modal" wire:click.self="closeDetails">
+            <div class="ma-modal ma-modal--wide">
+                <div class="ma-date">{{ $viewing->whenLabel() }}</div>
+                <h3>{{ $viewing->title }}</h3>
+                @if($viewing->location)
+                    <div class="ma-meta" style="margin:-0.5rem 0 1rem;">📍 {{ $viewing->location }}</div>
+                @endif
+                <div class="ma-rich">{{-- fullDescriptionHtml() is already sanitised --}}{!! $viewing->fullDescriptionHtml() !!}</div>
+                <div class="ma-modal-actions">
+                    <button type="button" class="ma-btn" wire:click="closeDetails">{{ __('Close') }}</button>
+                </div>
+            </div>
+        </div>
     @endif
 
     {{-- Registration questions modal (only for activities that have questions) --}}
