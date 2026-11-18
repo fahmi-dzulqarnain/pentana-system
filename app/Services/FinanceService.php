@@ -130,6 +130,43 @@ class FinanceService
         });
     }
 
+    /**
+     * Re-balance a bill after its amount_due changed. Money beyond the new amount is
+     * released (newest allocation first) back to the payments it came from, the status
+     * is re-derived, and the member's free funds then cover any bill still open - so a
+     * lowered bill stops showing "partial" and a raised one draws on existing credit.
+     */
+    public function reconcileBill(FeePeriod $period): void
+    {
+        DB::transaction(function () use ($period) {
+            $this->lockMember($period->user_id);
+
+            $excess = $this->toCents($period->allocations()->sum('amount_allocated'))
+                - $this->toCents($period->amount_due);
+
+            foreach ($period->allocations()->orderByDesc('id')->get() as $allocation) {
+                if ($excess <= 0) {
+                    break;
+                }
+
+                $amount = $this->toCents($allocation->amount_allocated);
+                if ($amount <= $excess) {
+                    $allocation->delete();
+                    $excess -= $amount;
+                } else {
+                    $allocation->update(['amount_allocated' => ($amount - $excess) / 100]);
+                    $excess = 0;
+                }
+            }
+
+            $this->refreshStatus($period);
+
+            if ($period->user) {
+                $this->applyAvailableFunds($period->user);
+            }
+        });
+    }
+
     private function lockMember(int $userId): void
     {
         User::whereKey($userId)->lockForUpdate()->first();
