@@ -52,7 +52,7 @@ class ComingSoonActivityTest extends TestCase
         $this->actAsAdmin();
 
         Livewire::test(CreateActivity::class)
-            ->fillForm(['title' => 'Family Day', 'starts_at' => null, 'timeframe' => 'December 2026'])
+            ->fillForm(['title' => 'Family Day', 'overview' => 'A day out.', 'starts_at' => null, 'timeframe' => 'December 2026'])
             ->call('create')
             ->assertHasNoFormErrors();
 
@@ -66,7 +66,7 @@ class ComingSoonActivityTest extends TestCase
         $this->actAsAdmin();
 
         Livewire::test(CreateActivity::class)
-            ->fillForm(['title' => 'Family Day', 'starts_at' => null, 'timeframe' => null])
+            ->fillForm(['title' => 'Family Day', 'overview' => 'A day out.', 'starts_at' => null, 'timeframe' => null])
             ->call('create')
             ->assertHasFormErrors(['timeframe' => 'required']);
     }

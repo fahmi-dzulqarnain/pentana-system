@@ -25,7 +25,7 @@ class ActivityFormLayoutTest extends TestCase
             return preg_match('/fi-section-header-heading[^>]*>\s*'.$title.'\s*</', $html, $m, PREG_OFFSET_CAPTURE) ? $m[0][1] : false;
         };
         $order = [
-            $heading('Details'), strpos($html, 'data.title'), strpos($html, 'data.description'), strpos($html, 'data.location'),
+            $heading('Details'), strpos($html, 'data.title'), strpos($html, 'data.overview'), strpos($html, 'data.description'), strpos($html, 'data.location'),
             $heading('When'), strpos($html, 'data.starts_at'), strpos($html, 'data.ends_at'), strpos($html, 'data.registration_closes_at'),
             $heading('Registration'), strpos($html, 'data.capacity'), strpos($html, 'data.registration_fields'),
         ];
