@@ -45,19 +45,4 @@ class ActivityFormLayoutTest extends TestCase
             $this->assertStringNotContainsString($command, $html, "unexpected {$command}");
         }
     }
-
-    public function test_member_page_strips_scripts_from_descriptions(): void
-    {
-        Activity::factory()->create([
-            'status' => 'published',
-            'starts_at' => now()->addWeek(),
-            'description' => '<p>Bring <strong>water</strong>.</p><script>alert(1)</script>',
-        ]);
-
-        $this->actingAs(User::factory()->create(['activated_at' => now()]))
-            ->get('/account/my-activities')
-            ->assertOk()
-            ->assertSee('<strong>water</strong>', false)
-            ->assertDontSee('<script>alert(1)</script>', false);
-    }
 }

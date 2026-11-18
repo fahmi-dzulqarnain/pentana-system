@@ -217,4 +217,69 @@ class MyActivitiesPageTest extends TestCase
         $registration = ActivityRegistration::where(['activity_id' => $activity->id, 'user_id' => $user->id])->first();
         $this->assertSame(['diet' => 'None'], $registration->answers);
     }
+
+    public function test_the_card_shows_the_overview_not_the_full_description(): void
+    {
+        $this->published(['overview' => "Tom's short blurb", 'description' => '<p>Long body with the whole programme</p>']);
+        $this->actAsPanelUser();
+
+        Livewire::test(MyActivities::class)
+            ->assertSee("Tom's short blurb")
+            ->assertDontSeeHtml('&amp;#039;')
+            ->assertDontSee('Long body with the whole programme')
+            ->assertSee(__('View details'));
+    }
+
+    public function test_view_details_shows_the_full_description_with_images(): void
+    {
+        $activity = $this->published([
+            'overview' => 'Short blurb',
+            'description' => '<p>Long body</p><img src="http://old-host/storage/activity-images/a.jpg" data-id="activity-images/a.jpg" alt="Poster">',
+        ]);
+        $this->actAsPanelUser();
+
+        Livewire::test(MyActivities::class)
+            ->call('viewDetails', $activity->id)
+            ->assertSee('Long body')
+            ->assertSeeHtml('activity-images/a.jpg')
+            ->assertSeeHtml('<img')
+            ->assertDontSeeHtml('old-host')
+            ->call('closeDetails')
+            ->assertDontSee('Long body');
+    }
+
+    public function test_details_strip_scripts_and_event_handlers(): void
+    {
+        $activity = $this->published([
+            'description' => '<p>Bring <strong>water</strong>.</p><img src="https://example.com/x.png" onerror="alert(1)"><script>alert(2)</script>',
+        ]);
+        $this->actAsPanelUser();
+
+        Livewire::test(MyActivities::class)
+            ->call('viewDetails', $activity->id)
+            ->assertSeeHtml('<strong>water</strong>')
+            ->assertSeeHtml('https://example.com/x.png')
+            ->assertDontSeeHtml('onerror')
+            ->assertDontSeeHtml('alert(2)');
+    }
+
+    public function test_no_details_button_without_a_full_description(): void
+    {
+        $this->published(['overview' => 'Just a blurb', 'description' => null]);
+        $this->actAsPanelUser();
+
+        Livewire::test(MyActivities::class)
+            ->assertSee('Just a blurb')
+            ->assertDontSee(__('View details'));
+    }
+
+    public function test_details_of_a_draft_activity_are_not_shown(): void
+    {
+        $draft = Activity::factory()->create(['status' => 'draft', 'description' => '<p>Secret plans</p>']);
+        $this->actAsPanelUser();
+
+        Livewire::test(MyActivities::class)
+            ->call('viewDetails', $draft->id)
+            ->assertDontSee('Secret plans');
+    }
 }
