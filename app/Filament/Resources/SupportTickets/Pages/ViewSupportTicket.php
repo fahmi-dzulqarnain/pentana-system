@@ -10,6 +10,7 @@ use App\Models\SupportTicket;
 use App\Services\SupportService;
 use Closure;
 use Filament\Actions\Action;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Textarea;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
@@ -93,9 +94,21 @@ class ViewSupportTicket extends ViewRecord
             ->label($label)
             ->schema([
                 Textarea::make('body')->label(__('Message'))->required()->maxLength(5000)->rows(5),
+                // Same private disk as members' screenshots; served by SupportAttachmentController.
+                FileUpload::make('attachment')
+                    ->label(__('Attachment (optional)'))
+                    ->helperText(__('An image or a PDF, up to 10 MB.'))
+                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'application/pdf'])
+                    ->disk('local')
+                    ->directory('support')
+                    ->visibility('private')
+                    ->maxSize(10240)
+                    // The field's value is client-controlled: accept only files uploaded here, never a typed path.
+                    ->preventFilePathTampering()
+                    ->visible(fn (): bool => $this->isAdmin()),
             ])
             ->action(function (array $data) use ($close): void {
-                app(SupportService::class)->reply($this->freshTicket(), auth()->user(), $data['body'], $close);
+                app(SupportService::class)->reply($this->freshTicket(), auth()->user(), $data['body'], $close, $data['attachment'] ?? null);
                 $this->done(__('Reply sent.'));
             });
     }

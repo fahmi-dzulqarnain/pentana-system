@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
- * Serves a support-ticket screenshot from the private disk to the ticket's member or an
+ * Serves a support-ticket attachment (a member's screenshot or an admin's image/PDF) from the private disk to the ticket's member or an
  * admin. Anyone else gets 404, not 403, so the URL never confirms a ticket exists.
  */
 class SupportAttachmentController extends Controller
@@ -22,6 +22,6 @@ class SupportAttachmentController extends Controller
         abort_unless(Storage::disk('local')->exists($message->attachment_path), 404);
 
         // nosniff: the browser must treat it as the stored image type, never sniff it into HTML.
-        return Storage::disk('local')->response($message->attachment_path, headers: ['X-Content-Type-Options' => 'nosniff']);
+        return Storage::disk('local')->response($message->attachment_path, $message->attachmentDownloadName(), headers: ['X-Content-Type-Options' => 'nosniff']);
     }
 }

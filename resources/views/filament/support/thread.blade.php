@@ -22,7 +22,13 @@
                 · {{ $message->created_at->diffForHumans() }}
             </div>
             <div style="white-space:normal;word-break:break-word;">{!! nl2br(e($message->body)) !!}</div>
-            @if ($message->attachment_path)
+            @if ($message->attachment_path && $message->attachmentIsPdf())
+                <a href="{{ route('support.attachment', $message) }}" target="_blank" rel="noopener"
+                   style="display:inline-flex;align-items:center;gap:0.4rem;margin-top:0.5rem;padding:0.4rem 0.75rem;border-radius:0.5rem;border:1px solid rgba(127,127,127,.35);text-decoration:none;">
+                    <x-filament::icon icon="heroicon-o-document-text" style="width:1.1rem;height:1.1rem;" />
+                    <span>{{ __('PDF attachment') }}</span>
+                </a>
+            @elseif ($message->attachment_path)
                 <a href="{{ route('support.attachment', $message) }}" target="_blank" rel="noopener" style="display:block;margin-top:0.5rem;">
                     <img src="{{ route('support.attachment', $message) }}" alt="{{ __('Screenshot') }}"
                          style="max-width:100%;max-height:20rem;border-radius:0.5rem;">

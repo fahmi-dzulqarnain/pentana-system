@@ -31,11 +31,7 @@ class SupportService
     public function open(User $member, SupportTicketType $type, string $subject, string $body, ?string $attachmentPath = null): SupportTicket
     {
         $this->ensure(! $member->is_admin);
-        // A screenshot is served back to its member, so only a file stored straight under support/
-        // may be referenced; anything else could expose another private file (APKs, other screenshots' temp copies).
-        if ($attachmentPath !== null && (! preg_match('#^support/[A-Za-z0-9._-]+$#', $attachmentPath) || str_contains($attachmentPath, '..'))) {
-            throw new InvalidArgumentException('Invalid support attachment path.');
-        }
+        $this->ensureAttachmentPath($attachmentPath);
 
         $ticket = DB::transaction(function () use ($member, $type, $subject, $body, $attachmentPath) {
             $ticket = SupportTicket::create([
@@ -60,16 +56,18 @@ class SupportService
         return $ticket;
     }
 
-    public function reply(SupportTicket $ticket, User $author, string $body, bool $close = false): SupportMessage
+    public function reply(SupportTicket $ticket, User $author, string $body, bool $close = false, ?string $attachmentPath = null): SupportMessage
     {
         $fromCommittee = (bool) $author->is_admin;
         $this->ensure($fromCommittee || $this->owns($author, $ticket));
         $this->ensure($fromCommittee || ! $close);
+        $this->ensureAttachmentPath($attachmentPath);
 
-        $message = DB::transaction(function () use ($ticket, $author, $body, $close, $fromCommittee) {
+        $message = DB::transaction(function () use ($ticket, $author, $body, $close, $fromCommittee, $attachmentPath) {
             $message = $ticket->messages()->create([
                 'user_id' => $author->id,
                 'body' => $body,
+                'attachment_path' => $attachmentPath,
                 'from_committee' => $fromCommittee,
             ]);
 
@@ -137,6 +135,18 @@ class SupportService
     private function owns(User $user, SupportTicket $ticket): bool
     {
         return $ticket->user_id === $user->id;
+    }
+
+    /**
+     * An attachment is served back to the ticket's member and admins, so only a file stored straight
+     * under support/ may be referenced; anything else could expose another private file (APKs,
+     * other uploads' temp copies).
+     */
+    private function ensureAttachmentPath(?string $path): void
+    {
+        if ($path !== null && (! preg_match('#^support/[A-Za-z0-9._-]+$#', $path) || str_contains($path, '..'))) {
+            throw new InvalidArgumentException('Invalid support attachment path.');
+        }
     }
 
     private function ensure(bool $allowed): void

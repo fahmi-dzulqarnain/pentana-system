@@ -151,6 +151,92 @@ class SupportTicketResourceTest extends TestCase
             ->assertSee('Waiting on member');
     }
 
+    public function test_an_admin_can_attach_an_image_to_a_reply(): void
+    {
+        Storage::fake('local');
+        $ticket = $this->ticketFor($this->member);
+        $this->actingAs($this->admin);
+
+        Livewire::test(ViewSupportTicket::class, ['record' => $ticket->getKey()])
+            ->callAction('reply', data: ['body' => 'Here is the menu.', 'attachment' => UploadedFile::fake()->image('menu.jpg')])
+            ->assertHasNoActionErrors();
+
+        $reply = $ticket->messages->last();
+        $this->assertTrue($reply->from_committee);
+        $this->assertStringStartsWith('support/', $reply->attachment_path);
+        $this->assertFalse($reply->attachmentIsPdf());
+        Storage::disk('local')->assertExists($reply->attachment_path);
+    }
+
+    public function test_an_admin_can_attach_a_pdf_and_the_member_sees_a_link_to_it(): void
+    {
+        Storage::fake('local');
+        $ticket = $this->ticketFor($this->member);
+        $this->actingAs($this->admin);
+
+        Livewire::test(ViewSupportTicket::class, ['record' => $ticket->getKey()])
+            ->callAction('replyAndClose', data: [
+                'body' => 'Receipt attached.',
+                'attachment' => UploadedFile::fake()->create('receipt.pdf', 200, 'application/pdf'),
+            ])
+            ->assertHasNoActionErrors();
+
+        $reply = $ticket->messages->last();
+        $this->assertTrue($reply->attachmentIsPdf());
+        Storage::disk('local')->assertExists($reply->attachment_path);
+        $this->assertSame(SupportTicketStatus::Closed, $ticket->fresh()->status);
+
+        $this->actingAs($this->member);
+        Livewire::test(ViewSupportTicket::class, ['record' => $ticket->getKey()])
+            ->assertSee('PDF attachment')
+            ->assertSee(route('support.attachment', $reply), escape: false);
+        $this->get(route('support.attachment', $reply))
+            ->assertOk()
+            ->assertHeader('X-Content-Type-Options', 'nosniff');
+    }
+
+    public function test_an_admin_reply_rejects_other_file_types(): void
+    {
+        Storage::fake('local');
+        $ticket = $this->ticketFor($this->member);
+        $this->actingAs($this->admin);
+
+        Livewire::test(ViewSupportTicket::class, ['record' => $ticket->getKey()])
+            ->callAction('reply', data: [
+                'body' => 'x',
+                'attachment' => UploadedFile::fake()->create('page.html', 1, 'text/html'),
+            ])
+            ->assertHasActionErrors(['attachment']);
+
+        $this->assertSame(1, $ticket->messages()->count());
+    }
+
+    public function test_a_tampered_reply_attachment_path_is_rejected(): void
+    {
+        Storage::fake('local');
+        Storage::disk('local')->put('android/app.apk', 'secret');
+        $ticket = $this->ticketFor($this->member);
+        $this->actingAs($this->admin);
+
+        Livewire::test(ViewSupportTicket::class, ['record' => $ticket->getKey()])
+            ->mountAction('reply')
+            ->set('mountedActions.0.data.body', 'x')
+            ->set('mountedActions.0.data.attachment', ['android/app.apk'])
+            ->callMountedAction();
+
+        $this->assertNull(SupportMessage::query()->whereNotNull('attachment_path')->first());
+    }
+
+    public function test_a_member_reply_has_no_attachment_field(): void
+    {
+        $ticket = $this->ticketFor($this->member);
+        $this->actingAs($this->member);
+
+        Livewire::test(ViewSupportTicket::class, ['record' => $ticket->getKey()])
+            ->mountAction('reply')
+            ->assertFormFieldHidden('attachment');
+    }
+
     public function test_the_member_sees_committee_not_the_admin_name(): void
     {
         $ticket = $this->ticketFor($this->member);

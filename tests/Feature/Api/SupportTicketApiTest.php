@@ -215,6 +215,30 @@ class SupportTicketApiTest extends TestCase
         $this->assertSame(1, $ticket->messages()->count());
     }
 
+    public function test_a_committee_pdf_is_typed_and_kept_out_of_the_legacy_image_url(): void
+    {
+        Storage::fake('local');
+        $ticket = SupportTicket::factory()->for($this->member)->create();
+        $image = SupportMessage::factory()->for($ticket, 'ticket')->create([
+            'user_id' => $this->member->id,
+            'attachment_path' => UploadedFile::fake()->image('s.png')->store('support', 'local'),
+        ]);
+        $pdf = SupportMessage::factory()->for($ticket, 'ticket')->create([
+            'user_id' => $this->admin->id, 'from_committee' => true,
+            'attachment_path' => UploadedFile::fake()->create('r.pdf', 10, 'application/pdf')->store('support', 'local'),
+        ]);
+
+        Sanctum::actingAs($this->member);
+        $this->getJson("/api/v1/support-tickets/{$ticket->id}")
+            ->assertJsonPath('data.messages.0.attachment_url', route('api.support-tickets.attachment', $image))
+            ->assertJsonPath('data.messages.0.attachment.type', 'image')
+            // Older app builds decode attachment_url as an image, so a PDF only appears under `attachment`.
+            ->assertJsonPath('data.messages.1.attachment_url', null)
+            ->assertJsonPath('data.messages.1.attachment.type', 'pdf')
+            ->assertJsonPath('data.messages.1.attachment.url', route('api.support-tickets.attachment', $pdf));
+        $this->get(route('api.support-tickets.attachment', $pdf))->assertOk();
+    }
+
     public function test_the_screenshot_is_served_to_the_owner_with_nosniff_and_hidden_from_others(): void
     {
         Storage::fake('local');
