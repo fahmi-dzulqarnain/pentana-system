@@ -77,6 +77,7 @@ class SupportTicketApiTest extends TestCase
             ->assertJsonPath('data.messages.1.from_committee', true)
             ->assertJsonPath('data.messages.1.is_mine', false)
             ->assertJsonPath('data.messages.1.attachment_url', null)
+            ->assertJsonPath('data.messages.1.attachment', null)
             ->assertJsonPath('data.closed_at', null)
             ->assertDontSee('Zainal');
 
@@ -231,6 +232,7 @@ class SupportTicketApiTest extends TestCase
         Sanctum::actingAs($this->member);
         $this->getJson("/api/v1/support-tickets/{$ticket->id}")
             ->assertJsonPath('data.messages.0.attachment_url', route('api.support-tickets.attachment', $image))
+            ->assertJsonPath('data.messages.0.attachment.url', route('api.support-tickets.attachment', $image))
             ->assertJsonPath('data.messages.0.attachment.type', 'image')
             // Older app builds decode attachment_url as an image, so a PDF only appears under `attachment`.
             ->assertJsonPath('data.messages.1.attachment_url', null)

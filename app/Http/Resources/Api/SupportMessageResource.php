@@ -25,10 +25,20 @@ class SupportMessageResource extends JsonResource
             'created_at' => $this->created_at?->toIso8601String(),
             // Images only: app builds before PDF support decode this URL as an image.
             'attachment_url' => $this->attachment_path && ! $this->attachmentIsPdf() ? $this->attachmentUrl() : null,
-            'attachment' => $this->attachment_path ? [
-                'url' => $this->attachmentUrl(),
-                'type' => $this->attachmentIsPdf() ? 'pdf' : 'image',
-            ] : null,
+            'attachment' => $this->attachment(),
+        ];
+    }
+
+    /** @return array{url: string, type: string}|null */
+    private function attachment(): ?array
+    {
+        if (! $this->attachment_path) {
+            return null;
+        }
+
+        return [
+            'url' => $this->attachmentUrl(),
+            'type' => $this->attachmentIsPdf() ? 'pdf' : 'image',
         ];
     }
 
