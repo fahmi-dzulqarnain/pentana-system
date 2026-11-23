@@ -28,10 +28,10 @@
     <div class="void">VOID</div>
 @endif
 
-<table class="head">
+<table class="head" role="presentation">
     <tr>
         <td style="width: 55%">
-            <table>
+            <table role="presentation">
                 <tr>
                     <td style="width: 48px"><img src="{{ $logo }}" width="38" height="38" alt=""></td>
                     <td style="vertical-align: middle">
