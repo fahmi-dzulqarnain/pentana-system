@@ -97,7 +97,7 @@ class LunchForm
             return 'new';
         }
 
-        return md5(json_encode([
+        return hash('sha256', json_encode([
             $record->getKey(),
             $record->status,
             $record->deadline?->toIso8601String(),
