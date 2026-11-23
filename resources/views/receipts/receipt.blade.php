@@ -9,8 +9,13 @@
     table { border-collapse: collapse; }
     .muted { color: #6b6b6b; }
     .right { text-align: right; }
-    .head { width: 100%; }
-    .head td { vertical-align: top; padding: 0; }
+    /* The header is positioned with CSS table boxes on plain divs: dompdf has no flexbox or
+       grid, and an HTML table element here would be a layout table holding no tabular data. */
+    .head { display: table; border-collapse: collapse; width: 100%; }
+    .logo { display: table; border-collapse: collapse; }
+    .row { display: table-row; }
+    .cell { display: table-cell; vertical-align: top; padding: 0; }
+    .cell.middle { vertical-align: middle; }
     .brand { font-size: 17px; font-weight: bold; }
     .paid { display: inline-block; border: 2px solid #15803d; color: #15803d; font-weight: bold; padding: 1px 10px; letter-spacing: 1px; margin-top: 4px; }
     .items { width: 100%; margin-top: 12px; }
@@ -28,20 +33,20 @@
     <div class="void">VOID</div>
 @endif
 
-<table class="head" role="presentation">
-    <tr>
-        <td style="width: 55%">
-            <table role="presentation">
-                <tr>
-                    <td style="width: 48px"><img src="{{ $logo }}" width="38" height="38" alt=""></td>
-                    <td style="vertical-align: middle">
+<div class="head">
+    <div class="row">
+        <div class="cell" style="width: 55%">
+            <div class="logo">
+                <div class="row">
+                    <div class="cell" style="width: 48px"><img src="{{ $logo }}" width="38" height="38" alt=""></div>
+                    <div class="cell middle">
                         <span class="brand">PENTANA</span><br>
                         <span class="muted">Official Receipt</span>
-                    </td>
-                </tr>
-            </table>
-        </td>
-        <td class="right">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="cell right">
             <strong>{{ $receipt->number }}</strong><br>
             <span class="muted">Issued {{ $receipt->created_at->format('d M Y') }}</span><br>
             @if ($receipt->isVoid())
@@ -49,9 +54,9 @@
             @else
                 <span class="paid">PAID</span>
             @endif
-        </td>
-    </tr>
-</table>
+        </div>
+    </div>
+</div>
 
 <div style="margin-top: 22px">
     <span class="muted">Received from</span><br>
