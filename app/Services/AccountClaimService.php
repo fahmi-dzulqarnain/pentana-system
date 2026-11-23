@@ -54,7 +54,7 @@ class AccountClaimService
     public function sendLink(string $email): void
     {
         $user = $this->claimable($email);
-        $key = 'claim-link:'.sha1(mb_strtolower(trim($email)));
+        $key = 'claim-link:'.hash('sha256', mb_strtolower(trim($email)));
 
         if ($user === null || RateLimiter::tooManyAttempts($key, 1)) {
             return;

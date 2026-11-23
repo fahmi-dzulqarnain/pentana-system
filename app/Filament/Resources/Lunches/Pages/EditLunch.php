@@ -136,7 +136,7 @@ class EditLunch extends EditRecord
             return 0;
         }
 
-        $hash = md5(serialize($this->menusState()));
+        $hash = hash('sha256', serialize($this->menusState()));
         if ($this->pendingDroppedMemo === null || $this->pendingDroppedMemo[0] !== $hash) {
             $count = app(LunchMenuChanges::class)->droppedResponses($this->record, $this->menusState())->count();
             $this->pendingDroppedMemo = [$hash, $count];

@@ -1,7 +1,7 @@
 <x-filament-panels::page>
     {{-- Dark-mode-aware styling. Filament's precompiled CSS can't carry `dark:` utilities and
          its palette vars (--white/--gray-*) don't flip, so custom colors live here with `.dark`
-         overrides (the `dark` class is toggled on <html> by Filament). --}}
+         overrides (Filament toggles the `dark` class on the root html element). --}}
     <style>
         .lc-nav-btn { display:inline-flex; align-items:center; justify-content:center; padding:0.375rem 0.625rem; border-radius:0.5rem; border:1px solid rgb(0 0 0 / 0.1); background:#fff; color:#374151; cursor:pointer; }
         .lc-nav-btn--text { padding:0.375rem 0.875rem; font-size:0.875rem; }

@@ -31,10 +31,11 @@ class TimeFormat
      */
     public static function keepAmPm(): void
     {
-        self::$meridiem ??= static function (int $hour, int $minute = 0, bool $isLower = false): string {
+        // Carbon calls this positionally with (hour, minute, isLower); the minute plays no part here.
+        self::$meridiem ??= static function (int $hour, mixed ...$rest): string {
             $marker = $hour < 12 ? 'AM' : 'PM';
 
-            return $isLower ? strtolower($marker) : $marker;
+            return ($rest[1] ?? false) ? strtolower($marker) : $marker;
         };
 
         foreach (array_diff(Locales::SUPPORTED, ['en']) as $locale) {
