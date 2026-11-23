@@ -55,12 +55,15 @@ class Activity extends Model
         // Keep block boundaries as spaces so "<p>A</p><p>B</p>" reads "A B", not "AB".
         $html = preg_replace('~<(?:br|/p|/li|/h[1-6]|/div|/blockquote)\b[^>]*>~i', '$0 ', $html);
         $text = html_entity_decode(strip_tags($html), ENT_QUOTES | ENT_HTML5, 'UTF-8');
-        $text = trim(preg_replace('/[\s\x{00A0}]+/u', ' ', $text));
+        // Under the u modifier \s is Unicode-aware, so it takes the no-break space (&nbsp;) too.
+        $text = trim(preg_replace('/\s+/u', ' ', $text));
 
-        if ($text === '') {
-            return null;
-        }
+        return $text === '' ? null : self::cutAtWordBoundary($text, $limit);
+    }
 
+    /** The text itself when it fits in $limit characters, else its leading words and an ellipsis. */
+    private static function cutAtWordBoundary(string $text, int $limit): string
+    {
         if (mb_strlen($text) <= $limit) {
             return $text;
         }

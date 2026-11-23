@@ -41,6 +41,28 @@ class ActivityOverviewTest extends TestCase
         $this->assertNull(Activity::plainTextExcerpt('<p>&nbsp; </p>'));
     }
 
+    public function test_excerpt_collapses_every_kind_of_whitespace_to_one_space(): void
+    {
+        // No-break spaces (typed, or as &nbsp;) count as whitespace alongside tabs and newlines.
+        $this->assertSame(
+            'One two three four',
+            Activity::plainTextExcerpt("<p>One&nbsp;&nbsp;\u{00A0} two\t\n three\u{00A0}four&nbsp;</p>"),
+        );
+        $this->assertNull(Activity::plainTextExcerpt("\u{00A0}\u{00A0}"));
+        $this->assertNull(Activity::plainTextExcerpt('   '));
+        $this->assertNull(Activity::plainTextExcerpt(''));
+    }
+
+    public function test_excerpt_keeps_text_that_fits_and_cuts_text_that_does_not(): void
+    {
+        $this->assertSame('hello world', Activity::plainTextExcerpt('<p>hello world</p>', 11));
+        $this->assertSame('hello…', Activity::plainTextExcerpt('<p>hello world!</p>', 11));
+        // Punctuation left dangling at the cut goes too.
+        $this->assertSame('Hello…', Activity::plainTextExcerpt('<p>Hello, world again</p>', 8));
+        // One long word has no boundary to cut at, so it is cut mid-word.
+        $this->assertSame('abcd…', Activity::plainTextExcerpt('<p>abcdefghijkl</p>', 5));
+    }
+
     public function test_overview_text_prefers_the_overview_and_falls_back_to_the_excerpt(): void
     {
         $withOverview = Activity::factory()->make(['overview' => 'Short blurb', 'description' => '<p>Long body</p>']);
