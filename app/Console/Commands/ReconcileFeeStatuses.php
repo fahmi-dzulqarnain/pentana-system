@@ -27,7 +27,11 @@ class ReconcileFeeStatuses extends Command
             ->filter(function (FeePeriod $bill) {
                 $paid = FinanceService::toCents($bill->allocations_sum_amount_allocated);
                 $due = FinanceService::toCents($bill->amount_due);
-                $expected = $paid >= $due ? 'paid' : ($paid > 0 ? 'partial' : 'unpaid');
+                $expected = match (true) {
+                    $paid >= $due => 'paid',
+                    $paid > 0 => 'partial',
+                    default => 'unpaid',
+                };
 
                 return $paid > $due || ($due > 0 && $bill->status !== $expected);
             });

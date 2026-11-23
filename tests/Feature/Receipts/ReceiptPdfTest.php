@@ -145,6 +145,17 @@ class ReceiptPdfTest extends TestCase
         $this->assertStringContainsString('Ahmad bin Ismail', $this->pdf()->html($receipt));
     }
 
+    public function test_only_the_line_items_are_an_html_table(): void
+    {
+        $this->bill('2026-09-01', 30);
+        $html = $this->pdf()->html($this->issue(30));
+
+        // The header is positioned with CSS; a <table> there would be a layout table.
+        $this->assertSame(1, substr_count($html, '<table'));
+        $this->assertStringContainsString('<table class="items">', $html);
+        $this->assertStringNotContainsString('role="presentation"', $html);
+    }
+
     public function test_pdf_is_small(): void
     {
         $this->bill('2026-09-01', 30);
